@@ -1,6 +1,6 @@
 // import React from 'react'
 import logo from '../../assets/logo.png'
-
+import { Link } from '@tanstack/router' 
 const LeftBar = () => {
   return (
     <div className='xl:w-1/5 w-20 h-full flex flex-col xl:pr-4 text-white'>
@@ -17,10 +17,10 @@ const LeftBar = () => {
           <i className='fa-solid fa-bell text-xl' />
           <span className='icon'>Notificaciones</span>
         </a>
-        <a href='#' className='btn mb-3 btn-ghost flex items-center justify-start'>
+        <Link to="/chat" className='btn mb-3 btn-ghost flex items-center justify-start'>
           <i className='fa-solid fa-envelope text-xl' />
           <span className='icon'>Mensajes</span>
-        </a>
+        </Link>
         <a href='#' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <i className='fa-solid fa-search text-xl' />
           <span className='icon'>Buscar</span>
