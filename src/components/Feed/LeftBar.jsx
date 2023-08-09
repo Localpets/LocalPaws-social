@@ -1,5 +1,6 @@
 // import React from 'react'
 import logo from '../../assets/logo.png'
+import { Link } from '@tanstack/router'
 
 const LeftBar = () => {
   return (
@@ -25,14 +26,14 @@ const LeftBar = () => {
           <i className='fa-solid fa-search text-xl' />
           <span className='icon'>Buscar</span>
         </a>
-        <a href='#' className='btn mb-3 btn-ghost flex items-center justify-start'>
+        <Link to='/profile' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <img
             className='w-10 rounded-full'
             src='https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg'
             alt=''
           />
           <span className='icon'>Perfil</span>
-        </a>
+        </Link>
         <a href='#' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <i className='fa-solid fa-ellipsis text-xl' />
           <span className='icon'>Más</span>
