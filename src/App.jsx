@@ -4,6 +4,7 @@ import Layout from './containers/Layout'
 import Feed from './containers/Feed/Feed'
 import Register from './containers/Auth/Register.jsx'
 import Login from './containers/Auth/Login.jsx'
+import Comments from './components/Post/Comments'
 import './App.css'
 // Create a root route
 const rootRoute = new RootRoute({
@@ -34,10 +35,7 @@ const queryClient = new QueryClient()
 function App () {
   return (
     <QueryClientProvider client={queryClient}>
-      <Layout>
-        <Feed />
-        <Outlet />
-      </Layout>
+    <Comments/>
     </QueryClientProvider>
   )
 }
