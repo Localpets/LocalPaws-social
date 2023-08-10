@@ -22,7 +22,7 @@ const Middle = () => {
       {/* Resto del contenido */}
       <Stories />
 
-      <div className='p-4 border border-gray-700'>
+      <div className='p-4 pt-20'>
         <svg className='w-8 h-8 mx-auto animate-spin-fast'>
           <circle
             cx='16'
@@ -51,4 +51,3 @@ const Middle = () => {
 }
 
 export default Middle
-

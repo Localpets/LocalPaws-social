@@ -25,9 +25,16 @@ const loginRoute = new Route({
   component: Login
 })
 
+// Create a feed route
+const feedRoute = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  component: Feed
+})
+
 // Create the route tree using your routes
 // eslint-disable-next-line react-refresh/only-export-components
-export const routeTree = rootRoute.addChildren([registerRoute, loginRoute])
+export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, feedRoute])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
 const queryClient = new QueryClient()
@@ -35,7 +42,9 @@ const queryClient = new QueryClient()
 function App () {
   return (
     <QueryClientProvider client={queryClient}>
-    <Comments/>
+      <Layout>
+        <Outlet />
+      </Layout>
     </QueryClientProvider>
   )
 }
