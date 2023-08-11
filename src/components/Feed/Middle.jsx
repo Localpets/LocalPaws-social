@@ -2,7 +2,7 @@
 // import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { makeRequest } from '../../library/axios.js'
-import logo from '../../assets/logo.png'
+import logo from '../../assets/Icons/logo.png'
 import Post from '../post/Post'
 import Stories from '../Story/Stories.jsx'
 
@@ -23,28 +23,7 @@ const Middle = () => {
       <Stories />
 
       <div className='p-4 pt-20'>
-        <svg className='w-8 h-8 mx-auto animate-spin-fast'>
-          <circle
-            cx='16'
-            cy='16'
-            fill='none'
-            r='14'
-            strokeWidth='4'
-            style={{ stroke: 'rgb(29, 161, 242)', opacity: 0.2 }}
-          />
-          <circle
-            cx='16'
-            cy='16'
-            fill='none'
-            r='14'
-            strokeWidth='4'
-            style={{
-              stroke: 'rgb(29, 161, 242)',
-              strokeDasharray: 80,
-              strokeDashoffset: 60
-            }}
-          />
-        </svg>
+        <span className='loading loading-ring loading-lg' />
       </div>
     </div>
   )
