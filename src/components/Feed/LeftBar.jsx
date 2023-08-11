@@ -1,5 +1,5 @@
 // import React from 'react'
-import logo from '../../assets/logo.png'
+import logo from '../../assets/Icons/logo.png'
 
 const LeftBar = () => {
   return (
@@ -32,10 +32,6 @@ const LeftBar = () => {
             alt=''
           />
           <span className='icon'>Perfil</span>
-        </a>
-        <a href='#' className='btn mb-3 btn-ghost flex items-center justify-start'>
-          <i className='fa-solid fa-ellipsis text-xl' />
-          <span className='icon'>Más</span>
         </a>
       </nav>
     </div>

@@ -1,0 +1,149 @@
+{   
+    "Lugares": [
+        {
+            "Id": "5924889151",
+            "Name": "mascovet",
+            "Address": "Av. 1 Este #3-08, Cúcuta, Norte de Santander",
+            "Img": "https://cdn-icons-png.flaticon.com/512/6053/6053921.png",
+            "type": "Veterinaria",
+            "lat": "7.895308513857516",
+            "lng": "-72.4989503048012"
+        },
+
+        {
+            "Id": "9242808532",
+            "Name": "Casa de Mascotas Prinx",
+            "Address": "Manzana 15 #Lt 5, Barrio Claret, Cúcuta, Norte de Santander",
+            "Img": "https://cdn-icons-png.flaticon.com/512/6053/6053921.png",
+            "type": "Veterinaria",
+            "lat": "7.916202240161597",
+            "lng": "-72.52835495712341"
+        },
+
+        {
+            "Id": "1449537062",
+            "Name": "León Pets",
+            "Img": "https://cdn-icons-png.flaticon.com/512/6053/6053921.png",
+            "Address": "Av. 27 #8 Norte, Cl. 1a #8 Norte-57, Cúcuta, Norte de Santander",
+            "type": "Veterinaria",
+            "lat": "7.913127257446796",
+            "lng": "-72.53023595515353"
+        },
+
+        {
+            "Id": "9271624046",
+            "Name": "Veterinaria tom y jerrys",
+            "Img": "https://cdn-icons-png.flaticon.com/512/6053/6053921.png",
+            "Address": "Avenida 3 entre calles 6 y 7, chapinero, Cúcuta, Norte de Santander",
+            "type": "Veterinaria",
+            "lat": "7.910842142310077",
+            "lng": "-72.51557650244253"
+        },
+        
+        {
+            "Id": "3334101341",
+            "Name": "Mascotas Shop",
+            "Address": "Cl. 34 #185, Los Patios, Norte de Santander",
+            "Img": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=VPBuBo5aGVoNQTUp8JJUkQ&cb_client=search.gws-prod.gps&w=408&h=240&yaw=55.11261&pitch=0&thumbfov=100",
+            "type": "Veterinaria",
+            "lat": "7.840890830637023",
+            "lng": "-72.50025536688449"
+        },
+    
+        {
+            "Id": "1242322240",
+            "Name": "Arkadia",
+            "Address": "La Cordialidad, Cl. 32 #1E-35, Los Patios, Norte de Santander",
+            "Img": "https://lh5.googleusercontent.com/p/AF1QipPBHM-5wvQ7JlHbuXMmgo1iUlQawGxXwcTpwCB_=w175-h233-p-k-no",
+            "type": "Veterinaria",
+            "lat": "7.83872156312432",
+            "lng": "-72.49667912847839"
+        },
+    
+        {
+            "Id": "4042200443",
+            "Name": "Cachorritos M&A",
+            "Img": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=VPBuBo5aGVoNQTUp8JJUkQ&cb_client=search.gws-prod.gps&w=408&h=240&yaw=55.11261&pitch=0&thumbfov=100",
+            "Address": "Av. 1 #29-44, Los Patios, Norte de Santander",
+            "type": "Veterinaria",
+            "lat": "7.836447039830066",
+            "lng": "-72.49996215198368"
+        },
+    
+        {
+            "Id": "2440043313",
+            "Name": "Veterinaria Maxi Pets LD",
+            "Img": "https://lh5.googleusercontent.com/p/AF1QipMUPOcJD1Xdjbi1XA1lPmmRvNBpOvFqtJgvH0XO=w487-h240-k-no",
+            "Address": "Av. 9, Los Patios, Norte de Santander",
+            "type": "Veterinaria",
+            "lat": "7.838336386313384",
+            "lng": "-72.50769902681776"
+        },
+
+        {
+            "Id": "4223403404",
+            "Name": "Vet Zen Clínica Veterinaria",
+            "Img": "https://lh5.googleusercontent.com/p/AF1QipMFtc9IHOw9gEHPtPOo6Y2qAJGni3d0agDxeywB=w427-h240-k-no",
+            "Address": "Avenida 10 # 28-02 Barrio Patio centro, Los Patios, Norte de Santander",
+            "type": "Veterinaria",
+            "lat": "7.837575709922819",
+            "lng": "-72.50856640888955"
+        },
+        {
+            "Id": "1823450324",
+            "Name": "Clínica Veterinaria AnimalSOS",
+            "Img": "https://lh5.googleusercontent.com/p/AF1QipOGjNK5SzSHzDny-_C00f2ubqpW39I_0VZIa5Y5=w427-h240-k-no",
+            "Address": "Cl. 7a Nte. #9e-17, Br. Santa Lucia",
+            "type": "Veterinaria",
+            "lat": "7.906591790933301",
+            "lng": "-72.49334527212356"
+        },
+        {
+            "Id": "4124512942",
+            "Name": "Centro veterinario El Bosque",
+            "Img": "https://lh3.googleusercontent.com/rZAbBXcGygteYER2ADA7DDL3oXBx3dKDzYQVhvkbrMlAB1cCtd5C1S7Wnms5W-Kv=w425-h240-k-no",
+            "Address": "Cl. 2N #2E-82, Br. La Capillana",
+            "type": "Veterinaria",
+            "lat": "7.9005419862560196",
+            "lng": "-72.49708115633918"
+        },
+        {
+            "Id": "2145125636",
+            "Name": "Clinica vetoopia",
+            "Img": "https://lh5.googleusercontent.com/p/AF1QipNjJhj45xrZOi6uWs6ofRHxN3AOQCuzICg_2ZbD=w425-h240-k-no",
+            "Address": "Av. 3 Este, Br. Ceiba 2",
+            "type": "Veterinaria",
+            "lat": "7.906957925065813",
+            "lng": "-72.49577300523715"
+        },
+        {
+            "Id": "6325231563",
+            "Name": "Hospital Veterinario. Dr Juan R. Barroso J.",
+            "Img": "https://lh5.googleusercontent.com/p/AF1QipMREykj5YI00H_MiUF4wcjxPj6kwfLzNL9Ya06A=w408-h543-k-no",
+            "Address": "Cl. 2 Nte. #9 Este-61 Br. Quinta Oriental",
+            "type": "Veterinaria",
+            "lat": "7.900343817297672",
+            "lng": "-72.49190525050548"
+        },
+
+        {
+            "Id": "6325231562",
+            "Name": "Petshop shery mis +cotas",
+            "Img": "https://lh5.googleusercontent.com/p/AF1QipNle5ADU1jMic9CB-9RI11XxpEpVa4Xf63yuj3I=w408-h544-k-no",
+            "Address": "Tv. 11 #mz 34 #11-24 Aniversario 1, Barrio Aniversario, Cúcuta, Norte de Santander",
+            "type": "Petshop",
+            "lat": "7.8891651850698725",
+            "lng": "-72.47456040848651"
+        },
+        
+        {
+            "Id": "6325231561",
+            "Name": "Fundación El Labrador",
+            "Img": "https://lh5.googleusercontent.com/p/AF1QipPRZfcrDjxB8Y_JxhunrfhrEIyq3gSQwxKLVKH0=w426-h240-k-no",
+            "Address": "Av 7, San Martín #4n-50, Cúcuta, Norte de Santander",
+            "type": "AnimalShelter",
+            "lat": "7.906027826432715",
+            "lng": "-72.47180324255841"
+        }
+    ]
+}

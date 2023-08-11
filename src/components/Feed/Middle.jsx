@@ -2,7 +2,7 @@
 // import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { makeRequest } from '../../library/axios.js'
-import logo from '../../assets/logo.png'
+import logo from '../../assets/Icons/logo.png'
 import Post from '../post/Post'
 import Share from '../share/Share'
 

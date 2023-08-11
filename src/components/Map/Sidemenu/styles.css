@@ -1,0 +1,98 @@
+@font-face {
+  font-family: 'Courier';
+  src: url('../../assets/Fonts/JosefinSans-Italic-VariableFont_wght.ttf');
+}
+
+body{
+  font-family: courier;
+}
+
+/* --------------------------------- */
+
+/* -------------Side bar------------ */
+
+/* --------------------------------- */
+
+img.rounded-box.ImgFrame.rounded-lg{
+  display: initial;
+}
+
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(221, 221, 221, 0.527);
+  border-radius: 50px
+}
+ 
+::-webkit-scrollbar-thumb {
+  background:rgba(152, 152, 152, 0.527);
+  border-radius: 50px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(72, 67, 67, 0.789);
+}
+
+#SiderbarBTN{
+  display: none;
+}
+
+.container-menu{
+  transition: all 500ms ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+#SiderbarBTN:checked ~ .container-menu{
+  opacity: 1;
+  visibility: visible;
+}
+
+.cont-menu{
+  background: rgba(221, 221, 221, 0.527);
+  transition: all 500ms ease;
+  transform: translateX(-100%);
+}
+
+#SiderbarBTN:checked ~ .container-menu .cont-menu{
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0%);
+}
+
+.ImgFrame{
+  width: 10em;
+  height: 10em;
+  border: 2px solid rgba(219, 219, 219, 0.379);
+  background: whitesmoke;
+  box-shadow: 2px 2px 2px rgb(202, 202, 202);
+}
+
+@media screen and (max-width: 500px) {
+  .cont-menu{
+    width: 100vw;
+    position: fixed;
+    top: 60vh;
+    height: 40vh;
+    padding-bottom: 1.25rem;
+    background: white;
+    overflow: auto;
+    transition: all 600ms ease;
+    transform: translateY(100%);
+  }
+
+  .container-menu{
+    opacity: 1;
+  }
+
+  #SiderbarBTN:checked ~ .container-menu .cont-menu{
+    opacity: 1;
+    visibility: visible;
+    transition: all 600ms ease;
+    transform: translateY(0%);
+  }
+  
+}

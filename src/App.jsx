@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Outlet, RootRoute, Route } from '@tanstack/router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Layout from './containers/Layout'
@@ -25,7 +26,6 @@ const loginRoute = new Route({
 })
 
 // Create the route tree using your routes
-// eslint-disable-next-line react-refresh/only-export-components
 export const routeTree = rootRoute.addChildren([registerRoute, loginRoute])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
