@@ -24,9 +24,9 @@ const Register = () => {
   })
 
   return (
-    <section className='bg-white mt-6 min-h-screen'>
+    <section className='bg-white h-screen overflow-hidden'>
       <Formik
-        initialValues={{ first_name: '', last_name: '', email: '', password: '', marketing_accept: false, phone_number: '', gender: '', type: 'USER' }}
+        initialValues={{ first_name: '', last_name: '', username: '', email: '', password: '', marketing_accept: false, phone_number: '', gender: '', type: 'USER' }}
         validate={values => {
           // Validations
           const errors = {}
@@ -37,6 +37,10 @@ const Register = () => {
           }
 
           if (!values.last_name) {
+            errors.last_name = 'Esto es un campo requerido'
+          }
+          // username
+          if (!values.username) {
             errors.last_name = 'Esto es un campo requerido'
           }
 
@@ -131,12 +135,6 @@ const Register = () => {
                 >
                   Bienvenido a PawsPlorer 🐾
                 </h1>
-
-                <p className='mt-4 leading-relaxed text-gray-500 text-md'>
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit. Eligendi nam
-                  dolorum aliquam, quibusdam aperiam voluptatum.
-                </p>
-
                 <form action='POST' onSubmit={handleSubmit} className='mt-8 grid grid-cols-6 gap-6'>
                   <div className='col-span-6 sm:col-span-3'>
                     <label
@@ -144,6 +142,26 @@ const Register = () => {
                       className='block text-sm font-medium text-gray-700'
                     >
                       Nombre
+                    </label>
+
+                    <input
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.first_name}
+                      type='text'
+                      id='FirstName'
+                      name='first_name'
+                      className='mt-1 focus:ring-blue-600 focus:border-blue-600 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md'
+                    />
+                    <h2 className='text-red-500 text-sm font-semibold'>{errors.first_name && touched.first_name && errors.first_name}</h2>
+                  </div>
+
+                  <div className='col-span-6 sm:col-span-3'>
+                    <label
+                      htmlFor='FirstName'
+                      className='block text-sm font-medium text-gray-700'
+                    >
+                      Usuario
                     </label>
 
                     <input
@@ -198,7 +216,7 @@ const Register = () => {
                     <h2 className='text-red-500 text-sm font-semibold'>{errors.phone_number && touched.phone_number && errors.phone_number}</h2>
                   </div>
 
-                  <div className='col-span-6 sm:col-span-3'>
+                  <div className='col-span-6 sm:col-span-6'>
                     <label
                       htmlFor='gender'
                       className='block text-sm font-medium text-gray-700'
