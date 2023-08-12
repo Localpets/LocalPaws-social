@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   BsFillChatDotsFill,
   BsFillPeopleFill,
@@ -6,29 +5,32 @@ import {
   BsPersonFillAdd,
   BsFillSendFill
 } from 'react-icons/bs'
+import { Link } from '@tanstack/router'
 import ConversationButton from '../../components/Chat/ConversationButton'
+import useChatStore from '../../context/ChatStore'
 
 const Chat = () => {
-  const [sideContacts, setSideContacts] = useState('absolute translate-x-[-100%]')
+  const { sideContactsStyle, toggleSideContactsStyle, toggleHamburguerStyle } = useChatStore()
+
   return (
     <section className='h-[100vh] md:h-[95vh] md:my-5 flex w-full container rounded-xl'>
       <section className='hidden w-40 h-full bg-[#1B263B] md:flex flex-col justify-between items-center gap-18 p-4 py-8 rounded-l-lg'>
         <h1 className='font-bold text-white text-xl'>PawsPlorer Messenger</h1>
         <ul className='flex flex-col items-center justify-center gap-8'>
           <li>
-            <button className='btn btn-ghost'>
+            <Link className='btn btn-ghost'>
               <BsFillChatDotsFill className='text-white text-2xl' />
-            </button>
+            </Link>
           </li>
           <li>
-            <button className='btn btn-ghost'>
+            <Link className='btn btn-ghost'>
               <BsFillPeopleFill className='text-white text-2xl' />
-            </button>
+            </Link>
           </li>
           <li>
-            <button className='btn btn-ghost'>
+            <Link to='/' className='btn btn-ghost'>
               <BsFillDoorOpenFill className='text-white text-2xl' />
-            </button>
+            </Link>
           </li>
         </ul>
         <button>
@@ -78,7 +80,7 @@ const Chat = () => {
 
       {/* movbile menu */}
 
-      <section className={`z-10 md:hidden w-full h-full bg-white flex flex-col justify-start items-center gap-18 p-4 ${sideContacts}`}>
+      <section className={`z-10 md:hidden w-full   h-full bg-white flex flex-col justify-start items-center gap-18 p-4 ${sideContactsStyle} transition-transform`}>
         <ul className='w-full flex flex-wrap items-center justify-start pb-2 gap-4'>
           <li>
             <h2 className='font-bold text-slate-800 text-xl'>Conversations</h2>
@@ -117,24 +119,24 @@ const Chat = () => {
 
         <section className='w-full bg-[#1B263B] flex flex-col justify-between items-center justify-self-end gap-4 p-4 rounded-lg'>
           <h1 className='font-bold text-white text-xl'>PawsPlorer Messenger</h1>
-          <ul className='flex flex-row items-center justify-center gap-8'>
+          <ul className='flex flex-row items-center justify-center'>
             <li>
-              <button className='btn btn-ghost'>
+              <Link className='btn btn-ghost'>
                 <BsFillChatDotsFill className='text-white text-2xl' />
-              </button>
+              </Link>
             </li>
             <li>
-              <button className='btn btn-ghost'>
+              <Link className='btn btn-ghost'>
                 <BsFillPeopleFill className='text-white text-2xl' />
-              </button>
+              </Link>
+            </li>
+            <li>
+              <Link to='/' className='btn btn-ghost'>
+                <BsFillDoorOpenFill className='text-white text-2xl' />
+              </Link>
             </li>
             <li>
               <button className='btn btn-ghost'>
-                <BsFillDoorOpenFill className='text-white text-2xl' />
-              </button>
-            </li>
-            <li>
-              <button>
                 <img
                   className='w-10 h-10 rounded-full'
                   src='https://scontent.fbga3-1.fna.fbcdn.net/v/t39.30808-6/242007867_1215216918952508_4103291446202515352_n.jpg?_nc_cat=111&cb=99be929b-59f725be&ccb=1-7&_nc_sid=174925&_nc_eui2=AeHM5pBNTPTWnHt5tj8ntLBB_GtyjOC3qGH8a3KM4LeoYRJOu1-nX95P5g-GmRHKfhMUFrtnQEQQUVWuoM-Mh5bA&_nc_ohc=ePSg0-TQTkkAX9-VcKJ&_nc_ht=scontent.fbga3-1.fna&oh=00_AfB5ZAHTxGPRCYpHy_9McxUQA-XKaib72pquD4wt-H90Zw&oe=64D49A32'
@@ -161,12 +163,9 @@ const Chat = () => {
           <label className='z-20 btn btn-sm btn-circle swap swap-rotate mr-2 md:hidden'>
             {/* this hidden checkbox controls the state */}
             <input
-              type='checkbox' className='hidden' onChange={() => {
-                if (sideContacts === 'absolute translate-x-[-100%]') {
-                  setSideContacts('absolute translate-x-0')
-                } else {
-                  setSideContacts('absolute translate-x-[-100%]')
-                }
+              type='checkbox' className='hidden' onClick={() => {
+                toggleSideContactsStyle()
+                toggleHamburguerStyle()
               }}
             />
 
