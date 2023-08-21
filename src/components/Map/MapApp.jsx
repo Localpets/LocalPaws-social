@@ -20,7 +20,7 @@ function MapApp () {
 
   // Mostrar mensaje de carga mientras se carga el mapa
   return (
-    <section>
+    <section className='localpaws__map-container'>
       <Header />
       <Sidemenu />
       <Pawsmap />

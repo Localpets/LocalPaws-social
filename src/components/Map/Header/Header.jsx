@@ -15,7 +15,7 @@ const Header = () => {
       <nav id='nav'>
 
         {/* Barra de navegación */}
-        <div className='navbar relative bg-base-100 flex justify-between items-center px-4 py-2'>
+        <div className='navbar relative bg-base-100 flex justify-between items-center px-4 py-4'>
 
           {/* Sección de inicio de la barra de navegación */}
           <div className='navbar-start'>
@@ -44,11 +44,11 @@ const Header = () => {
 
           </div>
           {/* Sección central de la barra de navegación */}
-          <div className='navbar-center'>
+          <div className='navbar-center flex itmes-center'>
 
             {/* Mostrar el enlace "PawsPlorer" solo cuando showPawsPlorer es verdadero */}
             {showPawsPlorer && (
-              <Link to='/' className='btn btn-ghost normal-case text-xl'>PawsPlorer</Link>
+              <Link to='/home' className='btn btn-ghost normal-case text-xl'>PawsPlorer</Link>
             )}
 
             {/* Mostrar los botones "Adopciones" solo cuando showOptions es verdadero */}
