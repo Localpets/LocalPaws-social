@@ -18,7 +18,7 @@ const Middle = () => {
   if (error) return 'An error has occurred: ' + error.message
 
   return (
-    <div className='w-full h-screen flex flex-col justify-start items-center pt-[2em] px-10'>
+    <div className='w-full pl-[25%] pr-[25%] bg-white min-h-full flex flex-col justify-start items-center pt-[2em] px-10'>
       {/* Resto del contenido */}
       <Stories />
       <div className='flex flex-col items-center w-full gap-4'>

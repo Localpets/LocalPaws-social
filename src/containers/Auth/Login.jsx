@@ -1,8 +1,10 @@
+/* eslint-disable camelcase */
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/router'
 import { Formik } from 'formik'
 import toast, { Toaster } from 'react-hot-toast'
-import axios from 'axios'
+import { makeRequest } from '../../library/axios'
+
 // images
 // import google from './assets/google.png'
 import cover from './assets/pexels-sam-lion-6001183.jpg'
@@ -10,6 +12,7 @@ import cover from './assets/pexels-sam-lion-6001183.jpg'
 const Login = () => {
   const [error, setError] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [userExists, setUserExists] = useState(false)
 
   useEffect(() => {
     if (error) {
@@ -26,7 +29,20 @@ const Login = () => {
     if (success) {
       toast.success('Iniciando sesión...')
     }
-  })
+  }, [error, success])
+
+  useEffect(() => {
+    if (localStorage.getItem('user')) {
+      setUserExists(true)
+    }
+
+    if (userExists) {
+      toast.success('Se encontro una sesión activa. Redireccionando...')
+      setTimeout(() => {
+        window.location.href = '/home'
+      }, 2000)
+    }
+  }, [userExists])
 
   return (
     <section className='bg-white min-h-screen'>
@@ -34,11 +50,24 @@ const Login = () => {
         initialValues={{ email: '', password: '' }}
         onSubmit={async (values, { setSubmitting }) => {
           try {
-            await axios.post('http://localhost:8080/api/auth/login', values)
+            await makeRequest.post('/auth/login', values)
+              .then((res) => {
+                const { email, first_name, last_name, user_id, thumbnail, gender, username } = res.data
+                const localStorageData = {
+                  mail: email,
+                  firstName: first_name,
+                  lastName: last_name,
+                  userId: user_id,
+                  profilePicture: thumbnail,
+                  userGender: gender,
+                  user: username
+                }
+                localStorage.setItem('user', JSON.stringify(localStorageData))
+              })
             setSuccess(true)
 
             setTimeout(() => {
-              window.location.href = '/'
+              window.location.href = '/home'
             }, 2000)
           } catch (err) {
             setError(err)

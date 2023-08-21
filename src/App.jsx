@@ -37,14 +37,14 @@ const openProfile = new Route({
 // Create a login route
 const loginRoute = new Route({
   getParentRoute: () => rootRoute,
-  path: '/login',
+  path: '/',
   component: Login
 })
 
 // Create a feed route
 const feedRoute = new Route({
   getParentRoute: () => rootRoute,
-  path: '/',
+  path: '/home',
   component: Feed
 })
 

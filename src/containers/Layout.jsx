@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 const Layout = ({ children }) => {
   return (
-    <main className='container mx-auto'>
+    <main className='mx-auto'>
       {children}
     </main>
   )

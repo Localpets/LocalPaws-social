@@ -1,19 +1,29 @@
-// import React from 'react'
+import { useState, useEffect } from 'react'
 
 const RightBar = () => {
+  const [user, setUser] = useState([])
+
+  useEffect(() => {
+    if (localStorage.getItem('user')) {
+      const user = JSON.parse(localStorage.getItem('user'))
+      setUser(user)
+    }
+  }, [setUser])
+
+  console.log(user)
   return (
-    <div className=' hidden  w-[60%] xl:block text-[#0D1B2AS] text-left border-l border-[#E0E1DD] pl-10 pr-12 pt-[4em]'>
+    <div className='hidden fixed right-0 bg-white w-[25%] xl:block h-full text-[#0D1B2AS] text-left border-l border-[#E0E1DD] pl-10 pr-12 pt-[4em]'>
       <div className='flex items-center border-b border-[#E0E1DD] pb-[1em] '>
         <img
           className='w-10 h-10 rounded-full'
-          src='https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg'
-          alt=''
+          src={user.profilePicture}
+          alt='User profile picture'
         />
         <div className='ml-2 text-sm'>
-          <h5 className='text-[#0D1B2A] font-bold'>Diego Garcia</h5>
-          <p className='text-gray-400'>@Ripdiegozz</p>
+          <h5 className='text-[#0D1B2A] font-bold'>{user.firstName} {user.lastName}</h5>
+          <p className='text-gray-400'>{user.user}</p>
         </div>
-        <span className="text-right text-solid text-[#415A77] cursor-pointer ml-auto">Mofidicar</span>
+        <span className='text-right text-solid text-[#415A77] cursor-pointer ml-auto'>Mofidicar</span>
       </div>
 
       <div className='rounded-2xl m-2 mt-4 '>
@@ -22,86 +32,85 @@ const RightBar = () => {
         </h3>
       </div>
 
-      <div className="">
+      <div className=''>
         <div className='p-2 dark:border-dim-200 flex justify-between items-center'>
-            <div className='flex items-center '>
-              <img
-                className='w-10 h-10 rounded-full '
-                src='https://pbs.twimg.com/profile_images/1635417140118290438/_O05STkG_400x400.jpg'
-                alt=''
-              />
-              <div className='ml-2 text-sm'>
-                <h5 className='text-[#0D1B2A] font-bold'>Camilo Correa</h5>
-                <p className='text-gray-400'>@Brayan57963</p>
-              </div>
-              
+          <div className='flex items-center '>
+            <img
+              className='w-10 h-10 rounded-full '
+              src='https://pbs.twimg.com/profile_images/1635417140118290438/_O05STkG_400x400.jpg'
+              alt=''
+            />
+            <div className='ml-2 text-sm'>
+              <h5 className='text-[#0D1B2A] font-bold'>Camilo Correa</h5>
+              <p className='text-gray-400'>@Brayan57963</p>
             </div>
-            <span className="text-right text-solid text-[#415A77] cursor-pointer ml-auto">Seguir</span>
+
+          </div>
+          <span className='text-right text-solid text-[#415A77] cursor-pointer ml-auto'>Seguir</span>
         </div>
 
-          <div className='p-2 dark:border-dim-200 flex justify-between items-center'>
-            <div className='flex items-center '>
-              <img
-                className='w-10 h-10 rounded-full '
-                src='https://pbs.twimg.com/profile_images/1512090674635542529/xZUiesiF_400x400.jpg'
-                alt=''
-              />
-              <div className='ml-2 text-sm'>
-                <h5 className='text-[#0D1B2A] font-bold'>Ricardo Villanueva</h5>
-                <p className='text-gray-400'>@Ricardoarsv</p>
-              </div>
+        <div className='p-2 dark:border-dim-200 flex justify-between items-center'>
+          <div className='flex items-center '>
+            <img
+              className='w-10 h-10 rounded-full '
+              src='https://pbs.twimg.com/profile_images/1512090674635542529/xZUiesiF_400x400.jpg'
+              alt=''
+            />
+            <div className='ml-2 text-sm'>
+              <h5 className='text-[#0D1B2A] font-bold'>Ricardo Villanueva</h5>
+              <p className='text-gray-400'>@Ricardoarsv</p>
             </div>
-            <span className="text-right text-solid text-[#415A77] cursor-pointer ml-auto">Seguir</span>
           </div>
+          <span className='text-right text-solid text-[#415A77] cursor-pointer ml-auto'>Seguir</span>
+        </div>
 
-          <div className='p-2 dark:border-dim-200 flex justify-between items-center'>
-            <div className='flex items-center '>
-              <img
-                className='w-10 h-10 rounded-full '
-                src='https://pbs.twimg.com/profile_images/1565904417789968385/5XmhSo3N_400x400.jpg'
-                alt=''
-              />
-              <div className='ml-2 text-sm'>
-                <h5 className='text-[#0D1B2A] font-bold'>Santiago Diaz</h5>
-                <p className='text-gray-400'>@santiagodiaz_11</p>
-              </div>
+        <div className='p-2 dark:border-dim-200 flex justify-between items-center'>
+          <div className='flex items-center '>
+            <img
+              className='w-10 h-10 rounded-full '
+              src='https://pbs.twimg.com/profile_images/1565904417789968385/5XmhSo3N_400x400.jpg'
+              alt=''
+            />
+            <div className='ml-2 text-sm'>
+              <h5 className='text-[#0D1B2A] font-bold'>Santiago Diaz</h5>
+              <p className='text-gray-400'>@santiagodiaz_11</p>
             </div>
-            <span className="text-right text-solid text-[#415A77] cursor-pointer ml-auto">Seguir</span>
           </div>
+          <span className='text-right text-solid text-[#415A77] cursor-pointer ml-auto'>Seguir</span>
+        </div>
 
-          <div className='p-2 dark:border-dim-200 flex justify-between items-center'>
-            <div className='flex items-center '>
-              <img
-                className='w-10 h-10 rounded-full '
-                src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
-                alt=''
-              />
-              <div className='ml-2 text-sm'>
-                <h5 className='text-[#0D1B2A] font-bold'>veterinaria prinx</h5>
-                <p className='text-gray-400'>@Vet_Prinx</p>
-              </div>
+        <div className='p-2 dark:border-dim-200 flex justify-between items-center'>
+          <div className='flex items-center '>
+            <img
+              className='w-10 h-10 rounded-full '
+              src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
+              alt=''
+            />
+            <div className='ml-2 text-sm'>
+              <h5 className='text-[#0D1B2A] font-bold'>veterinaria prinx</h5>
+              <p className='text-gray-400'>@Vet_Prinx</p>
             </div>
-            <span className="text-right text-solid text-[#415A77] cursor-pointer ml-auto">Seguir</span>
           </div>
+          <span className='text-right text-solid text-[#415A77] cursor-pointer ml-auto'>Seguir</span>
+        </div>
 
-          <div className='p-2 dark:border-dim-200 flex justify-between items-center'>
-            <div className='flex items-center '>
-              <img
-                className='w-10 h-10 rounded-full '
-                src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
-                alt=''
-              />
-              <div className='ml-2 text-sm'>
-                <h5 className='text-[#0D1B2A] font-bold'>Veterinaria leon</h5>
-                <p className='text-gray-400'>@vet_leon</p>
+        <div className='p-2 dark:border-dim-200 flex justify-between items-center'>
+          <div className='flex items-center '>
+            <img
+              className='w-10 h-10 rounded-full '
+              src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
+              alt=''
+            />
+            <div className='ml-2 text-sm'>
+              <h5 className='text-[#0D1B2A] font-bold'>Veterinaria leon</h5>
+              <p className='text-gray-400'>@vet_leon</p>
             </div>
           </div>
-          <span className="text-right text-solid text-[#415A77] cursor-pointer ml-auto">Seguir</span>
+          <span className='text-right text-solid text-[#415A77] cursor-pointer ml-auto'>Seguir</span>
         </div>
         <div className='text-blue-400 cursor-pointer p-2'>Ver más</div>
       </div>
     </div>
-
 
   )
 }

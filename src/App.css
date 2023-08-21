@@ -3,12 +3,9 @@
 @tailwind utilities;
 
 #root {
-  max-width: 1280px;
-  min-width: 375px                                  ;
+  /* max-width: 1280px;
+  min-width: 375px; */
   margin: 0 auto;
   text-align: center;
-}
-
-body {
-  background: white;
+  background-color: white;
 }

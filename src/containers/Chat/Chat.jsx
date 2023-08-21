@@ -28,7 +28,7 @@ const Chat = () => {
             </Link>
           </li>
           <li>
-            <Link to='/' className='btn btn-ghost'>
+            <Link to='/home' className='btn btn-ghost'>
               <BsFillDoorOpenFill className='text-white text-2xl' />
             </Link>
           </li>
@@ -131,7 +131,7 @@ const Chat = () => {
               </Link>
             </li>
             <li>
-              <Link to='/' className='btn btn-ghost'>
+              <Link to='/home' className='btn btn-ghost'>
                 <BsFillDoorOpenFill className='text-white text-2xl' />
               </Link>
             </li>
