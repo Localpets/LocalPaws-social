@@ -5,7 +5,7 @@ import Middle from '../../components/Feed/Middle.jsx'
 
 const Feed = () => {
   return (
-    <div className='flex text-black'>
+    <div className='flex text-black w-full h-full'>
       <LeftBar />
       <Middle />
       <RightBar />
