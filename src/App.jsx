@@ -6,8 +6,9 @@ import Feed from './containers/Feed/Feed'
 import Register from './containers/Auth/Register.jsx'
 import Login from './containers/Auth/Login.jsx'
 import Chat from './containers/Chat/Chat.jsx'
-// import Comments from './components/Post/Comments'
+import Profile from './containers/Profile/Profile.jsx'
 import './App.css'
+
 // Create a root route
 const rootRoute = new RootRoute({
   component: App
@@ -26,6 +27,13 @@ const chatRoute = new Route({
   component: Chat
 })
 
+// Create a profile route
+const openProfile = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/profile',
+  component: Profile
+})
+
 // Create a login route
 const loginRoute = new Route({
   getParentRoute: () => rootRoute,
@@ -42,7 +50,7 @@ const feedRoute = new Route({
 
 // Create the route tree using your routes
 // eslint-disable-next-line react-refresh/only-export-components
-export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, feedRoute, chatRoute])
+export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, openProfile, feedRoute, chatRoute])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
 const queryClient = new QueryClient()
