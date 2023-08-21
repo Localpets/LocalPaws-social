@@ -29,7 +29,7 @@ const Login = () => {
   })
 
   return (
-    <section className='bg-white mt-6 min-h-screen'>
+    <section className='bg-white min-h-screen'>
       <Formik
         initialValues={{ email: '', password: '' }}
         onSubmit={async (values, { setSubmitting }) => {
@@ -59,16 +59,6 @@ const Login = () => {
           isSubmitting
         }) => (
           <div className='lg:grid lg:min-h-[90vh] lg:grid-cols-12'>
-            <aside
-              className='relative block h-16 lg:order-last lg:col-span-5 lg:h-[100vh] xl:col-span-6'
-            >
-              <img
-                alt='Pattern'
-                src={cover}
-                className='absolute inset-0 h-[100vh] w-full object-cover brightness-75'
-              />
-            </aside>
-
             <main
               className='flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-10 xl:col-span-6'
             >
@@ -152,6 +142,15 @@ const Login = () => {
                 </form>
               </div>
             </main>
+            <aside
+              className='relative block h-16 lg:order-first lg:col-span-5 lg:h-[100vh] xl:col-span-6'
+            >
+              <img
+                alt='Pattern'
+                src={cover}
+                className='absolute inset-0 h-[100vh] w-full object-cover brightness-75'
+              />
+            </aside>
           </div>
         )}
       </Formik>
