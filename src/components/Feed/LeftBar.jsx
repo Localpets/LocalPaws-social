@@ -1,5 +1,6 @@
 // import React from 'react'
-import logo from '../../assets/logo.png'
+import logo from '../../assets/Icons/logo.png'
+
 import { Link } from '@tanstack/router'
 const LeftBar = () => {
   return (
