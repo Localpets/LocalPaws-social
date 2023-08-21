@@ -7,6 +7,7 @@ import Register from './containers/Auth/Register.jsx'
 import Login from './containers/Auth/Login.jsx'
 import Chat from './containers/Chat/Chat.jsx'
 import Profile from './containers/Profile/Profile.jsx'
+import MapApp from './components/Map/MapApp'
 import './App.css'
 
 // Create a root route
@@ -48,9 +49,16 @@ const feedRoute = new Route({
   component: Feed
 })
 
+// Create a map route
+const mapRoute = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/map',
+  component: MapApp
+})
+
 // Create the route tree using your routes
 // eslint-disable-next-line react-refresh/only-export-components
-export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, openProfile, feedRoute, chatRoute])
+export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, openProfile, feedRoute, chatRoute, mapRoute])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
 const queryClient = new QueryClient()

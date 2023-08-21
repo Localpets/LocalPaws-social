@@ -2,8 +2,9 @@ import { useLoadScript } from '@react-google-maps/api'
 import Header from './Header/Header'
 import Sidemenu from './Sidemenu/Sidemenu'
 import Pawsmap from './Pawsmap/Pawsmap'
+import './MapApp.css'
 
-function Map () {
+function MapApp () {
   // Cargar el script de Google Maps con la clave API
   const { isLoaded } = useLoadScript({ googleMapsApiKey: import.meta.env.VITE_API_URL })
 
@@ -28,4 +29,4 @@ function Map () {
   )
 }
 
-export default Map
+export default MapApp

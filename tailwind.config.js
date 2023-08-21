@@ -9,6 +9,6 @@ export default {
   },
   plugins: [require('daisyui'), require('@tailwindcss/forms')],
   daisyui: {
-    themes: ['emerald', 'dark', 'forest', 'lofi', 'synthwave', 'halloween', 'valentine', 'luxury', 'bumblebee', 'dracula', 'cupcake']
+    themes: ['emerald', 'dark', 'forest', 'lofi', 'valentine', 'bumblebee', 'dracula', 'cupcake']
   }
 }

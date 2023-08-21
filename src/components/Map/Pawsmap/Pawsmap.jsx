@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api'
-import { useStore } from '../../context/store.js'
-import CustomMarker from '../../components/Markers/CustomMarker'
-import Places from '../../db/places.json'
-import markerIcon from '../../../../../../public/assets/markers/marcador.png'
-import { AppleMapStyle } from '../../assets/MapsSyles/AppleMapStyle'
-import MarkerIcon from '../../assets/Icons/marcador.png'
+import { useStore } from '../context/store'
+import CustomMarker from '../Markers/CustomMarker'
+import Places from '../db/places.json'
+import { AppleMapStyle } from '../../../assets/MapsSyles/AppleMapStyle'
+import MarkerIcon from '../../../assets/Icons/marcador.png'
 import './Pawsmap.css'
 
 const Pawsmap = () => {
@@ -89,7 +88,7 @@ const Pawsmap = () => {
           position={clickedLocation}
           clickable={false}
           icon={{
-            url: markerIcon,
+            url: MarkerIcon,
             scaledSize: new window.google.maps.Size(60, 60),
             origin: new window.google.maps.Point(0, 0),
             anchor: new window.google.maps.Point(30, 45)

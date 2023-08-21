@@ -9,14 +9,14 @@ import {
   BsFillCaretLeftFill
 } from 'react-icons/bs'
 
-import { useStore } from '../../context/store.js'
+import { useStore } from '../context/store'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Pagination, Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
 import './styles.css'
-import '../Map/Map.css'
+import '../Pawsmap/Pawsmap.css'
 
 const Sidemenu = () => {
   // Usar el contexto para obtener valores y funciones
