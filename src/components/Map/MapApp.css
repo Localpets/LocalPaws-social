@@ -3,6 +3,7 @@
     src: url('../../assets/Fonts/JosefinSans-Italic-VariableFont_wght.ttf');
 }
 
-localpaws__map-container{
+.localpaws__map-container{
     font-family: courier;
+    overflow: hidden;
 }
