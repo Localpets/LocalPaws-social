@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { makeRequest } from '../../library/axios.js'
 import logo from '../../assets/logo.png'
-import Post from '../post/Post'
+import Post from '../Post/Post'
 import Share from '../share/Share'
 
 const Middle = () => {

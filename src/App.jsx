@@ -5,6 +5,7 @@ import Feed from './containers/Feed/Feed'
 import Register from './containers/Auth/Register.jsx'
 import Login from './containers/Auth/Login.jsx'
 import './App.css'
+import Comentarios from './components/Post/Comments'
 // Create a root route
 const rootRoute = new RootRoute({
   component: App
@@ -34,12 +35,10 @@ const queryClient = new QueryClient()
 function App () {
   return (
     <QueryClientProvider client={queryClient}>
-      <Layout>
-        <Feed />
-        <Outlet />
-      </Layout>
+      <Comentarios/>
     </QueryClientProvider>
   )
 }
+
 
 export default App
