@@ -14,7 +14,7 @@ const Profile = () => {
   }, [setUser])
 
   return (
-    <section className='min-h-screen min-w-screen'>
+    <section className='min-h-screen min-w-screen pb-10'>
       <LeftBar />
       <section className='pl-[25%]'>
         <div className='flex items-center pt-4 justify-center gap-20'>

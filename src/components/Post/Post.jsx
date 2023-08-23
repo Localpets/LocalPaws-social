@@ -1,12 +1,13 @@
 /* eslint-disable camelcase */
 // import React from 'react'
+import { Link } from '@tanstack/router'
 import PropTypes from 'prop-types'
 
 const Post = ({ post }) => {
   const { likes, text, post_user_id } = post
 
   return (
-    <div className='border p-4 cursor-pointer  w-full'>
+    <Link to='/post' className='border p-4 cursor-pointer  w-full'>
       <div className='flex  pb-0'>
         <img
           className='h-9 w-9 rounded-full '
@@ -39,7 +40,7 @@ const Post = ({ post }) => {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

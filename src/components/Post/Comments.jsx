@@ -5,7 +5,7 @@ import CommentsData from './Comments.json'
 const Comentarios = () => {
   const CommentsValidos = CommentsData.Comments.filter(comment => comment.esComments)
   return (
-    <div className='Comments py-[2em]  '>
+    <div className='Comments'>
       <div id='img-post' className='h-[50%] flex  border border-r border-[#E0E1DD] ' />
       <div className='flex flex-col w-full'>
         <div className=' flex justify-between border-b border-black  p-[1em]'>
