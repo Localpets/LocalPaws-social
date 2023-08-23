@@ -1,4 +1,5 @@
 // import React from 'react'
+import { Link } from '@tanstack/router'
 import logo from '../../assets/logo.png'
 
 const LeftBar = () => {
@@ -10,12 +11,10 @@ const LeftBar = () => {
         </a>
 
         <nav className='mt-5 flex flex-col '>
-          <div className='btn mb-3 btn-ghost flex items-center justify-start '>
-            <i className='fa-solid fa-house text-xl' /> 
-            <a href='#' className=''>
-              <span className='icon hidden md:flex '>Inicio</span>
-            </a>
-          </div>
+        <Link to='/' className='btn mb-3 btn-ghost flex items-center justify-start '>
+        <i className='fa-solid fa-house text-xl' /> 
+              <span className='icon hidden  md:flex  '>Inicio</span>
+          </Link>
 
           <div className='btn mb-3 btn-ghost flex items-center justify-start '>
             <i className='fa-solid fa-search text-xl' /> 
@@ -31,12 +30,10 @@ const LeftBar = () => {
             </a>
           </div>
 
-          <div className='btn mb-3 btn-ghost flex items-center justify-start '>
+          <Link to='/notificaciones' className='btn mb-3 btn-ghost flex items-center justify-start '>
             <i className='fa-solid fa-bell text-xl' /> 
-            <a href='#' className=''>
               <span className='icon hidden  md:flex  '>Notificaciones</span>
-            </a>
-          </div>
+          </Link>
 
           <div className='btn mb-3 btn-ghost flex items-center justify-start '>
             <img

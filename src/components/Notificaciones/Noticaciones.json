@@ -1,0 +1,18 @@
+{   
+    "Notify2": [
+        {
+            "id": 1,
+            "usuario": "Taylor Swift",
+            "Comentario": "Acaba de seguirte",
+            "type": "Like",
+            "ImageUser": "https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg"
+        },
+        {
+            "id": 2,
+            "usuario": "Ricardo Villanueva",
+            "Comentario": "Acaba de seguirte",
+            "type": "Follow",
+            "ImageUser": "https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg"
+        }
+    ]
+ }

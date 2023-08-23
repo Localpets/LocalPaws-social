@@ -5,6 +5,7 @@ import Feed from './containers/Feed/Feed'
 import Register from './containers/Auth/Register.jsx'
 import Login from './containers/Auth/Login.jsx'
 import Comments from './components/Post/Comments'
+import Notificaciones from './components/Notificaciones/Notificacion.jsx'
 import './App.css'
 // Create a root route
 const rootRoute = new RootRoute({
@@ -18,6 +19,12 @@ const registerRoute = new Route({
   component: Register
 })
 
+// Create a noti route
+const notiRoute = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/notificaciones',
+  component: Notificaciones
+})
 // Create a login route
 const loginRoute = new Route({
   getParentRoute: () => rootRoute,
@@ -34,7 +41,7 @@ const feedRoute = new Route({
 
 // Create the route tree using your routes
 // eslint-disable-next-line react-refresh/only-export-components
-export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, feedRoute])
+export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, feedRoute, notiRoute])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
 const queryClient = new QueryClient()
