@@ -2,7 +2,6 @@
 // import React from 'react'
 import { Link } from '@tanstack/router'
 import PropTypes from 'prop-types'
-import PostSkeleton from './PostSkeleton'
 
 const Post = ({ post, user }) => {
   const { likes, text, image, category, createdAt } = post

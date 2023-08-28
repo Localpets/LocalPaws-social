@@ -1,6 +1,6 @@
 import React from 'react'
 import { Formik, Form, Field } from 'formik'
-import axios from 'axios'
+import { makeRequest } from '../../library/axios'
 
 const PostForm = () => {
   const initialValues = {
@@ -19,11 +19,7 @@ const PostForm = () => {
     formData.append('post_user_id', id)
 
     try {
-      const response = await axios.post('http://localhost:8080/api/post/create', formData, {
-        headers: {
-          'x-access-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzIsImlhdCI6MTY5MjQyNDcxMH0.Xqle7Q4O89ylqMMgFnO3xe9ZQkposPJVBBGvcZT3PZk'
-        }
-      })
+      const response = await makeRequest.post('post/create', formData)
       console.log(response.data)
     } catch (error) {
       console.error(error)
