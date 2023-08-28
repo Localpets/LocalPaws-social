@@ -43,9 +43,11 @@ const Middle = () => {
   if (error) return 'An error has occurred: ' + error.message
 
   return (
-    <div className='w-full pl-[25%] pr-[25%] bg-white min-h-screen flex flex-col justify-start items-center pt-[2em] px-10'>
+    <div className='w-full pl-[25%] pr-[25%] min-h-screen flex flex-col justify-start gap-4 items-center mt-8 px-10'>
 
       <Stories />
+
+      <PostForm />
 
       <div className='flex flex-col items-center w-full gap-4 min-h-screen'>
         {
@@ -55,7 +57,6 @@ const Middle = () => {
         }
       </div>
 
-      <PostForm />
     </div>
   )
 }

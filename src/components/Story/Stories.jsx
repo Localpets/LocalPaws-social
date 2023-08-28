@@ -2,7 +2,7 @@
 
 const Stories = () => {
   return (
-    <div className='flex flex-row w-full text-solid text-[#0D1B2A] text-center'>
+    <div className='flex flex-row w-full text-solid text-[#0D1B2A] text-center bg-white p-8 rounded-lg'>
       <ul className='flex'>
         <li className='flex-none p-2 text-center flex flex-col items-center'>
           <img

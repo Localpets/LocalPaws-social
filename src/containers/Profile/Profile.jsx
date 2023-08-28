@@ -1,5 +1,5 @@
-/// ESTE ES MI CODIGO 
-
+/// ESTE ES MI CODIGO DE PERFIL, NO SE SI LO VAYAMOS A USAR, PERO LO DEJO POR SI ACASO
+// By: Diaxxi
 import { useState, useEffect } from 'react'
 import LeftBar from '../../components/Feed/LeftBar'
 import Posts from '../Profile/ProfilePost.json'
@@ -24,8 +24,9 @@ const Profile = () => {
       <section className='pl-[25%]'>
         <div className='flex items-center pt-4 justify-center gap-20'>
           <img
-            className='w-[10vw] h-30 rounded-full'
-            src='https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg'
+            className='w-[10vw] h-[10vw] rounded-full'
+            src={user.profilePicture}
+            alt='user-thumbnail'
           />
           <div className='flex flex-col gap-2 pt-8'>
             <h1 className='text-lg text-left font-bold'>{user.firstName} {user.lastName}</h1>
@@ -44,21 +45,21 @@ const Profile = () => {
           <div>
             <img
               className='w-[5vw] h-30 rounded-full'
-              src='https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg'
+              src='https://i.pinimg.com/564x/46/74/a3/4674a3e9525f7ad39e3e3c5d54673bfb.jpg'
             />
             <h1>Me</h1>
           </div>
           <div>
             <img
               className='w-[5vw] h-30 rounded-full'
-              src='https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg'
+              src='https://i.pinimg.com/564x/1f/9b/fe/1f9bfea8792704eb419f0f4d1024388a.jpg'
             />
             <h1>Amigos</h1>
           </div>
           <div>
             <img
               className='w-[5vw] h-30 rounded-full'
-              src='https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg'
+              src='https://i.pinimg.com/564x/9f/2b/17/9f2b179938393ae626c04c5683b0ad45.jpg'
             />
             <h1>Familia</h1>
           </div>
@@ -71,14 +72,15 @@ const Profile = () => {
           <div className='grid gap-1 grid-cols-3 grid-rows-3'>
 
             {Posts.Posts2.map(Posts => {
-              return(
-              <Link key={Posts.id} to='/post'>
-              <img
-                className='w-[40vw] h-[40vh]'
-                src={Posts.imagePost}
-              />
-            </Link>
-            )})};
+              return (
+                <Link key={Posts.id} to='/post'>
+                  <img
+                    className='w-[40vw] h-[40vh]'
+                    src={Posts.imagePost}
+                  />
+                </Link>
+              )
+            })};
 
           </div>
         </section>
