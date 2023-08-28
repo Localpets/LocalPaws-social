@@ -2,6 +2,7 @@
 import { Outlet, RootRoute, Route } from '@tanstack/router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Layout from './containers/Layout'
+import Logout from './components/Misc/Logout'
 import Feed from './containers/Feed/Feed'
 import Register from './containers/Auth/Register.jsx'
 import Login from './containers/Auth/Login.jsx'
@@ -62,9 +63,15 @@ const postReview = new Route({
   component: Comments
 })
 
+const logoutView = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/logout',
+  component: Logout
+})
+
 // Create the route tree using your routes
 // eslint-disable-next-line react-refresh/only-export-components
-export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview])
+export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview, logoutView])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
 const queryClient = new QueryClient()

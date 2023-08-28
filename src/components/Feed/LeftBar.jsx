@@ -44,6 +44,10 @@ const LeftBar = () => {
           />
           <span className='icon'>Perfil</span>
         </Link>
+        <Link to='/logout' className='btn mb-3 btn-ghost flex items-center justify-start'>
+          <i className='fa-solid fa-sign-out text-xl' />
+          <span className='icon'>Cerrar sesión</span>
+        </Link>
       </nav>
     </div>
   )
