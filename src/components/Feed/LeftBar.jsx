@@ -38,9 +38,9 @@ const LeftBar = () => {
         </Link>
         <Link to='/profile' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <img
-            className='w-10 rounded-full'
+            className='w-10 h-10 rounded-full'
             src={user.profilePicture}
-            alt=''
+            alt='user-thumbnail'
           />
           <span className='icon'>Perfil</span>
         </Link>
