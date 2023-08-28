@@ -2,22 +2,25 @@
 // import React from 'react'
 import { Link } from '@tanstack/router'
 import PropTypes from 'prop-types'
+import PostSkeleton from './PostSkeleton'
 
-const Post = ({ post }) => {
-  const { likes, text, post_user_id } = post
+const Post = ({ post, user }) => {
+  const { likes, text, image, category, createdAt } = post
+  const { first_name, last_name, thumbnail } = user
+  const dateToLocal = new Date(createdAt).toLocaleDateString()
 
   return (
     <Link to='/post' className='border p-4 cursor-pointer  w-full'>
       <div className='flex  pb-0'>
         <img
           className='h-9 w-9 rounded-full '
-          src='https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg'
-          alt='#'
+          src={thumbnail}
+          alt='user-thumbnail'
         />
         <p className='ml-2 flex flex-shrink-0 items-center font-medium'>
-          {post_user_id}
+          {first_name} {last_name}
           <span className='ml-1 text-sm leading-5 '>
-            Nov 2
+            {dateToLocal} · {category}
           </span>
         </p>
       </div>
@@ -27,8 +30,8 @@ const Post = ({ post }) => {
         </p>
         <img
           className='rounded-2xl border border-gray-700 my-3 mr-2 w-full'
-          src='https://images.nature.com/original/magazine-assets/d41586-019-00653-5/d41586-019-00653-5_16459150.jpg'
-          alt=''
+          src={image}
+          alt='post-image'
         />
         <div className='flex items-center w-full justify-start gap-x-10'>
           <div className=' flex items-center  text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-600'>
@@ -45,7 +48,8 @@ const Post = ({ post }) => {
 }
 
 Post.propTypes = {
-  post: PropTypes.object.isRequired
+  post: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired
 }
 
 export default Post

@@ -10,7 +10,6 @@ const RightBar = () => {
     }
   }, [setUser])
 
-  console.log(user)
   return (
     <div className='hidden fixed right-0 bg-white w-[25%] xl:block h-full text-[#0D1B2AS] text-left border-l border-[#E0E1DD] pl-10 pr-12 pt-[4em]'>
       <div className='flex items-center border-b border-[#E0E1DD] pb-[1em] '>

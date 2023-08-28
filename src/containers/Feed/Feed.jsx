@@ -12,7 +12,7 @@ const Feed = () => {
   }, [])
 
   return (
-    <div className='flex text-black bg-white w-full min-h-full'>
+    <div className='flex text-black bg-white w-full min-h-screen'>
       <LeftBar />
       <Middle />
       <RightBar />
