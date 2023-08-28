@@ -84,7 +84,7 @@ const Register = () => {
         }}
         onSubmit={async (values, { setSubmitting }) => {
           try {
-            const res = await axios.post('http://localhost:8080/api/auth/register', values)
+            const res = await axios.post('https://localpaws-api-rkch-dev.fl0.io/api/auth/register', values)
 
             if (res.status === 201) {
               setSuccess(true)
