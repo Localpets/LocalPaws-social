@@ -1,0 +1,22 @@
+/* Estilos para los mensajes */
+.message-content {
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.message-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 20em;
+  width: 20em;
+  max-height: 9em;
+  line-height: 1.5em;
+  width: 100%;
+  overflow: hidden;
+}
+
+.expanded {
+  max-height: 100%;
+  overflow: visible;
+}
