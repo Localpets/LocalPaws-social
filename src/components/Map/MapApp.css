@@ -5,5 +5,8 @@
 
 .localpaws__map-container{
     font-family: courier;
-    overflow: hidden;
 }
+
+.no-overflow {
+    overflow: hidden !important;
+  }
