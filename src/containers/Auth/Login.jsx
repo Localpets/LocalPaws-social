@@ -1,8 +1,10 @@
+/* eslint-disable camelcase */
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/router'
 import { Formik } from 'formik'
 import toast, { Toaster } from 'react-hot-toast'
-import axios from 'axios'
+import { makeRequest } from '../../library/axios'
+
 // images
 // import google from './assets/google.png'
 import cover from './assets/pexels-sam-lion-6001183.jpg'
@@ -10,6 +12,7 @@ import cover from './assets/pexels-sam-lion-6001183.jpg'
 const Login = () => {
   const [error, setError] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [userExists, setUserExists] = useState(false)
 
   useEffect(() => {
     if (error) {
@@ -26,19 +29,45 @@ const Login = () => {
     if (success) {
       toast.success('Iniciando sesión...')
     }
-  })
+  }, [error, success])
+
+  useEffect(() => {
+    if (localStorage.getItem('user')) {
+      setUserExists(true)
+    }
+
+    if (userExists) {
+      toast.success('Se encontro una sesión activa. Redireccionando...')
+      setTimeout(() => {
+        window.location.href = '/home'
+      }, 2000)
+    }
+  }, [userExists])
 
   return (
-    <section className='bg-white mt-6 min-h-screen'>
+    <section className='bg-white min-h-screen'>
       <Formik
         initialValues={{ email: '', password: '' }}
         onSubmit={async (values, { setSubmitting }) => {
           try {
-            await axios.post('http://localhost:8080/api/auth/login', values)
+            await makeRequest.post('/auth/login', values)
+              .then((res) => {
+                const { email, first_name, last_name, user_id, thumbnail, gender, username } = res.data
+                const localStorageData = {
+                  mail: email,
+                  firstName: first_name,
+                  lastName: last_name,
+                  userId: user_id,
+                  profilePicture: thumbnail,
+                  userGender: gender,
+                  user: username
+                }
+                localStorage.setItem('user', JSON.stringify(localStorageData))
+              })
             setSuccess(true)
 
             setTimeout(() => {
-              window.location.href = '/'
+              window.location.href = '/home'
             }, 2000)
           } catch (err) {
             setError(err)
@@ -59,18 +88,8 @@ const Login = () => {
           isSubmitting
         }) => (
           <div className='lg:grid lg:min-h-[90vh] lg:grid-cols-12'>
-            <aside
-              className='relative block h-16 lg:order-last lg:col-span-5 lg:h-[100vh] xl:col-span-6'
-            >
-              <img
-                alt='Pattern'
-                src={cover}
-                className='absolute inset-0 h-[100vh] w-full object-cover brightness-75'
-              />
-            </aside>
-
             <main
-              className='flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-10 xl:col-span-6'
+              className='flex items-center h-screen justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-10 xl:col-span-6'
             >
               <div className='max-w-xl lg:max-w-3xl'>
                 <a className='block text-blue-600' href='/'>
@@ -100,7 +119,7 @@ const Login = () => {
                 </p>
 
                 <form action='POST' onSubmit={handleSubmit} className='mt-8 grid grid-cols-6 gap-6'>
-                  <div className='col-span-6'>
+                  <div className='col-span-6 col-start-1 md:col-span-4 md:col-start-2'>
                     <label htmlFor='Email' className='block text-sm font-medium text-gray-700'>
                       Email
                     </label>
@@ -117,7 +136,7 @@ const Login = () => {
                     <h2 className='text-red-500 text-sm font-semibold'>{errors.email && touched.email && errors.email}</h2>
                   </div>
 
-                  <div className='col-span-6'>
+                  <div className='col-span-6 col-start-1 md:col-span-4 md:col-start-2'>
                     <label
                       htmlFor='Password'
                       className='block text-sm font-medium text-gray-700'
@@ -137,7 +156,7 @@ const Login = () => {
                     <h2 className='text-red-500 text-sm font-semibold'>{errors.password && touched.password && errors.password}</h2>
                   </div>
 
-                  <div className='col-span-8 justify-center sm:flex sm:items-center sm:gap-4'>
+                  <div className='col-span-6 justify-center pt-6 sm:flex sm:flex-col sm:justify-center sm:items-center sm:gap-4'>
                     <button
                       className='inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500' disabled={isSubmitting} type='submit'
                     >
@@ -152,6 +171,15 @@ const Login = () => {
                 </form>
               </div>
             </main>
+            <aside
+              className='hidden relative lg:block h-16 lg:order-first lg:col-span-5 lg:h-[100vh] xl:col-span-6'
+            >
+              <img
+                alt='Pattern'
+                src={cover}
+                className='absolute inset-0 h-[100vh] w-full object-cover brightness-75'
+              />
+            </aside>
           </div>
         )}
       </Formik>
