@@ -4,12 +4,12 @@ import { Link } from '@tanstack/router'
 import PropTypes from 'prop-types'
 
 const Post = ({ post, user }) => {
-  const { likes, text, image, category, createdAt } = post
+  const { likes, text, image, category, createdAt, post_id } = post
   const { first_name, last_name, thumbnail } = user
   const dateToLocal = new Date(createdAt).toLocaleDateString()
 
   return (
-    <Link to='/post' className='border p-4 bg-white rounded-lg cursor-pointer  w-full'>
+    <Link to={`/post/${post_id}`} className='border p-4 bg-white rounded-lg cursor-pointer  w-full'>
       <div className='flex  pb-0'>
         <img
           className='h-9 w-9 rounded-full '

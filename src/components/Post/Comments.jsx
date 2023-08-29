@@ -1,33 +1,65 @@
 // import React from 'react'
+import { useEffect, useState } from 'react'
+// import CommentsData from './Comments.json'
 import './Comments.css'
-import CommentsData from './Comments.json'
+import { makeRequest } from '../../library/axios'
 
 const Comentarios = () => {
-  const CommentsValidos = CommentsData.Comments.filter(comment => comment.esComments)
+  const [post, setPost] = useState({})
+  const [user, setUser] = useState({})
+  const postId = new URL(window.document.location).pathname.split('/').pop()
+
+  useEffect(() => {
+    const getPost = async () => {
+      await makeRequest.get(`/post/find/id/${postId}`)
+        .then(res => {
+          setPost(res.data.post)
+        })
+        .catch(err => console.log(err))
+    }
+
+    getPost()
+  }, [setPost, postId])
+
+  useEffect(() => {
+    const newPost = post
+    if (newPost.post_user_id) {
+      const getUser = async () => {
+        await makeRequest.get(`/user/find/id/${newPost.post_user_id}`)
+          .then(res => {
+            setUser(res.data.user)
+          })
+          .catch(err => console.log(err))
+      }
+      getUser()
+    }
+  }, [post])
+
+  const postDate = new Date(post.createdAt).toLocaleDateString()
   return (
     <div className='Comments'>
-      <div id='img-post' className='h-[50%] flex  border border-r border-[#E0E1DD] ' />
+      <img id='img-post' className='w-10 max-h-screen flex p-10 border border-r border-[#E0E1DD]' src={post.image} />
       <div className='flex flex-col w-full'>
         <div className=' flex justify-between border-b border-black  p-[1em]'>
           <div className='flex '>
             <div className='flex'>
               <img
                 className='w-12 h-12 rounded-full '
-                src='https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg'
-                alt=''
+                src={user.thumbnail}
+                alt='user-thumbnail'
               />
             </div>
             <div className='flex md:items-start md:ml-2 text-sm items-start ml-2 flex-col'>
-              <h5 className='text-[#0D1B2A] font-bold mb-1'>Diego Garcia</h5>
-              <p className='text-gray-400 '>@Ripdiegozz</p>
+              <h5 className='text-[#0D1B2A] font-bold mb-1'>{user.first_name} {user.last_name}</h5>
+              <p className='text-gray-400 '>{user.username}</p>
             </div>
           </div>
           <div className='flex justify-between items-center cursor-pointer '>
             <i className='fa-solid fa-ellipsis text-xl text-[#0D1B2A]' />
           </div>
         </div>
-        <div id="style-7" className='h-[50%] p-[1em] border-b border-black flex text-black overflow-auto'>
-          <ul>
+        <div id='style-7' className='h-[50%] p-[1em] border-b border-black flex text-black overflow-auto'>
+          {/* <ul>
             {CommentsValidos.map(Comments => (
               <li key={Comments.id}>
                 <div className='comentario flex items-center py-4'>
@@ -38,10 +70,13 @@ const Comentarios = () => {
                 </div>
               </li>
             ))}
-          </ul>
+          </ul> */}
         </div>
         <div className='flex justify-between mt-1 py-1.5 px-4 '>
-          <i className='fa-regular fa-heart text-xl text-[#0D1B2A] p-2 cursor-pointer' />
+          <div>
+            <i className='fa-regular fa-heart text-xl text-[#0D1B2A] p-2 cursor-pointer' />
+            <span className='text-black'>{post.likes}</span>
+          </div>
           <i className='fa-regular fa-share-from-square text-xl text-[#0D1B2A] p-2 cursor-pointer' />
           <div className='flex '><i className='fa-regular fa-bookmark text-xl text-[#0D1B2A] p-2 cursor-pointer' /></div>
         </div>
@@ -73,8 +108,8 @@ const Comentarios = () => {
             <p className='mb-0'>Le gusta a Brayan57963 y a 8K personas más</p>
           </div>
         </div>
-        <div className='flex p-2'>
-          <p>Hace 1 dias</p>
+        <div className='flex p-2 text-black'>
+          <p>{postDate}</p>
         </div>
 
         <div className=''>

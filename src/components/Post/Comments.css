@@ -12,7 +12,6 @@
     box-shadow: 0 0 0 2px rgba(132, 27, 218, 0.2) !important; /* Agrega un sombreado alrededor del input */
   }
   #img-post{
-    background-image: url("https://scontent.fcuc1-1.fna.fbcdn.net/v/t1.6435-9/77414073_10157912000298734_845404547747676160_n.jpg?_nc_cat=110&cb=99be929b-59f725be&ccb=1-7&_nc_sid=68be17&_nc_eui2=AeGOu9XTpfaYLl-Iq_EVcMXAWBCFUO-cnnZYEIVQ75yedsrS60rGFiywWQGmNdWo-1D6hWtxNo4LpP4dD3TOFjVs&_nc_ohc=_sEwNbqFYJgAX_xcOlr&_nc_ht=scontent.fcuc1-1.fna&oh=00_AfBRCIy05fE6Cof1MYWQmnPaNW4bM6O3k1VlISFz_pOHjg&oe=65009EEE");
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;

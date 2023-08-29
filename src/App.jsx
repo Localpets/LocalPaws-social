@@ -9,7 +9,7 @@ import Login from './containers/Auth/Login.jsx'
 import Chat from './containers/Chat/Chat.jsx'
 import Profile from './containers/Profile/Profile.jsx'
 import MapApp from './components/Map/MapApp'
-import Comments from './components/Post/Comments'
+import Comentarios from './components/Post/Comments'
 import './App.css'
 // Create a root route
 const rootRoute = new RootRoute({
@@ -59,8 +59,8 @@ const mapRoute = new Route({
 
 const postReview = new Route({
   getParentRoute: () => rootRoute,
-  path: '/post',
-  component: Comments
+  path: '/post/$post_id',
+  component: Comentarios
 })
 
 const logoutView = new Route({
