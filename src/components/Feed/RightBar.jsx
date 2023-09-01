@@ -2,7 +2,7 @@
 
 const RightBar = () => {
   return (
-    <section className='hidden fixed right-0 w-[20%] xl:flex xl:flex-col items-center justify-center gap-5 h-auto text-[#0D1B2AS] text-left mt-10 mr-8'>
+    <section className='hidden fixed right-0 w-[20%] xl:flex xl:flex-col items-center justify-center gap-5 h-auto text-[#0D1B2AS] text-left mt-8 mr-8'>
       <div className='bg-white w-full h-auto text-[#0D1B2AS] text-left border-2 rounded-lg border-[#E0E1DD] px-4 py-4'>
         <h3 className='text-[#0D1B2AS] font-bold dark:border-dim-200'>
           Personas populares

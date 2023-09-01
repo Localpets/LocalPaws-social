@@ -64,6 +64,9 @@ const PostForm = () => {
       const response = await makeRequest.post('post/create', formData)
       setInitialPostValues(values)
       console.log(response.data)
+      if (response.data.status === 'success') {
+        window.location.reload()
+      }
     } catch (error) {
       console.error(error)
     }

@@ -11,7 +11,7 @@ const LeftBar = () => {
     }
   }, [setUser])
   return (
-    <div className='flex fixed flex-col left-0 text-[#0D1B2A] h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-10 bg-white ml-10 md:justify-start'>
+    <div className='flex fixed flex-col left-0 text-[#0D1B2A] h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-8 bg-white ml-10 md:justify-start'>
       <Link to='/home' className='link-active my-2 w-16 mx-auto'>
         <img src={logo} alt='Logo PawsPlorer' className='w-16' />
       </Link>

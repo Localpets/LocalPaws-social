@@ -13,6 +13,8 @@ const Middle = () => {
   const [user, setUser] = React.useState({})
   const [posts, setPosts] = React.useState([])
 
+  const postsRef = React.useRef(posts)
+
   React.useEffect(() => {
     if (localStorage.getItem('user')) {
       const newUser = JSON.parse(localStorage.getItem('user'))
@@ -26,8 +28,11 @@ const Middle = () => {
       const user = JSON.parse(localStorage.getItem('user'))
       const id = user.userId
       return await makeRequest.get(`post/find/follows/user/${id}`).then((res) => {
-        console.log(res.data)
-        setPosts(res.data.posts)
+        // sort posts by id descending
+        const sortedPosts = res.data.posts.sort((a, b) => b.post_id - a.post_id)
+        postsRef.current = sortedPosts
+        console.log('Sorted posts: ', sortedPosts)
+        setPosts(sortedPosts)
         return res.data
       })
     }
@@ -51,7 +56,7 @@ const Middle = () => {
 
       <div className='flex flex-col items-center w-full gap-4 min-h-screen'>
         {
-          posts.map((post) => (
+          postsRef.current.map((post) => (
             <PostQueryWrapper key={post.post_id} post={post} />
           ))
         }

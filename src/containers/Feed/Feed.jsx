@@ -14,7 +14,7 @@ const Feed = () => {
   return (
     <div className='text-black w-full min-h-screen'>
       <Header />
-      <section className='flex'>
+      <section className='flex pt-16'>
         <LeftBar />
         <Middle />
         <RightBar />
