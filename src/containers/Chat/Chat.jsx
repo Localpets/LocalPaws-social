@@ -33,7 +33,7 @@ const Chat = () => {
 
   // useEffect para crear la instancia del Socket al renderizar el componente y desconectarlo al desrenderizar
   useEffect(() => {
-    const newSocket = io('http://localhost:7000')
+    const newSocket = io('http://localhost:8080')
     setSocket(newSocket)
 
     return () => {
