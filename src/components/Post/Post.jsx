@@ -39,7 +39,7 @@ const Post = ({ post, user }) => {
         </p>
         {imageLoaded && (
           <img
-            className='rounded-lg border my-3 mr-2 w-full object-fit h-[40rem]'
+            className='rounded-lg border my-3 mr-2 w-full object-cover h-[40rem]'
             src={image}
             alt='post-image'
           />
