@@ -4,7 +4,7 @@ import { Link } from '@tanstack/router'
 import { Formik } from 'formik'
 import toast, { Toaster } from 'react-hot-toast'
 import { makeRequest } from '../../library/axios'
-
+import useAuthStore from '../../context/AuthContext'
 // images
 // import google from './assets/google.png'
 import cover from './assets/pexels-sam-lion-6001183.jpg'
@@ -13,6 +13,7 @@ const Login = () => {
   const [error, setError] = useState(false)
   const [success, setSuccess] = useState(false)
   const [userExists, setUserExists] = useState(false)
+  const { setUser } = useAuthStore()
 
   useEffect(() => {
     if (error) {
@@ -38,11 +39,13 @@ const Login = () => {
 
     if (userExists) {
       toast.success('Se encontro una sesión activa. Redireccionando...')
+      const newUser = JSON.parse(localStorage.getItem('user'))
+      setUser(newUser)
       setTimeout(() => {
         window.location.href = '/home'
       }, 2000)
     }
-  }, [userExists])
+  }, [userExists, setUser])
 
   return (
     <section className='bg-white min-h-screen'>

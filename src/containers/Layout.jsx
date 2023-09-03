@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 const Layout = ({ children }) => {
   return (
-    <main className='bg-white mx-auto'>
+    <main className='bg-gray-200 mx-auto'>
       {children}
     </main>
   )

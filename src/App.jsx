@@ -2,14 +2,15 @@
 import { Outlet, RootRoute, Route } from '@tanstack/router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Layout from './containers/Layout'
+import Logout from './components/Misc/Logout'
 import Feed from './containers/Feed/Feed'
 import Register from './containers/Auth/Register.jsx'
 import Login from './containers/Auth/Login.jsx'
 import Chat from './containers/Chat/Chat.jsx'
 import Profile from './containers/Profile/Profile.jsx'
 import MapApp from './components/Map/MapApp'
-import Comments from './components/Post/Comments'
-import Notificaciones from './components/Notificaciones/Notificacion.jsx'
+// import Notificaciones from './components/Notificaciones/Notificacion.jsx'
+import Comentarios from './components/Post/Comments'
 import './App.css'
 // Create a root route
 const rootRoute = new RootRoute({
@@ -24,11 +25,12 @@ const registerRoute = new Route({
 })
 
 // Create a noti route
-const notiRoute = new Route({
-  getParentRoute: () => rootRoute,
-  path: '/notificaciones',
-  component: Notificaciones
-})
+// const notiRoute = new Route({
+//   getParentRoute: () => rootRoute,
+//   path: '/notificaciones',
+//   component: Notificaciones
+// })
+
 const chatRoute = new Route({
   getParentRoute: () => rootRoute,
   path: '/chat',
@@ -65,13 +67,19 @@ const mapRoute = new Route({
 
 const postReview = new Route({
   getParentRoute: () => rootRoute,
-  path: '/post',
-  component: Comments
+  path: '/post/$post_id',
+  component: Comentarios
+})
+
+const logoutView = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/logout',
+  component: Logout
 })
 
 // Create the route tree using your routes
 // eslint-disable-next-line react-refresh/only-export-components
-export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview, notiRoute])
+export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview, logoutView])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
 const queryClient = new QueryClient()

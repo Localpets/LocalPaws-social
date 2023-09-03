@@ -1,9 +1,17 @@
 @font-face {
     font-family: courier;
-    src: url('../../assets/Fonts/JosefinSans-Italic-VariableFont_wght.ttf');
+    src: url('../../assets/Fonts/OpenSans-Regular.ttf');
+}
+
+@font-face {
+    font-family: arial;
+    src: url('../../assets/Fonts/Seventies-Sunrise-Trial.otf');
 }
 
 .localpaws__map-container{
-    font-family: courier;
-    overflow: hidden;
+    font-family: arial;
 }
+
+.no-overflow {
+    overflow: hidden !important;
+  }
