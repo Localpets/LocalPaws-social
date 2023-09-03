@@ -43,12 +43,13 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef }) => {
       const receiverId = currentchat.conversation[0].receiver_id === localuser.userId
         ? currentchat.conversation[0].sender_id
         : currentchat.conversation[0].receiver_id
-
+      const RoomForUsers = `${Math.min(localuser.userId, receiverId)}-${Math.max(localuser.userId, receiverId)}`
       // Envía los datos al servidor para enviar un mensaje
       const response = await makeRequest.post('message/create', {
         sender_id: localuser.userId,
         receiver_id: receiverId,
-        text: message
+        text: message,
+        room: RoomForUsers
       })
 
       if (response.status === 200) {

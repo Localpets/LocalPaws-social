@@ -39,10 +39,7 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
 
           // Iterar a través de los mensajes y agruparlos en el objeto
           chats.forEach(chat => {
-            const conversationKey = `${Math.min(
-            chat.sender_id,
-            chat.receiver_id
-          )}-${Math.max(chat.sender_id, chat.receiver_id)}`
+            const conversationKey = chat.room
 
             if (!conversationMap[conversationKey]) {
               conversationMap[conversationKey] = []
