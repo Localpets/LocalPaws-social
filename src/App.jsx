@@ -9,8 +9,10 @@ import Login from './containers/Auth/Login.jsx'
 import Chat from './containers/Chat/Chat.jsx'
 import Profile from './containers/Profile/Profile.jsx'
 import MapApp from './components/Map/MapApp'
-import Comentarios from './components/Post/Comments'
+// import Notificaciones from './components/Notificaciones/Notificacion.jsx'
+import PostPage from './components/Post/PostPage'
 import './App.css'
+
 // Create a root route
 const rootRoute = new RootRoute({
   component: App
@@ -22,6 +24,13 @@ const registerRoute = new Route({
   path: '/register',
   component: Register
 })
+
+// Create a noti route
+// const notiRoute = new Route({
+//   getParentRoute: () => rootRoute,
+//   path: '/notificaciones',
+//   component: Notificaciones
+// })
 
 const chatRoute = new Route({
   getParentRoute: () => rootRoute,
@@ -60,7 +69,7 @@ const mapRoute = new Route({
 const postReview = new Route({
   getParentRoute: () => rootRoute,
   path: '/post/$post_id',
-  component: Comentarios
+  component: PostPage
 })
 
 const logoutView = new Route({
