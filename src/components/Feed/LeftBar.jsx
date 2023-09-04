@@ -1,15 +1,11 @@
-import { useEffect, useState } from 'react'
 import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
 import { Link } from '@tanstack/router'
+import useAuthStore from '../../context/AuthContext'
+// import useValidateUserLogged from '../../hooks/ValidateUserLogged'
 
 const LeftBar = () => {
-  const [user, setUser] = useState([])
-  useEffect(() => {
-    if (localStorage.getItem('user')) {
-      const user = JSON.parse(localStorage.getItem('user'))
-      setUser(user)
-    }
-  }, [setUser])
+  const { user } = useAuthStore()
+
   return (
     <div className='flex fixed flex-col left-0 text-[#0D1B2A] h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-8 bg-white ml-10 md:justify-start'>
       <Link to='/home' className='link-active my-2 w-28 h-20 mx-auto'>

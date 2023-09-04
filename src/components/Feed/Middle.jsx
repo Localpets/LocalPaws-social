@@ -6,32 +6,23 @@ import PostQueryWrapper from '../Post/PostQueryWrapper.jsx'
 import Stories from '../Story/Stories.jsx'
 import 'react-loading-skeleton/dist/skeleton.css'
 import PostForm from '../Forms/PostForm.jsx'
-// import useAuthStore from '../../context/AuthContext.js'
+import useAuthStore from '../../context/AuthContext.js'
 
 const Middle = () => {
-  // const { user } = useAuthStore()
-  const [user, setUser] = React.useState({})
+  const { user } = useAuthStore()
+  // const [user, setUser] = React.useState({})
   const [posts, setPosts] = React.useState([])
 
   const postsRef = React.useRef(posts)
 
-  React.useEffect(() => {
-    if (localStorage.getItem('user')) {
-      const newUser = JSON.parse(localStorage.getItem('user'))
-      setUser(newUser)
-    }
-  }, [])
-
   const { isLoading, error, data } = useQuery({
     queryKey: ['posts', user],
     queryFn: async () => {
-      const user = JSON.parse(localStorage.getItem('user'))
       const id = user.userId
       return await makeRequest.get(`post/find/follows/user/${id}`).then((res) => {
         // sort posts by id descending
         const sortedPosts = res.data.posts.sort((a, b) => b.post_id - a.post_id)
         postsRef.current = sortedPosts
-        console.log('Sorted posts: ', sortedPosts)
         setPosts(sortedPosts)
         return res.data
       })
@@ -45,6 +36,7 @@ const Middle = () => {
       </div>
     )
   }
+
   if (error) return 'An error has occurred: ' + error.message
 
   return (

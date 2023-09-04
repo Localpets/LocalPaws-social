@@ -10,7 +10,6 @@ const PostQueryWrapper = ({ post }) => {
     queryKey: ['post', post.post_user_id], // Usa el ID del usuario para la consulta
     queryFn: async () => {
       return await makeRequest.get(`user/find/id/${post.post_user_id}`).then((res) => {
-        console.log(res.data)
         return res.data
       })
     }
@@ -21,7 +20,7 @@ const PostQueryWrapper = ({ post }) => {
   }
   if (error) return 'An error has occurred: ' + error.message
 
-  return <Post post={post} user={data.user} />
+  return <Post post={post} postUser={data.user} />
 }
 
 PostQueryWrapper.propTypes = {

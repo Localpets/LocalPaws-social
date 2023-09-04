@@ -39,8 +39,6 @@ const Login = () => {
 
     if (userExists) {
       toast.success('Se encontro una sesión activa. Redireccionando...')
-      const newUser = JSON.parse(localStorage.getItem('user'))
-      setUser(newUser)
       setTimeout(() => {
         window.location.href = '/home'
       }, 2000)
