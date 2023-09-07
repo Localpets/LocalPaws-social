@@ -1,16 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { makeRequest } from '../library/axios'
 
-const useGetCurrentUser = () => {
+const useGetCurrentUser = async (id) => {
   const [user, setUser] = useState || []
 
-  useEffect(() => {
-    if (localStorage.getItem('user')) {
-      const user = JSON.parse(localStorage.getItem('user'))
-      setUser(user)
-    }
-  }, [user, setUser])
+  const { data } = await makeRequest.get(`/user/find/id/${id}`)
 
-  return { user }
+  setUser(data.user)
+
+  return user
 }
 
 export default useGetCurrentUser

@@ -1,12 +1,13 @@
 import React from 'react'
 import { Formik, Form, Field } from 'formik'
 import { makeRequest } from '../../library/axios'
+import { useQuery } from '@tanstack/react-query'
 
 const PostForm = () => {
   const [user, setUser] = React.useState({})
   const [isTyping, setIsTyping] = React.useState(false)
   const [previewImage, setPreviewImage] = React.useState('')
-
+  const [categories, setCategories] = React.useState([])
   React.useEffect(() => {
     if (!localStorage.getItem('user')) {
       window.alert('No se ha iniciado sesión. Redireccionando...')
@@ -73,6 +74,26 @@ const PostForm = () => {
 
     setSubmitting(false)
   }
+
+  const { isLoading, error } = useQuery({
+    queryKey: ['posts', user],
+    queryFn: async () => {
+      return await makeRequest.get('/post/category/find/all').then((res) => {
+        setCategories(res.data.categories)
+        return res.data
+      })
+    }
+  })
+
+  if (isLoading) {
+    return (
+      <div className='mx-auto pt-20'>
+        <span className='loading loading-ring loading-lg' />
+      </div>
+    )
+  }
+
+  if (error) return 'An error has occurred: ' + error.message
 
   return (
     <div className='w-full p-10 bg-white m-2 rounded-lg border-2 border-[#E0E1DD]'>
@@ -171,10 +192,13 @@ const PostForm = () => {
                     value={values.category}
                     className='rounded-lg border-2 border-[#E0E1DD] text-black'
                   >
-                    <option value='' className='text-ellipsis'>Categoría</option>
-                    <option value='post'>Post</option>
-                    <option value='event'>Event</option>
-                    <option value='job'>Job</option>
+                    {
+                      categories
+                        ? categories.map((category) => (
+                          <option key={category.category_type_id} value={category.title}>{category.title}</option>
+                        ))
+                        : null
+                    }
                   </Field>
                   <h2 className='text-red-500 text-sm font-semibold'>{errors.category && touched.category && errors.category}</h2>
                 </div>

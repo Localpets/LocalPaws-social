@@ -1,11 +1,8 @@
-import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
 import { Link } from '@tanstack/router'
-import useAuthStore from '../../context/AuthContext'
-// import useValidateUserLogged from '../../hooks/ValidateUserLogged'
+import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
+import PropTypes from 'prop-types'
 
-const LeftBar = () => {
-  const { user } = useAuthStore()
-
+const LeftBar = ({ user }) => {
   return (
     <div className='flex fixed flex-col left-0 text-[#0D1B2A] h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-8 bg-white ml-10 md:justify-start'>
       <Link to='/home' className='link-active my-2 w-28 h-20 mx-auto'>
@@ -47,6 +44,10 @@ const LeftBar = () => {
       </nav>
     </div>
   )
+}
+
+LeftBar.propTypes = {
+  user: PropTypes.object.isRequired
 }
 
 export default LeftBar

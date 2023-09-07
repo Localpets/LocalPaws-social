@@ -6,11 +6,9 @@ import PostQueryWrapper from '../Post/PostQueryWrapper.jsx'
 import Stories from '../Story/Stories.jsx'
 import 'react-loading-skeleton/dist/skeleton.css'
 import PostForm from '../Forms/PostForm.jsx'
-import useAuthStore from '../../context/AuthContext.js'
+import PropTypes from 'prop-types'
 
-const Middle = () => {
-  const { user } = useAuthStore()
-  // const [user, setUser] = React.useState({})
+const Middle = ({ user }) => {
   const [posts, setPosts] = React.useState([])
 
   const postsRef = React.useRef(posts)
@@ -19,11 +17,12 @@ const Middle = () => {
     queryKey: ['posts', user],
     queryFn: async () => {
       const id = user.userId
-      return await makeRequest.get(`post/find/follows/user/${id}`).then((res) => {
+      return makeRequest.get(`post/find/follows/user/${id}`).then((res) => {
         // sort posts by id descending
         const sortedPosts = res.data.posts.sort((a, b) => b.post_id - a.post_id)
         postsRef.current = sortedPosts
         setPosts(sortedPosts)
+
         return res.data
       })
     }
@@ -56,6 +55,10 @@ const Middle = () => {
 
     </div>
   )
+}
+
+Middle.propTypes = {
+  user: PropTypes.object.isRequired
 }
 
 export default Middle
