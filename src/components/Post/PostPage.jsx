@@ -1,77 +1,135 @@
-// import React from 'react'
 import { useEffect, useState } from 'react'
-// import CommentsData from './Comments.json'
-import './Comments.css'
-import { makeRequest } from '../../library/axios'
 import { Link } from '@tanstack/router'
+import { makeRequest } from '../../library/axios'
+import './Comments.css'
 
 const PostPage = () => {
-  const [post, setPost] = useState({})
-  const [user, setUser] = useState({})
-  const [CommentsValidos, setCommentsValidos] = useState([])
   const postId = new URL(window.document.location).pathname.split('/').pop()
 
-  useEffect(() => {
-    const getPost = async () => {
-      await makeRequest
-        .get(`/post/find/id/${postId}`)
-        .then((res) => {
-          setPost(res.data.post)
-          console.log(res.data.post)
-        })
-        .catch((err) => console.log(err))
-    }
-
-    const getCommentsAndUser = async () => {
-      await makeRequest
-        .get(`/comment/find/post/${postId}`)
-        .then((res) => {
-          const comments = res.data.comments
-          const commentsValidos = []
-          comments.forEach((comment) => {
-            if (comment.comment_user_id) {
-              const getCommentUser = async () => {
-                await makeRequest
-                  .get(`/user/find/id/${comment.comment_user_id}`)
-                  .then((res) => {
-                    const commentUser = res.data.user
-                    commentsValidos.push({
-                      comment_id: comment.comment_id,
-                      text: comment.text,
-                      usuario: commentUser.username,
-                      ImageUser: commentUser.thumbnail
-                    })
-                    setCommentsValidos(commentsValidos)
-                  })
-                  .catch((err) => console.log(err))
-              }
-              getCommentUser()
-            }
-          })
-        })
-        .catch((err) => console.log(err))
-    }
-
-    getCommentsAndUser()
-    getPost()
-  }, [setPost, postId, setCommentsValidos])
+  // Estados del componente
+  const [post, setPost] = useState({})
+  const [postUser, setPostUser] = useState({})
+  const [likes, setLikes] = useState(0)
+  const [liked, setLiked] = useState(false)
+  const [likeStyle, setLikeStyle] = useState('fa-solid fa-heart mr-2 text-lg')
+  const [comments, setComments] = useState([])
 
   useEffect(() => {
-    const newPost = post
-    if (newPost.post_user_id) {
-      const getUser = async () => {
-        await makeRequest
-          .get(`/user/find/id/${newPost.post_user_id}`)
-          .then((res) => {
-            setUser(res.data.user)
-          })
-          .catch((err) => console.log(err))
+    const fetchPost = async () => {
+      try {
+        const response = await makeRequest.get(`/post/find/id/${postId}`)
+        setPost(response.data.post)
+      } catch (error) {
+        console.error(error)
       }
-      getUser()
     }
+
+    const fetchCommentsAndUsers = async () => {
+      try {
+        const response = await makeRequest.get(`/comment/find/post/${postId}`)
+        const commentsData = response.data.comments
+
+        const validComments = await Promise.all(
+          commentsData.map(async (comment) => {
+            if (comment.comment_user_id) {
+              const userResponse = await makeRequest.get(`/user/find/id/${comment.comment_user_id}`)
+              const commentUser = userResponse.data.user
+
+              return {
+                comment_id: comment.comment_id,
+                text: comment.text,
+                usuario: commentUser.username,
+                ImageUser: commentUser.thumbnail
+              }
+            }
+            return null
+          })
+        )
+
+        setComments(validComments.filter(Boolean))
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchPost()
+    fetchCommentsAndUsers()
+  }, [postId])
+
+  useEffect(() => {
+    const fetchPostUser = async () => {
+      if (post.post_user_id) {
+        try {
+          const response = await makeRequest.get(`/user/find/id/${post.post_user_id}`)
+          setPostUser(response.data.user)
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    }
+
+    fetchPostUser()
   }, [post])
 
-  // const postDate = new Date(post.createdAt).toLocaleDateString()
+  useEffect(() => {
+    const fetchLikes = async () => {
+      try {
+        const response = await makeRequest.get(`/like/post/${postId}`)
+        const likeData = response.data.likes
+
+        setLikes(likeData.length)
+
+        const user = JSON.parse(localStorage.getItem('user'))
+        const userLiked = likeData.some((like) => like.user_id === user.userId)
+
+        if (userLiked) {
+          setLikeStyle('fa-solid fa-heart mr-2 text-lg text-red-600')
+          setLiked(true)
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchLikes()
+  }, [postId])
+
+  const handleLike = async () => {
+    const user = JSON.parse(localStorage.getItem('user'))
+
+    setLiked(!liked)
+
+    try {
+      if (!liked) {
+        setLikeStyle('fa-solid fa-heart mr-2 text-lg text-red-600')
+        setLikes(likes + 1)
+
+        const data = {
+          like_type: 'Like',
+          post_id: postId,
+          user_id: user.userId
+        }
+
+        const response = await makeRequest.post('/like/create/', data, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+
+        console.log(response)
+      }
+
+      if (liked) {
+        setLikeStyle('fa-solid fa-heart mr-2 text-lg')
+        setLikes(likes - 1)
+
+        const response = await makeRequest.delete(`/like/delete/${postId}/${user.userId}`)
+        console.log(response)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   return (
     <div className='Comments py-10'>
@@ -86,15 +144,15 @@ const PostPage = () => {
             <div className='flex'>
               <img
                 className='w-12 h-12 rounded-full '
-                src={user.thumbnail}
+                src={postUser.thumbnail}
                 alt='user-thumbnail'
               />
             </div>
             <div className='flex md:items-start md:ml-2 text-sm items-start ml-2 flex-col'>
               <h5 className='text-[#0D1B2A] font-bold mb-1'>
-                {user.first_name} {user.last_name}
+                {postUser.first_name} {postUser.last_name}
               </h5>
-              <p className='text-gray-400 '>{user.username}</p>
+              <p className='text-gray-400 '>{postUser.username}</p>
             </div>
           </div>
           <Link to='/home' className='flex justify-between items-center cursor-pointer '>
@@ -112,7 +170,7 @@ const PostPage = () => {
                 <Link to='#'>
                   <img
                     className='h-8 w-8 rounded-full'
-                    src={user.thumbnail}
+                    src={postUser.thumbnail}
                     alt='imagen-perfil-usuario'
                   />
                 </Link>
@@ -121,7 +179,7 @@ const PostPage = () => {
                 </div>
               </div>
             </li>
-            {CommentsValidos.map((Comments) => (
+            {comments.map((Comments) => (
               <li key={Comments.comment_id}>
                 <div className='comentario flex items-center py-2'>
                   <Link to='#'>
@@ -140,11 +198,11 @@ const PostPage = () => {
           </ul>
         </div>
         <div className='flex flex-col'>
-          <div className='flex justify-between px-6 py-2 border-t'>
-            <div>
-              <i className='fa-regular fa-heart text-xl text-[#0D1B2A] p-2 cursor-pointer' />
-              <span className='text-black'>{post.likes}</span>
-            </div>
+          <div className='flex justify-between items-center px-6 py-2 border-t'>
+            <button onClick={handleLike}>
+              <i className={likeStyle} />
+              <span>{likes}</span>
+            </button>
             <i className='fa-regular fa-share-from-square text-xl text-[#0D1B2A] p-2 cursor-pointer' />
             <i className='fa-regular fa-bookmark text-xl text-[#0D1B2A] p-2 cursor-pointer' />
           </div>

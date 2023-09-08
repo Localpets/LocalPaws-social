@@ -8,14 +8,20 @@ import useAuthStore from '../../context/AuthContext'
 
 const Post = ({ post, postUser }) => {
   // Initialization of states
+  // userState
   const { user } = useAuthStore()
+  // imageLoaded state
   const [imageLoaded, setImageLoaded] = React.useState(false)
+  const [componentStyle, setComponentStyle] = React.useState('border p-4 bg-white rounded-lg w-full h-auto')
+  // like states
   const [likes, setLikes] = React.useState(0)
   const [liked, setLiked] = React.useState(false)
   const [likeStyle, setLikeStyle] = React.useState('fa-solid fa-heart mr-2 text-lg')
-  const [componentStyle, setComponentStyle] = React.useState('border p-4 bg-white rounded-lg w-full h-auto')
-
+  // post props
   const { text, image, category, createdAt, post_id } = post
+  // post user props
+  const { first_name, last_name, thumbnail } = postUser
+  const dateToLocal = new Date(createdAt).toLocaleDateString()
 
   React.useEffect(() => {
     if (image !== 'no image') {
@@ -62,9 +68,6 @@ const Post = ({ post, postUser }) => {
       console.log(res)
     }
   }
-
-  const { first_name, last_name, thumbnail } = postUser
-  const dateToLocal = new Date(createdAt).toLocaleDateString()
 
   return (
     <article className={componentStyle}>
