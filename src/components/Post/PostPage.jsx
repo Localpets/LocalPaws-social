@@ -144,7 +144,7 @@ const PostPage = () => {
             <div className='flex'>
               <img
                 className='w-12 h-12 rounded-full '
-                src={postUser.thumbnail}
+                src={postUser.thumbnail || 'http://localhost:8080/icons/6.png'}
                 alt='user-thumbnail'
               />
             </div>
@@ -170,7 +170,7 @@ const PostPage = () => {
                 <Link to='#'>
                   <img
                     className='h-8 w-8 rounded-full'
-                    src={postUser.thumbnail}
+                    src={postUser.thumbnail || 'http://localhost:8080/icons/6.png'}
                     alt='imagen-perfil-usuario'
                   />
                 </Link>
