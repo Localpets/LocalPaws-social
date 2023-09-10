@@ -155,9 +155,9 @@ const PostPage = () => {
               <p className='text-gray-400 '>{postUser.username}</p>
             </div>
           </div>
-          <Link to='/home' className='flex justify-between items-center cursor-pointer '>
+          <a href='/home' className='flex justify-between items-center cursor-pointer '>
             <i className='fa-solid fa-close text-xl text-[#0D1B2A] pr-6' />
-          </Link>
+          </a>
         </div>
         <div
           id='style-7'

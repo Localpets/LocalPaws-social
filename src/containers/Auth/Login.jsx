@@ -2,18 +2,18 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/router'
 import { Formik } from 'formik'
-import toast, { Toaster } from 'react-hot-toast'
 import { makeRequest } from '../../library/axios'
+import toast, { Toaster } from 'react-hot-toast'
+import UserLoggedModal from '../../components/Auth/UserLoggedModal'
 import useAuthStore from '../../context/AuthContext'
-// images
-// import google from './assets/google.png'
 import cover from './assets/pexels-sam-lion-6001183.jpg'
 
 const Login = () => {
   const [error, setError] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [userExists, setUserExists] = useState(false)
-  const { setUser } = useAuthStore()
+  const [userLogged, setUserLogged] = useState(false)
+
+  const { login } = useAuthStore()
 
   useEffect(() => {
     if (error) {
@@ -33,17 +33,13 @@ const Login = () => {
   }, [error, success])
 
   useEffect(() => {
-    if (localStorage.getItem('user')) {
-      setUserExists(true)
-    }
+    const user = JSON.parse(localStorage.getItem('user'))
 
-    if (userExists) {
-      toast.success('Se encontro una sesión activa. Redireccionando...')
-      setTimeout(() => {
-        window.location.href = '/home'
-      }, 2000)
+    if (user) {
+      login(user.userId, true)
+      setUserLogged(true)
     }
-  }, [userExists, setUser])
+  }, [login])
 
   return (
     <section className='bg-white min-h-screen'>
@@ -53,17 +49,17 @@ const Login = () => {
           try {
             await makeRequest.post('/auth/login', values)
               .then((res) => {
-                const { email, first_name, last_name, user_id, thumbnail, gender, username } = res.data
+                const { user_id } = res.data
+
                 const localStorageData = {
-                  mail: email,
-                  firstName: first_name,
-                  lastName: last_name,
-                  userId: user_id,
-                  profilePicture: thumbnail,
-                  userGender: gender,
-                  user: username
+                  userId: user_id
                 }
+
                 localStorage.setItem('user', JSON.stringify(localStorageData))
+
+                useAuthStore.setState({ auth: true, user: localStorageData })
+
+                setSubmitting(false)
               })
             setSuccess(true)
 
@@ -181,6 +177,7 @@ const Login = () => {
                 className='absolute inset-0 h-[100vh] w-full object-cover brightness-75'
               />
             </aside>
+            {userLogged && <UserLoggedModal />}
           </div>
         )}
       </Formik>

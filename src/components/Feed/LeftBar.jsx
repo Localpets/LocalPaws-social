@@ -1,8 +1,12 @@
 import { Link } from '@tanstack/router'
+import useAuthStore from '../../context/AuthContext'
+import useFindUser from '../../hooks/useFindUser'
 import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
-import PropTypes from 'prop-types'
 
-const LeftBar = ({ user }) => {
+const LeftBar = () => {
+  const { loggedUser } = useAuthStore()
+  const { user } = useFindUser(loggedUser)
+
   return (
     <div className='flex fixed flex-col left-0 text-[#0D1B2A] h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-8 bg-white ml-10 md:justify-start'>
       <Link to='/home' className='link-active my-2 w-28 h-20 mx-auto'>
@@ -32,7 +36,7 @@ const LeftBar = ({ user }) => {
         <Link to='/profile' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <img
             className='w-10 h-10 rounded-full'
-            src={user.profilePicture}
+            src={user?.thumbnail || 'https://i.imgur.com/HeIi0wU.png'}
             alt='user-thumbnail'
           />
           <span className='icon'>Perfil</span>
@@ -44,10 +48,6 @@ const LeftBar = ({ user }) => {
       </nav>
     </div>
   )
-}
-
-LeftBar.propTypes = {
-  user: PropTypes.object.isRequired
 }
 
 export default LeftBar

@@ -41,7 +41,7 @@ const chatRoute = new Route({
 // Create a profile route
 const openProfile = new Route({
   getParentRoute: () => rootRoute,
-  path: '/profile',
+  path: '/profile/$user_id',
   component: Profile
 })
 

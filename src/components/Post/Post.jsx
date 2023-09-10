@@ -5,11 +5,13 @@ import { Link } from '@tanstack/router'
 import PropTypes from 'prop-types'
 import { makeRequest } from '../../library/axios'
 import useAuthStore from '../../context/AuthContext'
+import useFindUser from '../../hooks/useFindUser'
 
 const Post = ({ post, postUser }) => {
   // Initialization of states
   // userState
-  const { user } = useAuthStore()
+  const { loggedUser } = useAuthStore()
+  const { user } = useFindUser(loggedUser)
   // imageLoaded state
   const [imageLoaded, setImageLoaded] = React.useState(false)
   const [componentStyle, setComponentStyle] = React.useState('border p-4 bg-white rounded-lg w-full h-auto')
@@ -32,7 +34,7 @@ const Post = ({ post, postUser }) => {
     const fetchLikes = async () => {
       const { data } = await makeRequest.get(`/like/post/${post_id}`)
       setLikes(data.likes.length)
-      const checkIfUserLiked = data.likes.find(like => like.user_id === user.userId)
+      const checkIfUserLiked = data.likes.find(like => like.user_id === user?.user_id)
       if (checkIfUserLiked) {
         setLiked(true)
         setLikeStyle('fa-solid fa-heart mr-2 text-lg text-red-600')
@@ -51,7 +53,7 @@ const Post = ({ post, postUser }) => {
       const data = {
         like_type: 'Like',
         post_id,
-        user_id: user.userId
+        user_id: loggedUser
       }
       const res = await makeRequest.post('/like/create/', data, {
         headers: {
@@ -64,7 +66,7 @@ const Post = ({ post, postUser }) => {
     if (liked) {
       setLikeStyle('fa-solid fa-heart mr-2 text-lg')
       setLikes(likes - 1)
-      const res = await makeRequest.delete(`/like/delete/${post_id}/${user.userId}`)
+      const res = await makeRequest.delete(`/like/delete/${post_id}/${loggedUser}`)
       console.log(res)
     }
   }
