@@ -1,15 +1,12 @@
-import { useEffect, useState } from 'react'
-import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
 import { Link } from '@tanstack/router'
+import useAuthStore from '../../context/AuthContext'
+import useFindUser from '../../hooks/useFindUser'
+import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
 
 const LeftBar = () => {
-  const [user, setUser] = useState([])
-  useEffect(() => {
-    if (localStorage.getItem('user')) {
-      const user = JSON.parse(localStorage.getItem('user'))
-      setUser(user)
-    }
-  }, [setUser])
+  const { loggedUser } = useAuthStore()
+  const { user } = useFindUser(loggedUser)
+
   return (
     <div className='flex fixed flex-col left-0 text-[#0D1B2A] h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-8 bg-white ml-10 md:justify-start'>
       <Link to='/home' className='link-active my-2 w-28 h-20 mx-auto'>
@@ -39,7 +36,7 @@ const LeftBar = () => {
         <Link to='/profile' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <img
             className='w-10 h-10 rounded-full'
-            src={user.profilePicture}
+            src={user?.thumbnail || 'https://i.imgur.com/HeIi0wU.png'}
             alt='user-thumbnail'
           />
           <span className='icon'>Perfil</span>

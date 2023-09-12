@@ -1,36 +1,38 @@
-/// ESTE ES MI CODIGO DE PERFIL, NO SE SI LO VAYAMOS A USAR, PERO LO DEJO POR SI ACASO
-// By: Diaxxi
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useState, useEffect } from 'react'
+import { Link } from '@tanstack/router'
 import LeftBar from '../../components/Feed/LeftBar'
 import Posts from '../Profile/ProfilePost.json'
-import { Link } from '@tanstack/router'
+import Header from '../../components/Header/Header'
+import useAuthStore from '../../context/AuthContext'
 
 const Profile = () => {
-  const [user, setUser] = useState([])
+  const [userLogged, setUserLogged] = useState({})
+
+  const { setUser } = useAuthStore()
 
   useEffect(() => {
     if (localStorage.getItem('user')) {
-      const user = JSON.parse(localStorage.getItem('user'))
-      setUser(user)
+      setUserLogged(JSON.parse(localStorage.getItem('user')))
     } else {
-      window.alert('No se ha iniciado sesión. Redireccionando...')
-      window.location.href = '/'
+      setUserLogged(useAuthStore.getState().user)
     }
   }, [setUser])
 
   return (
     <section className='min-h-screen min-w-screen pb-10'>
-      <LeftBar />
-      <section className='pl-[25%]'>
+      <Header />
+      <section className='pl-[25%] pt-16'>
+        <LeftBar user={userLogged} />
         <div className='flex items-center pt-4 justify-center gap-20'>
           <img
             className='w-[10vw] h-[10vw] rounded-full'
-            src={user.profilePicture}
+            src={userLogged.profilePicture}
             alt='user-thumbnail'
           />
           <div className='flex flex-col gap-2 pt-8'>
-            <h1 className='text-lg text-left font-bold'>{user.firstName} {user.lastName}</h1>
-            <h2 className='text-left text-lg'>{user.user}</h2>
+            <h1 className='text-lg text-left font-bold'>{userLogged.firstName} {userLogged.lastName}</h1>
+            <h2 className='text-left text-lg'>{userLogged.user}</h2>
             <div className='flex gap-4 text-[0.8em]'>
               <h2 className=''><span className='font-bold'>12</span> Seguidores</h2>
               <h2 className=''><span className='font-bold'>25</span> Seguidos</h2>

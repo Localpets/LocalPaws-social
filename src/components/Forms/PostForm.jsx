@@ -1,21 +1,27 @@
 import React from 'react'
 import { Formik, Form, Field } from 'formik'
+import swal from 'sweetalert'
+import { useQuery } from '@tanstack/react-query'
+import useAuthStore from '../../context/AuthContext'
+import useFindUser from '../../hooks/useFindUser'
 import { makeRequest } from '../../library/axios'
+import PropTypes from 'prop-types'
 
-const PostForm = () => {
-  const [user, setUser] = React.useState({})
+const PostForm = ({ addPost }) => {
+  const { loggedUser } = useAuthStore()
+  const { user } = useFindUser(loggedUser)
+
+  const [imageError, setImageError] = React.useState(false)
   const [isTyping, setIsTyping] = React.useState(false)
   const [previewImage, setPreviewImage] = React.useState('')
+  const [categories, setCategories] = React.useState([])
 
   React.useEffect(() => {
-    if (!localStorage.getItem('user')) {
-      window.alert('No se ha iniciado sesión. Redireccionando...')
-      window.location.href = '/'
-    } else {
-      const user = JSON.parse(localStorage.getItem('user'))
-      setUser(user)
+    if (imageError) {
+      swal('Error', 'La imagen no puede pesar más de 5MB y los formatos permitidos son .jpg, .jpeg, .png', 'error')
+      setImageError(false)
     }
-  }, [])
+  }, [imageError])
 
   const handleUserTyping = (e) => {
     if (e.target.value.length > 50) {
@@ -53,26 +59,43 @@ const PostForm = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     const formData = new FormData()
-    const user = JSON.parse(localStorage.getItem('user'))
-    const id = user.userId
     formData.append('text', values.text)
     formData.append('category', values.category)
     formData.append('image', values.image)
-    formData.append('post_user_id', id)
+    formData.append('post_user_id', user.user_id)
 
     try {
       const response = await makeRequest.post('post/create', formData)
       setInitialPostValues(values)
-      console.log(response.data)
-      if (response.data.status === 'success') {
-        window.location.reload()
-      }
+      addPost(response.data.post)
     } catch (error) {
-      console.error(error)
+      if (error.response.status === 400) {
+        setImageError(true)
+      }
     }
 
     setSubmitting(false)
   }
+
+  const { isLoading, error } = useQuery({
+    queryKey: ['posts', user],
+    queryFn: async () => {
+      return await makeRequest.get('/post/category/find/all').then((res) => {
+        setCategories(res.data.categories)
+        return res.data
+      })
+    }
+  })
+
+  if (isLoading) {
+    return (
+      <div className='mx-auto pt-20'>
+        <span className='loading loading-ring loading-lg' />
+      </div>
+    )
+  }
+
+  if (error) return 'An error has occurred: ' + error.message
 
   return (
     <div className='w-full p-10 bg-white m-2 rounded-lg border-2 border-[#E0E1DD]'>
@@ -99,7 +122,7 @@ const PostForm = () => {
       >
         {({ isSubmitting, setFieldValue, errors, touched, handleBlur, values }) => (
           <section className='flex justify-center items-center'>
-            <img src={user.profilePicture} alt='user-thumbnail' className='w-16 h-14 mt-0 rounded-full self-start' />
+            <img src={user?.thumbnail || 'https://i.imgur.com/HeIi0wU.png'} alt='user-thumbnail' className='w-16 h-14 mt-0 rounded-full self-start' />
             <Form className='flex flex-col justify-center items-start w-full'>
               <div className='flex items-center justify-center gap-2 px-4 w-full'>
                 <div className='w-full px-2 flex flex-col'>
@@ -171,10 +194,13 @@ const PostForm = () => {
                     value={values.category}
                     className='rounded-lg border-2 border-[#E0E1DD] text-black'
                   >
-                    <option value='' className='text-ellipsis'>Categoría</option>
-                    <option value='post'>Post</option>
-                    <option value='event'>Event</option>
-                    <option value='job'>Job</option>
+                    {
+                      categories
+                        ? categories.map((category) => (
+                          <option key={category.category_type_id} value={category.title}>{category.title}</option>
+                        ))
+                        : null
+                    }
                   </Field>
                   <h2 className='text-red-500 text-sm font-semibold'>{errors.category && touched.category && errors.category}</h2>
                 </div>
@@ -185,6 +211,10 @@ const PostForm = () => {
       </Formik>
     </div>
   )
+}
+
+PostForm.propTypes = {
+  addPost: PropTypes.func.isRequired
 }
 
 export default PostForm
