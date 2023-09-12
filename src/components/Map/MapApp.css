@@ -1,0 +1,17 @@
+@font-face {
+    font-family: courier;
+    src: url('../../assets/Fonts/OpenSans-Regular.ttf');
+}
+
+@font-face {
+    font-family: arial;
+    src: url('../../assets/Fonts/Seventies-Sunrise-Trial.otf');
+}
+
+.localpaws__map-container{
+    font-family: arial;
+}
+
+.no-overflow {
+    overflow: hidden !important;
+  }

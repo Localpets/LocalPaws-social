@@ -1,32 +1,50 @@
-// import React from 'react'
+/* eslint-disable camelcase */
+import React from 'react'
+import { Link } from '@tanstack/router'
 import PropTypes from 'prop-types'
 
-const Post = ({ likes, text, User }) => {
+const Post = ({ post, user }) => {
+  const [imageLoaded, setImageLoaded] = React.useState(false)
+  const [componentStyle, setComponentStyle] = React.useState('border p-4 bg-white rounded-lg cursor-pointer w-full h-auto')
+  const { likes, text, image, category, createdAt, post_id } = post
+
+  React.useEffect(() => {
+    if (image !== 'no image') {
+      setImageLoaded(true)
+      setComponentStyle('border p-4 bg-white rounded-lg cursor-pointer w-full h-auto')
+    }
+  }, [image])
+
+  const { first_name, last_name, thumbnail } = user
+  const dateToLocal = new Date(createdAt).toLocaleDateString()
+
   return (
-    <div className='border border-gray-700 cursor-pointer  w-full'>
-      <div className='flex  pb-0'>
+    <Link to={`/post/${post_id}`} className={componentStyle}>
+      <div className='flex p-4'>
         <img
           className='h-9 w-9 rounded-full '
-          src='https://pbs.twimg.com/profile_images/1636962643876478977/MZB-blU6_400x400.jpg'
-          alt='#'
+          src={thumbnail}
+          alt='user-thumbnail'
         />
-        <p className='ml-2 flex flex-shrink-0 items-center font-medium text-white'>
-          {Pedro} {Pascal}
-          <span className='ml-1 text-sm leading-5  text-white'>
-            Nov 2
+        <p className='ml-2 flex flex-shrink-0 items-center font-medium'>
+          {first_name} {last_name}
+          <span className='ml-1 text-sm leading-5 '>
+            {dateToLocal} · {category}
           </span>
         </p>
       </div>
-      <div className='pl-8 xl:pl-16 pr-4'>
-        <p className='font-medium text-white text-left'>
-          Hola soy pedro
+      <div className='pl-4 xl:pl-4 pr-4'>
+        <p className='font-medium text-left py-2 pl-1'>
+          {text}
         </p>
-        <img
-          className='rounded-2xl border border-gray-700 my-3 mr-2 w-full'
-          src='https://images.nature.com/original/magazine-assets/d41586-019-00653-5/d41586-019-00653-5_16459150.jpg'
-          alt=''
-        />
-        <div className='flex items-center w-full justify-start gap-x-10'>
+        {imageLoaded && (
+          <img
+            className='rounded-lg border my-3 mr-2 w-full object-cover h-[40rem]'
+            src={image}
+            alt='post-image'
+          />
+        )}
+        <div className='flex items-center w-full justify-start gap-x-10 py-4 pl-1'>
           <div className=' flex items-center  text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-600'>
             <i className='fa-solid fa-heart mr-2 text-lg' />
             {likes}
@@ -36,14 +54,13 @@ const Post = ({ likes, text, User }) => {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
 Post.propTypes = {
-  likes: PropTypes.number,
-  text: PropTypes.string,
-  User: PropTypes.object
+  post: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired
 }
 
 export default Post

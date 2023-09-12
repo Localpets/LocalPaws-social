@@ -1,0 +1,20 @@
+{
+    "Posts2": [
+        {
+            "id": 1,
+            "imagePost": "https://i.pinimg.com/564x/12/4d/02/124d02a298e0a64307ba5002716ee50c.jpg"
+        },
+        {
+            "id": 2,
+            "imagePost": "https://i.pinimg.com/564x/83/e9/54/83e954f5fc49e8d781b6ec1b63091fd2.jpg"
+        },
+        {
+            "id": 3,
+            "imagePost": "https://i.pinimg.com/564x/01/76/35/017635199c644529a44ca0b69f721979.jpg"
+        },
+        {
+            "id": 4,
+            "imagePost": "https://i.pinimg.com/564x/8f/73/61/8f7361238dacd251ae4c70402aa43e79.jpg"
+        }
+    ]
+}

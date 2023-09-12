@@ -7,11 +7,27 @@ import { Link } from '@tanstack/router'
 import likeIcon from '../../assets/Noticon/likeIcon.png'
 import followIcon from '../../assets/Noticon/followIcon.png'
 import mentionIcon from '../../assets/Noticon/mentionIcon.png'
+import { useEffect } from 'react'
+import { makeRequest } from '../../library/axios'
+import { useState } from 'react'
 
 
 
 
 const Notificaciones = () => {
+  const [notifys, setNotifys] = useState([])
+    useEffect(() => {
+      async function fetchNoti() {
+        try {
+          const response = await makeRequest.get('')
+          setNotifys(response.data.data)
+        } catch (error) {
+          console.error('Error al obtener las notificaciones', error)
+        }
+      } 
+      fetchNoti();
+    }, []);
+
   return (
     <div className='flex text-black'>
       <LeftBar />
