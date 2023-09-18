@@ -10,62 +10,87 @@ import mentionIcon from '../../assets/Noticon/mentionIcon.png'
 import { useEffect } from 'react'
 import { makeRequest } from '../../library/axios'
 import { useState } from 'react'
-
+import Header from '../Header/Header'
+import { useQuery } from '@tanstack/react-query'
 
 
 
 const Notificaciones = () => {
-  const [notifys, setNotifys] = useState([])
-    useEffect(() => {
-      async function fetchNoti() {
-        try {
-          const response = await makeRequest.get('')
-          setNotifys(response.data.data)
-        } catch (error) {
-          console.error('Error al obtener las notificaciones', error)
-        }
-      } 
-      fetchNoti();
-    }, []);
+  const [notification, setNotification] = useState([])
+
+  const Types = {
+    "Like": likeIcon,
+    "Follow": followIcon,
+    "Mention": mentionIcon
+  }
+
+  const selectIcon = (type) => {
+    if (type === "Like"){
+      return Types.Like
+    }
+    else if (type === "Follow"){
+      return Types.Follow
+    }
+    else if (type === "Mention"){
+      return Types.Mention
+    }
+  }
+  const { isLoading, error, data } = useQuery({
+    queryKey: ['notification'],
+    queryFn: async () => {
+      const user = JSON.parse(localStorage.getItem('user'))
+      const id = user.userId
+      return await makeRequest.get(`/notification/find/id/receiver/${id}`).then((res) => {
+        setNotification(res.data.notifications)
+        console.log(res.data.notifications)
+        
+        return res.data
+      })
+    }
+  })
+
+  if (isLoading) {
+    return (
+      <div className='mx-auto pt-20'>
+        <span className='loading loading-ring loading-lg' />
+      </div>
+    )
+  }
+  if (error) return 'An error has occurred: ' + error.message
 
   return (
-    <div className='flex text-black'>
-      <LeftBar />
-      <div className='w-full h-screen flex flex-col justify-start items-center pt-[2em] '>
-      
-      <div className='flex w-full pl-3 pb-4'>
-        <h1 className='flex font-bold text-3xl text-left'>Notificaciones</h1>
-      </div>
-      
-      {Notify.Notify2.map(Notify2 => {
-        const IconForEachType = {
-          Follow: followIcon,
-          Like: likeIcon,
-          Mention: mentionIcon
-        };
-        const iconoURL = IconForEachType[Notify2.type];
-        return (
-          
-        <Link to='/' key={Notify2.id} className="flex w-full pl-3 h-20 pt-2 gap-4 hover:bg-[#E0E1DD] border-t items-center">
-        <img src={iconoURL} className='items-center pl-2 w-10 h-8'/>
-        <div>
-        <img className='w-6 rounded-full'
-            src={Notify2.ImageUser}></img>
-        <p className="flex text-left w-full pt-2 text-black gap-1" ><span>{Notify2.usuario}</span>{Notify2.Comentario}</p>
+    <div className='text-black w-full mx-auto min-h-screen'>
+      <Header />
+      <section className='flex pt-16'>
+        <div className='w-full pl-[25%] pr-[25%] min-h-screen flex flex-col rounded-lg justify-start gap-4 items-center px-10'>
+          <LeftBar className='' />
+          <div className='w-full min-h-auto max-h-screen p-[2em] flex flex-col px-8 border-[#E0E1DD] bg-white rounded-lg mt-8 justify-start items-center pt-[2em] '>
+
+            <div className='flex w-full pl-3 pb-4 '>
+              <h1 className='flex font-bold text-3xl text-left'>Notificaciones</h1>
+            </div>
+              {notification.length > 0
+              ? notification.map((notification) => {
+                const icon = selectIcon(notification.type)
+              return(
+                <Link to='/' key={notification.id} className="flex w-full pl-3 h-20 pt-2 gap-4  rounded-lg  hover:bg-[#E0E1DD] border-t items-center">
+                  <img src={icon} className='items-center pl-2 w-10 h-8' />
+                  <div>
+                    <img className='w-8 h-8 rounded-full'
+                      src={notification.user.thumbnail}></img>
+                    <p className="flex text-left w-full pt-2 text-black gap-1" ><span className='font-bold'>{notification.user.username}</span>{notification.text}</p>
+                  </div>
+                </Link>)
+              })
+            :'Cargando'}
+          </div>
+          <RightBar />
         </div>
-      </Link>
-      )})}
-      
-      
-
-      
-    </div>
-      <RightBar />
+      </section>
     </div>
 
-    
 
-      
+
   )
 }
 
