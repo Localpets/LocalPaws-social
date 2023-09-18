@@ -29,6 +29,7 @@ export default function useFindUser (userId) {
           await makeRequest.get(`/user/find/id/${id}`)
             .then(res => {
               setUser(res.data.user)
+              console.log(res.data.user)
               setLoading(false)
             })
             .catch(err => {
