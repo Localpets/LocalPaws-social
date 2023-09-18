@@ -1,76 +1,97 @@
 import { useState, useEffect } from 'react'
-import {makeRequest} from '../../library/axios'
+import { makeRequest } from '../../library/axios'
+import { PiUserCirclePlusDuotone, PiUserCircleMinusDuotone, PiUserSwitchDuotone } from 'react-icons/pi'
 
 const RightBar = () => {
-  const [localuser, setLocaluser] = useState([])
-  const [userlist, setUserlist] = useState ([])
-  const [userFollows, setUserFollows] = useState ([])
+  const [localuser, setLocaluser] = useState({})
+  const [userlist, setUserlist] = useState([])
+  const [userFollows, setUserFollows] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [randomUsers, setRandomUsers] = useState([])
 
   useEffect(() => {
     if (localStorage.getItem('user')) {
-      const user = JSON.parse(localStorage.getItem('user'));
-      setLocaluser(user);
-      console.log("Mi usuario es: ", localuser);
+      const user = JSON.parse(localStorage.getItem('user'))
+      setLocaluser(user)
     }
-  }, [setLocaluser]);
-  
+  }, [setLocaluser])
+
   useEffect(() => {
     const getUserlist = async () => {
       try {
-        const res = await makeRequest.get(`/user/find/all`);
-        setUserlist(res.data.data);
-        console.log("Estos son los usuarios:", userlist);
+        const res = await makeRequest.get('/user/find/all')
+        setUserlist(res.data.data)
       } catch (err) {
-        console.error(err);
+        console.error(err)
       }
-    };
-  
-    getUserlist();
-  
+    }
+
+    getUserlist()
+
     const getfollowers = async () => {
       if (localuser.userId) {
         try {
-          const res = await makeRequest.get(`/follow/find/followed/${localuser.userId}`);
-          const fetchedFollows = res.data.follows; // Obtener el valor actualizado
-          setUserFollows(fetchedFollows);
-          console.log("Estos son los usuarios encontrados", fetchedFollows); // Usar el valor actualizado
+          setLoading(true)
+          const res = await makeRequest.get(`/follow/find/followed/${localuser.userId}`)
+          setUserFollows(res.data.follows)
+          setLoading(false)
         } catch (err) {
-          console.error(err);
+          console.error(err)
         }
       } else {
-        console.log("El usuario no está definido");
+        console.log('El usuario no está definido')
       }
-    };
-  
-    getfollowers();
-  }, [setUserlist, localuser, setUserFollows]);
-  
-   
+    }
 
+    getfollowers()
+  }, [setUserlist, localuser, setUserFollows])
 
-  const FollowClick = async (user) => {
-   
-    await makeRequest.post("/follow/create",{
-      "followedId": localuser.userId,
-      "followerId": user.user_id
-    })
-      .then(() => {
-        console.log("Usuarios seguidos correctamente: ", localuser.userId, user.user_id)
-      })
-      
-      .catch(err => console.log(err));
-  };
+  const getRandomUsers = () => {
+    const shuffledUsers = [...userlist].filter(user => user.user_id !== localuser.userId).sort(() => 0.5 - Math.random())
+    const selectedUsers = shuffledUsers.slice(0, 4)
+    return selectedUsers
+  }
 
-  const UnFollowClick = async (user) => {
-    await makeRequest.delete(`/follow/delete/${user.user_id}/${localuser.userId}`)
-      .then( ()=> {
-        console.log("Pawseguidor eliminado correctamente", localuser.userId, user.user_id)
-      })
-      .catch(err => console.log(err));
-  };
-  
- 
+  useEffect(() => {
+    const selectedRandomUsers = getRandomUsers()
+    setRandomUsers(selectedRandomUsers)
+  }, [userlist])
 
+  const FollowClick = async (user, userFollows, setUserFollows, localuser, followeduser) => {
+    try {
+      setLoading(prevLoading => ({
+        ...prevLoading,
+        [user.user_id]: true // Iniciar la animación de carga para el usuario actual
+      }))
+
+      if (followeduser) {
+        await makeRequest.delete(`/follow/delete/${localuser.userId}/${user.user_id}`)
+        console.log('Seguidor eliminado correctamente', localuser.userId, user.user_id)
+      } else {
+        await makeRequest.post('/follow/create', {
+          followedId: user.user_id,
+          followerId: localuser.userId
+        })
+        console.log('Seguidor añadido correctamente', localuser.userId, user.user_id)
+      }
+
+      setLoading(prevLoading => ({
+        ...prevLoading,
+        [user.user_id]: false // Detener la animación de carga para el usuario actual
+      }))
+
+      const updatedFollows = followeduser
+        ? userFollows.filter((follow) => follow.user_id !== user.user_id)
+        : [...userFollows, { user_id: user.user_id }]
+      setUserFollows(updatedFollows)
+    } catch (err) {
+      console.log(err)
+      setLoading(prevLoading => ({
+        ...prevLoading,
+        [user.user_id]: false // Detener la animación de carga en caso de error
+      }))
+    }
+  }
 
   return (
     <section className='hidden fixed right-0 w-[20%] xl:flex xl:flex-col items-center justify-center gap-5 h-auto text-[#0D1B2AS] text-left mt-10 mr-8'>
@@ -79,18 +100,17 @@ const RightBar = () => {
           Personas populares
         </h3>
         <div>
-        <div className='p-2 dark:border-dim-200 flex flex-col justify-between items-start'>
-          {userlist.map(user => {
-            const currentuser = userFollows.find((follows) => localuser.userId === follows.user_id);
-            const followeduser = userFollows ? userFollows.find((follows) => follows.user_id === user.user_id) : null;
-            console.log(followeduser);
+          <div className='p-2 dark:border-dim-200 flex flex-col'>
+            {randomUsers.map(user => {
+              const followeduser = userFollows.find((follows) => follows.user_id === user.user_id)
+              const FollowStatus = followeduser
+                ? <PiUserCircleMinusDuotone className='text-[2em] text-red-500' />
+                : <PiUserCirclePlusDuotone className='text-[2em] text-green-500' />
 
-            return ( 
-              <div key={user.user_id}>
-                {currentuser ? (
-                  <p>Este es mi usuario</p>
-                ) : (
-                  <div className='flex items-center justify-between mb-2'>
+              return user.user_id === localuser.userId
+                ? null
+                : (<div key={user.user_id}>
+                  <div className='flex items-center mb-2 justify-between'>
                     <div className='flex items-center '>
                       <img
                         className='w-10 h-10 rounded-full'
@@ -102,35 +122,31 @@ const RightBar = () => {
                           {user.first_name} {user.last_name}
                         </h5>
                         <p className='text-gray-400'>{user.username}</p>
-                      </div>                 
+                      </div>
                     </div>
-                    {followeduser ? (
-                      <button
-                        className='ml-auto content-end'
-                        onClick={() => {
-                          UnFollowClick(user);
-                        }}
-                      >
-                        Siguiendo
-                      </button>
-                    ) : (
-                      <button
-                        className='ml-auto content-end'
-                        onClick={() => {
-                          FollowClick(user);
-                        }}
-                      >
-                        Seguir
-                      </button> 
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                    <div className='flex items-center'>
+                      {loading[user.user_id]
+                        ? (<PiUserSwitchDuotone className='animate-spin rounded-full text-[2em]' />
+                          )
+                        : <button
+                            className='ml-auto content-end'
+                            onClick={() => {
+                              FollowClick(user, userFollows, setUserFollows, localuser, followeduser)
+                            }}
+                            disabled={Object.values(loading).some(value => value)}
+                          >
+                          {FollowStatus}
+                          {/* eslint-disable-next-line react/jsx-closing-tag-location */}
+                        </button>}
+                    </div>
 
-          
+                  </div>
+                  {/* eslint-disable-next-line react/jsx-closing-tag-location */}
+                </div>
+                  )
+            })}
+          </div>
+
           <div className='text-blue-400 cursor-pointer p-2'>Ver más</div>
         </div>
       </div>
