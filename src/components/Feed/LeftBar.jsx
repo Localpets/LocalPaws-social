@@ -33,7 +33,7 @@ const LeftBar = () => {
           <i className='fa-solid fa-route text-xl' />
           <span className='icon hidden md:flex '>Mapa</span>
         </Link>
-        <Link to='/profile' className='btn mb-3 btn-ghost flex items-center justify-start'>
+        <Link to='/profile/1' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <img
             className='w-10 h-10 rounded-full'
             src={user?.thumbnail || 'https://i.imgur.com/HeIi0wU.png'}
