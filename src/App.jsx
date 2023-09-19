@@ -9,7 +9,7 @@ import Login from './containers/Auth/Login.jsx'
 import Chat from './containers/Chat/Chat.jsx'
 import Profile from './containers/Profile/Profile.jsx'
 import MapApp from './components/Map/MapApp'
-// import Notificaciones from './components/Notificaciones/Notificacion.jsx'
+import Notificaciones from './components/Notificaciones/Notificacion.jsx'
 import PostPage from './components/Post/PostPage'
 import './App.css'
 
@@ -26,11 +26,11 @@ const registerRoute = new Route({
 })
 
 // Create a noti route
-// const notiRoute = new Route({
-//   getParentRoute: () => rootRoute,
-//   path: '/notificaciones',
-//   component: Notificaciones
-// })
+ const notiRoute = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/notificaciones',
+  component: Notificaciones
+ })
 
 const chatRoute = new Route({
   getParentRoute: () => rootRoute,
@@ -80,7 +80,7 @@ const logoutView = new Route({
 
 // Create the route tree using your routes
 // eslint-disable-next-line react-refresh/only-export-components
-export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview, logoutView])
+export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, notiRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview, logoutView])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
 const queryClient = new QueryClient()

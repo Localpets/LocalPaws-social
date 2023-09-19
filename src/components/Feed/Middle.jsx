@@ -47,11 +47,11 @@ const Middle = () => {
   }
 
   if (error) {
-    console.log(error)
-    return (
-      <div className='mx-auto pt-20'>
-        <span className='loading loading-ring loading-lg' />
-      </div>
+    /*     console.log(error)
+ */ return (
+   <div className='mx-auto pt-20'>
+     <span className='loading loading-ring loading-lg' />
+   </div>
     )
   }
 
