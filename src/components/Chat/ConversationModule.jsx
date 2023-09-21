@@ -4,9 +4,9 @@ import useChatStore from '../../context/ChatStore'
 import { useEffect } from 'react'
 import { makeRequest } from '../../library/axios'
 import '../../containers/Chat/Chat.css'
-import PropTypes from 'prop-types'
+import { useSocket } from '../../socket/socket'
 
-const ConversationModule = ({ localuser, currentchat, chatContainerRef }) => {
+const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurrentchat }) => {
   const {
     editingMessageId,
     setEditingMessageId,
@@ -23,6 +23,8 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef }) => {
     toggleSideContactsStyle,
     toggleHamburguerStyle
   } = useChatStore()
+
+  const socket = useSocket()
 
   useEffect(() => {
     // Accede al elemento DOM del contenedor y ajusta el scrollTop
@@ -53,7 +55,19 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef }) => {
       })
 
       if (response.status === 200) {
+        const messageId = response.data.message.id
+        // Obtener la fecha y hora actual en formato ISO 8601
+        const currentDateTime = new Date().toISOString()
         console.log('Mensaje enviado exitosamente')
+        socket.emit('sendMessage', {
+          sender_id: localuser.userId,
+          receiver_id: receiverId,
+          messageId,
+          text: message,
+          room: RoomForUsers,
+          createdAt: currentDateTime
+        })
+
         setMessage('')
       } else {
         window.confirm('Error al enviar el mensaje')
@@ -246,6 +260,40 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef }) => {
     }
   }
 
+  // Inicializar un contador para los IDs de mensajes
+  let messageCounter = 0
+  useEffect(() => {
+    if (socket) {
+      socket.on('newMessage', (message) => {
+        console.log('Este es el mensaje traído desde el servidor', message)
+        console.log(currentchat)
+
+        // Asignar un nuevo ID único al mensaje
+        const newMessage = {
+          ...message,
+          id: messageCounter++
+        }
+
+        setCurrentchat((prevChat) => {
+          // Verifica si el mensaje ya existe en la conversación actual por su ID
+          const messageExists = prevChat.conversation.some((msg) => msg.id === newMessage.id)
+
+          if (!messageExists) {
+            // Si el mensaje no existe, agrégalo a la conversación
+            prevChat.conversation.unshift(newMessage)
+
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+          }
+
+          return {
+            ...prevChat,
+            conversation: [...prevChat.conversation]
+          }
+        })
+      })
+    }
+  }, [chatContainerRef, currentchat, setCurrentchat, socket])
+
   return (
     <section className='border-2 flex flex-col justify-start flex-1 h-full w-full'>
 
@@ -342,7 +390,7 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef }) => {
                                 : (
                                   <div className={`message-text ${expandedMessageId === message.id ? 'expanded' : ''}`}>
                                     <div className='flex items-center gap-2'>
-                                      <div>{formatMessageText(message.text, message.id)}</div>
+                                      <div>{message.text && formatMessageText(message.text, message.Id)}</div> {/* AQUI OJO CUIDADO */}
                                       <button className={` hidden-button bg-[#2a3d60cd] text-sm rounded-xl top-2 ${message.sender_id === localuser.userId ? '' : 'hidden'}`} onClick={() => toggleMenu(message.id)}> ⊚ </button>
                                       <button className={` hidden-button absolute bg-[#2a3d60cd] text-sm rounded-xl w-6 h-6 ${message.sender_id === localuser.userId ? 'left-[-2em] top-2' : 'right-[-2em] top-2'}`}>⤺</button>
                                       <button className={` hidden-button absolute bg-[#2a3d60cd] rounded-xl w-6 h-6 p-1 ${message.sender_id === localuser.userId ? 'left-[-4em] top-2' : 'right-[-4em] top-2'}`} onClick={() => toggleReactMenu(message.id)}>
@@ -423,9 +471,5 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef }) => {
           )}
     </section>
   )
-}
-
-ConversationModule.propTypes = {
-  localuser: PropTypes.object.isRequired
 }
 export default ConversationModule

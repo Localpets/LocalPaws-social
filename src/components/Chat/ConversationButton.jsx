@@ -3,6 +3,7 @@ import { BsClock } from 'react-icons/bs'
 import useChatStore from '../../context/ChatStore'
 import { useEffect, useCallback } from 'react'
 import { makeRequest } from '../../library/axios'
+import { useSocket } from '../../socket/socket'
 
 const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
   const {
@@ -17,11 +18,45 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
     users
   } = useChatStore()
 
+  const socket = useSocket()
+
   // Función para cargar los mensajes de una conversación
   const loadConversationMessages = useCallback((conversation) => {
     setCurrentchat(conversation)
-    console.log('load conversations: ', currentchat)
-  }, [currentchat, setCurrentchat])
+  }, [setCurrentchat])
+
+  const handleJoinRoom = (otherUserId) => {
+    // Concatenar los IDs de los usuarios para obtener el nuevo nombre de la sala
+    const newRoomName = `${Math.min(localuser.userId, otherUserId)}-${Math.max(localuser.userId, otherUserId)}`
+
+    // Obtener el nombre de la sala actual del usuario
+    const currentRoomName = getCurrentRoomName()
+
+    // Si el usuario está actualmente en una sala y la sala actual es diferente de la nueva sala,
+    // entonces saca al usuario de la sala anterior y únete a la nueva sala
+    if (currentRoomName && currentRoomName !== newRoomName) {
+      // Salir de la sala anterior
+      socket.emit('leaveRoom', currentRoomName)
+      console.log(`Usuario ${localuser.userId} salió de la sala: ${currentRoomName}`)
+
+      // Unirse a la nueva sala
+      socket.emit('joinRoom', newRoomName)
+      console.log(`Usuario ${localuser.userId} se unió a la sala: ${newRoomName}`)
+    } else if (!currentRoomName) {
+      // Si el usuario no está en ninguna sala actualmente, únete directamente a la nueva sala
+      socket.emit('joinRoom', newRoomName)
+      console.log(`Usuario ${localuser.userId} se unió a la sala: ${newRoomName}`)
+    }
+  }
+
+  // Función para obtener la sala actual del usuario
+  function getCurrentRoomName () {
+  // Verifica si currentchat y currentchat.conversation están definidos antes de acceder a 'length'
+    if (currentchat && currentchat.conversation) {
+      return currentchat.conversation.length > 0 ? currentchat.conversation[0].room : null
+    }
+    return null // O devuelve null si no está definido
+  }
 
   // useEffect para obtener los mensajes de la conversación y usuarios
   useEffect(() => {
@@ -67,7 +102,6 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
   }, [localuser.userId, setAllchats, setLoadingchats, setUsers])
 
   useEffect(() => {
-    console.log('currentchat changed:', currentchat)
     if (currentchat) {
       loadConversationMessages(currentchat)
     }
@@ -125,6 +159,7 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
                           username: limitedUsername,
                           thumbnail: otherUser ? otherUser.thumbnail : ''
                         })
+                        handleJoinRoom(otherUserId)
                       }}
                     >
                       <div className='text-black'>

@@ -26,11 +26,11 @@ const registerRoute = new Route({
 })
 
 // Create a noti route
- const notiRoute = new Route({
+const notiRoute = new Route({
   getParentRoute: () => rootRoute,
   path: '/notificaciones',
   component: Notificaciones
- })
+})
 
 const chatRoute = new Route({
   getParentRoute: () => rootRoute,
