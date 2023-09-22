@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { BsFillSendFill } from 'react-icons/bs'
 import useChatStore from '../../context/ChatStore'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { makeRequest } from '../../library/axios'
 import '../../containers/Chat/Chat.css'
 import { useSocket } from '../../socket/socket'
@@ -24,7 +24,24 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
     toggleHamburguerStyle
   } = useChatStore()
 
+  const [reactions, setReactions] = useState([])
+  const [realtimeReactions, setRealtimeReactions] = useState([])
+
   const socket = useSocket()
+
+  useEffect(() => {
+    const getReactions = async () => {
+      try {
+        const res = await makeRequest.get('message/find/reactions/all')
+        if (res.status === 200) {
+          setReactions(res.data.reactions)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    getReactions()
+  }, [setReactions])
 
   useEffect(() => {
     // Accede al elemento DOM del contenedor y ajusta el scrollTop
@@ -60,12 +77,13 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
         const currentDateTime = new Date().toISOString()
         console.log('Mensaje enviado exitosamente')
         socket.emit('sendMessage', {
-          sender_id: localuser.userId,
+          createdAt: currentDateTime,
+          edited: 0,
+          id: messageId,
           receiver_id: receiverId,
-          messageId,
-          text: message,
           room: RoomForUsers,
-          createdAt: currentDateTime
+          sender_id: localuser.userId,
+          text: message
         })
 
         setMessage('')
@@ -79,20 +97,19 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
     }
   }
   // Maneja la eliminacion de un mensaje
-  const handleDelete = async (event, MessageID) => {
+  const handleDelete = async (event, MessageID, MesageRoom) => {
     event.preventDefault()
     try {
-      setTimeout(async () => {
-        console.log('Aun esta eliminando el archivo.')
-        const response = await makeRequest.delete(`message/delete/${MessageID}`)
-        console.log(MessageID)
-        if (response.status === 200) {
-          console.log('Mensaje eliminado exitosamente')
-        } else {
-          window.confirm('Error al eliminar el mensaje')
-          console.error('Error al eliminar el mensaje')
-        }
-      }, 500)
+      const response = await makeRequest.delete(`message/delete/${MessageID}`)
+      if (response.status === 200) {
+        socket.emit('deleteMessage', {
+          id: MessageID,
+          room: MesageRoom
+        })
+      } else {
+        window.confirm('Error al eliminar el mensaje')
+        console.error('Error al eliminar el mensaje')
+      }
     } catch (error) {
       window.confirm('Error al conectar a la api')
       console.error('Error de red:', error)
@@ -100,7 +117,7 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
   }
 
   // Manejador de envio de mensaje editado
-  const handleEditKeyDown = async (event, messageId) => {
+  const handleEditKeyDown = async (event, messageRoom, messageId) => {
     if (event.key === 'Enter') {
       event.preventDefault()
       try {
@@ -111,6 +128,12 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
 
         if (response.status === 200) {
           console.log('Mensaje actualizado exitosamente')
+          socket.emit('editMessage', {
+            id: messageId,
+            text: editInputValue,
+            edited: 1,
+            room: messageRoom
+          })
           setEditingMessageId(null)
         } else {
           console.error('Error al actualizar el mensaje')
@@ -128,14 +151,13 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
   }
 
   // Manejador de envío de reacciones a la API
-  const HandleReactions = async (event, messageId, userId, reactionType) => {
+  const HandleReactions = async (event, messageId, userId, reactionType, messageRoom) => {
     event.preventDefault()
     try {
       const existingReactions = await makeRequest.get(`message/find/reaction/${messageId}`)
 
       // Verifiac si el usuario ya ha reaccionado al mensaje
       const userReaction = existingReactions.data.reactions.find(reaction => reaction.user_id === userId)
-
       if (userReaction) {
         await HandleDeleteReactions(event, messageId, userId, userReaction.Reaction)
         console.log('Reacción eliminada porque ya habia reaccionado exitosamente')
@@ -147,7 +169,14 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
       })
 
       if (response.status === 200) {
+        const ReactionId = response.data.message.id
         console.log('Reacción enviada exitosamente')
+        socket.emit('addReaction', {
+          id: ReactionId,
+          message_id: messageId,
+          Reaction: reactionType,
+          room: messageRoom
+        })
       } else {
         console.error('Error al reaccionar al mensaje')
       }
@@ -260,27 +289,19 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
     }
   }
 
-  // Inicializar un contador para los IDs de mensajes
-  let messageCounter = 0
   useEffect(() => {
     if (socket) {
       socket.on('newMessage', (message) => {
         console.log('Este es el mensaje traído desde el servidor', message)
         console.log(currentchat)
 
-        // Asignar un nuevo ID único al mensaje
-        const newMessage = {
-          ...message,
-          id: messageCounter++
-        }
-
         setCurrentchat((prevChat) => {
           // Verifica si el mensaje ya existe en la conversación actual por su ID
-          const messageExists = prevChat.conversation.some((msg) => msg.id === newMessage.id)
+          const messageExists = prevChat.conversation.some((msg) => msg.id === message.id)
 
           if (!messageExists) {
             // Si el mensaje no existe, agrégalo a la conversación
-            prevChat.conversation.unshift(newMessage)
+            prevChat.conversation.unshift(message)
 
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
           }
@@ -291,8 +312,40 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
           }
         })
       })
+      socket.on('editedMessage', (message) => {
+        setCurrentchat((prevChat) => {
+          // Busca el mensaje actualizado en la conversación y actualiza solo su texto
+          const updatedConversation = prevChat.conversation.map((msg) =>
+            msg.id === message.id ? { ...msg, text: message.text } : msg
+          )
+
+          return {
+            ...prevChat,
+            conversation: updatedConversation
+          }
+        })
+      })
+      socket.on('deletedMessage', (message) => {
+        setCurrentchat((prevChat) => {
+          // Filtra los mensajes para eliminar el mensaje con el ID especificado
+          const filteredConversation = prevChat.conversation.filter(
+            (msg) => msg.id !== message
+          )
+          return {
+            ...prevChat,
+            conversation: filteredConversation
+          }
+        })
+      })
+      socket.on('addedReaction', (newReaction) => {
+        console.log('Reacción agregada en tiempo real:', newReaction)
+
+        // Actualiza el estado con las nuevas reacciones
+        setRealtimeReactions((prevReactions) => [...prevReactions, newReaction])
+      })
     }
-  }, [chatContainerRef, currentchat, setCurrentchat, socket])
+  }, [chatContainerRef, currentchat, message.id, reactions, setCurrentchat, socket])
+  console.log(reactions)
 
   return (
     <section className='border-2 flex flex-col justify-start flex-1 h-full w-full'>
@@ -365,22 +418,33 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                         minute: 'numeric',
                         hour12: true // Formato de 12 horas
                       }
-
                       const formattedTime = date.toLocaleString('en-US', options)
+
+                      const reactionsForCurrentMessage = reactions.filter(
+                        (reaction) => reaction.message_id === message.id
+                      )
+
+                      const realtimeReactionsForCurrentMessage = realtimeReactions.filter(
+                        (reaction) => reaction.message_id === message.id
+                      )
+
+                      const allReactions = [...reactionsForCurrentMessage, ...realtimeReactionsForCurrentMessage]
+
+                      const Messagereactions = allReactions.map((reaction) => reaction.Reaction)
                       return (
                         <div
-                          className={`chat ${message.sender_id === localuser.userId ? 'chat-end' : 'chat-start'}`}
+                          className={`flex flex-col chat ${message.sender_id === localuser.userId ? 'chat-end' : 'chat-start'}`}
                           key={message.id}
                         >
                           <div className='chat-bubble bg-[#1B263B] text-white flex items-start text-left gap-4'>
                             <div className='message-content'>
                               {editingMessageId === message.id
                                 ? <>
-                                  <input
+                                  <inputrs
                                     type='text'
                                     value={editInputValue}
                                     onChange={e => setEditInputValue(event.target.value)}
-                                    onKeyDown={e => handleEditKeyDown(event, message.id)}
+                                    onKeyDown={e => handleEditKeyDown(event, message.room, message.id)}
                                     placeholder={message.text}
                                     className='bg-[#1B263B] border-[#1B263B] text-white focus:border-[#1B263B] focus:outline-[#1B263B]'
                                   />
@@ -401,10 +465,10 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                                       {openReactMenu === message.id && (
                                         <div className={`flex items-center w-[12em] justify-center h-4 menu-options absolute ${message.sender_id === localuser.userId ? 'left-[-12em] top-8' : 'right-[-12em] top-8'}`}>
                                           <div>
-                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Like')}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/487/487535.png' /></button>
-                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Heart')}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/9717/9717576.png' /></button>
-                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Laugh')}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/8976/8976336.png ' /></button>
-                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Cry')}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/9717/9717728.png' /></button>
+                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Like', message.room)}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/487/487535.png' /></button>
+                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Heart', message.room)}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/9717/9717576.png' /></button>
+                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Laugh', message.room)}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/8976/8976336.png ' /></button>
+                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Cry', message.room)}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/9717/9717728.png' /></button>
                                           </div>
                                         </div>
                                       )}
@@ -412,7 +476,7 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                                     {openMenuId === message.id && (
                                       <div className={` menu-options ${message.sender_id === localuser.userId ? 'right-[100%] bottom-[10%]' : 'hidden'}`}>
                                         {/* Opciones del menú */}
-                                        <button className={`hover:font-bold ${localuser.userId === message.sender_id ? '' : 'Hidden-btn'}`} onClick={() => handleDelete(event, message.id)}>Eliminar</button>
+                                        <button className={`hover:font-bold ${localuser.userId === message.sender_id ? '' : 'Hidden-btn'}`} onClick={() => handleDelete(event, message.id, message.room)}>Eliminar</button>
                                         <button className={`hover:font-bold ${localuser.userId === message.sender_id ? '' : 'Hidden-btn'}`} onClick={() => handleUpdate(message.id)}>Editar</button>
                                       </div>
                                     )}
@@ -425,7 +489,32 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                                 <p className={`edited-indicator ${message.edited === 1 ? '' : 'hidden'}`}>editado</p>
                               </div>
                             </div>
+
                           </div>
+                          <div className={`bg-[#2a3d60cd] rounded-3xl p-[0.1em] relative top-[-0.5em] ${message.sender_id === localuser.userId ? 'left-[-0.2em]' : 'right-[-0.2em]'}`}>
+                            {Messagereactions.map((reaction, index, array) => {
+                              // Verifica si la reacción es duplicada
+                              const isDuplicated = array.indexOf(reaction) !== index
+
+                              // Si la reacción es duplicada, no la mostramos
+                              if (isDuplicated) {
+                                return null
+                              }
+
+                              // Verifica si hay más de una instancia de esta reacción
+                              const duplicates = array.filter((r) => r === reaction)
+
+                              // Si hay más de una instancia, agrega 'x2'
+                              const renderedReaction = duplicates.length > 1 ? `${reaction}x2` : reaction
+
+                              return (
+                                <span key={index} className='mr-2'>
+                                  {renderedReaction}
+                                </span>
+                              )
+                            })}
+                          </div>
+
                         </div>
                       )
                     })
