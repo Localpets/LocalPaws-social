@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { makeRequest } from '../../library/axios'
 import { PiUserCirclePlusDuotone, PiUserCircleMinusDuotone, PiUserSwitchDuotone } from 'react-icons/pi'
+import useFindUser from '../../hooks/useFindUser'
 
 const RightBar = () => {
   const [localuser, setLocaluser] = useState({})
@@ -9,12 +10,14 @@ const RightBar = () => {
   const [loading, setLoading] = useState(false)
   const [randomUsers, setRandomUsers] = useState([])
 
+  const userFromDB = useFindUser()
+
   useEffect(() => {
     if (localStorage.getItem('user')) {
-      const user = JSON.parse(localStorage.getItem('user'))
+      const user = userFromDB.user
       setLocaluser(user)
     }
-  }, [setLocaluser])
+  }, [setLocaluser, userFromDB])
 
   useEffect(() => {
     const getUserlist = async () => {
@@ -29,10 +32,10 @@ const RightBar = () => {
     getUserlist()
 
     const getfollowers = async () => {
-      if (localuser.userId) {
+      if (localuser) {
         try {
           setLoading(true)
-          const res = await makeRequest.get(`/follow/find/followed/${localuser.userId}`)
+          const res = await makeRequest.get(`/follow/find/followed/${localuser.user_id}`)
           setUserFollows(res.data.follows)
           setLoading(false)
         } catch (err) {
@@ -47,9 +50,11 @@ const RightBar = () => {
   }, [setUserlist, localuser, setUserFollows])
 
   const getRandomUsers = () => {
-    const shuffledUsers = [...userlist].filter(user => user.user_id !== localuser.userId).sort(() => 0.5 - Math.random())
-    const selectedUsers = shuffledUsers.slice(0, 4)
-    return selectedUsers
+    if (localuser) {
+      const shuffledUsers = [...userlist].filter(user => user.user_id !== localuser.user_id).sort(() => 0.5 - Math.random())
+      const selectedUsers = shuffledUsers.slice(0, 4)
+      return selectedUsers
+    }
   }
 
   useEffect(() => {
@@ -65,14 +70,14 @@ const RightBar = () => {
       }))
 
       if (followeduser) {
-        await makeRequest.delete(`/follow/delete/${localuser.userId}/${user.user_id}`)
-        console.log('Seguidor eliminado correctamente', localuser.userId, user.user_id)
+        await makeRequest.delete(`/follow/delete/${localuser.user_id}/${user.user_id}`)
+        console.log('Seguidor eliminado correctamente', localuser.user_id, user.user_id)
       } else {
         await makeRequest.post('/follow/create', {
           followedId: user.user_id,
-          followerId: localuser.userId
+          followerId: localuser.user_id
         })
-        console.log('Seguidor añadido correctamente', localuser.userId, user.user_id)
+        console.log('Seguidor añadido correctamente', localuser.user_id, user.user_id)
       }
 
       setLoading(prevLoading => ({
@@ -101,50 +106,52 @@ const RightBar = () => {
         </h3>
         <div>
           <div className='p-2 dark:border-dim-200 flex flex-col'>
-            {randomUsers.map(user => {
-              const followeduser = userFollows.find((follows) => follows.user_id === user.user_id)
-              const FollowStatus = followeduser
-                ? <PiUserCircleMinusDuotone className='text-[2em] text-red-500' />
-                : <PiUserCirclePlusDuotone className='text-[2em] text-green-500' />
+            {randomUsers
+              ? randomUsers.map(user => {
+                const followeduser = userFollows.find((follows) => follows.user_id === user.user_id)
+                const FollowStatus = followeduser
+                  ? <PiUserCircleMinusDuotone className='text-[2em] text-red-500' />
+                  : <PiUserCirclePlusDuotone className='text-[2em] text-green-500' />
 
-              return user.user_id === localuser.userId
-                ? null
-                : (<div key={user.user_id}>
-                  <div className='flex items-center mb-2 justify-between'>
-                    <div className='flex items-center '>
-                      <img
-                        className='w-10 h-10 rounded-full'
-                        src={user.thumbnail}
-                        alt={user.username}
-                      />
-                      <div className='ml-2 text-sm'>
-                        <h5 className='text-[#0D1B2A] font-bold'>
-                          {user.first_name} {user.last_name}
-                        </h5>
-                        <p className='text-gray-400'>{user.username}</p>
+                return user.user_id === localuser.user_id
+                  ? null
+                  : (<div key={user.user_id}>
+                    <div className='flex items-center mb-2 justify-between'>
+                      <div className='flex items-center '>
+                        <img
+                          className='w-10 h-10 rounded-full'
+                          src={user.thumbnail}
+                          alt={user.username}
+                        />
+                        <div className='ml-2 text-sm'>
+                          <h5 className='text-[#0D1B2A] font-bold'>
+                            {user.first_name} {user.last_name}
+                          </h5>
+                          <p className='text-gray-400'>{user.username}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className='flex items-center'>
-                      {loading[user.user_id]
-                        ? (<PiUserSwitchDuotone className='animate-spin rounded-full text-[2em]' />
-                          )
-                        : <button
-                            className='ml-auto content-end'
-                            onClick={() => {
-                              FollowClick(user, userFollows, setUserFollows, localuser, followeduser)
-                            }}
-                            disabled={Object.values(loading).some(value => value)}
-                          >
-                          {FollowStatus}
-                          {/* eslint-disable-next-line react/jsx-closing-tag-location */}
-                        </button>}
-                    </div>
+                      <div className='flex items-center'>
+                        {loading[user.user_id]
+                          ? (<PiUserSwitchDuotone className='animate-spin rounded-full text-[2em]' />
+                            )
+                          : <button
+                              className='ml-auto content-end'
+                              onClick={() => {
+                                FollowClick(user, userFollows, setUserFollows, localuser, followeduser)
+                              }}
+                              disabled={Object.values(loading).some(value => value)}
+                            >
+                            {FollowStatus}
+                            {/* eslint-disable-next-line react/jsx-closing-tag-location */}
+                          </button>}
+                      </div>
 
+                    </div>
+                    {/* eslint-disable-next-line react/jsx-closing-tag-location */}
                   </div>
-                  {/* eslint-disable-next-line react/jsx-closing-tag-location */}
-                </div>
-                  )
-            })}
+                    )
+              })
+              : null}
           </div>
 
           <div className='text-blue-400 cursor-pointer p-2'>Ver más</div>

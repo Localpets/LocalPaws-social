@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-unused-vars */
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -21,18 +22,25 @@ const Middle = () => {
     setPostsRef([newPost, ...postsRef])
   }
 
+  const deletePost = async (postId) => {
+    setPostsRef(postsRef.filter((post) => post.post_id !== postId))
+    // postRouter.delete("/delete/:id/:post_user_id", verifyToken, deletePost);
+    await makeRequest.delete(`/post/delete/${postId}/${user.user_id}`)
+      .then(res => {
+        console.log(res.data)
+      }
+      )
+      .catch(err => console.error(err))
+  }
+
   const { isLoading, error, data } = useQuery({
     queryKey: ['posts', user],
     queryFn: async () => {
-      if (!user) return
-      // eslint-disable-next-line camelcase
+      if (!user) return {} // Devuelve un objeto vacío si no necesitas datos
       const { user_id } = user
-      // eslint-disable-next-line camelcase
       return makeRequest.get(`post/find/follows/user/${user_id}`).then((res) => {
-        // sort posts by id descending
         const sortedPosts = res.data.posts.sort((a, b) => b.post_id - a.post_id)
         setPostsRef(sortedPosts)
-
         return res.data
       })
     }
@@ -47,12 +55,7 @@ const Middle = () => {
   }
 
   if (error) {
-    /*     console.log(error)
- */ return (
-   <div className='mx-auto pt-20'>
-     <span className='loading loading-ring loading-lg' />
-   </div>
-    )
+    return error.message
   }
 
   return (
@@ -65,7 +68,7 @@ const Middle = () => {
       <div className='flex flex-col items-center w-full gap-4 min-h-screen'>
         {
           postsRef.map((post) => (
-            <PostQueryWrapper key={post.post_id} post={post} />
+            <PostQueryWrapper key={post.post_id} post={post} deletePost={deletePost} />
           ))
         }
       </div>
