@@ -88,7 +88,7 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
 
   const deleteLike = async () => {
     if (currentUser) {
-      setLikeStyle('fa-solid fa-heart mr-2 text-lg')
+      setLikeStyle('fa-solid fa-heart mr-2 text-lg text-purple-700')
       setLikes(likes - 1)
       setLiked(false)
       setCurrentReaction(null)
@@ -118,11 +118,6 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
       setLikes(likes + 1)
       setLiked(true)
       setCurrentReaction(type)
-      setUserLike({
-        like_type: type,
-        comment_id: comment.comment_id,
-        user_id: currentUser.userId
-      })
 
       if (typeof type !== 'string') {
         type = 'Like'
@@ -147,6 +142,12 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
         .then((res) => {
           console.log('Response:', res)
           setLikeStyle(getLikeStyle(type))
+          setUserLike({
+            like_type: type,
+            like_id: res.data.like.like_id,
+            comment_id: comment.comment_id,
+            user_id: currentUser.userId
+          })
         })
         .catch((error) => {
           console.error('Error creating like:', error)

@@ -172,11 +172,6 @@ const PostPage = () => {
       setLikes(likes + 1)
       setLiked(true)
       setCurrentReaction(type)
-      setUserLike({
-        like_type: type,
-        post_id: postId,
-        user_id: currentUser.userId
-      })
 
       if (typeof type !== 'string') {
         type = 'Like'
@@ -202,6 +197,12 @@ const PostPage = () => {
         .then((res) => {
           console.log('Response:', res)
           setLikeStyle(getLikeStyle(type))
+          setUserLike({
+            like_type: type,
+            like_id: res.data.newLike.like_id,
+            post_id: postId,
+            user_id: currentUser.userId
+          })
         })
         .catch((error) => {
           console.error('Error creating like:', error)
