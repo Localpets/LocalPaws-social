@@ -4,13 +4,14 @@ import {
   BsFillChatDotsFill,
   BsFillPeopleFill,
   BsFillDoorOpenFill,
-  BsPersonFillAdd
+  BsChatFill
 } from 'react-icons/bs'
 import { SocketProvider } from '../../socket/socket'
 import { Link } from '@tanstack/router'
 import useChatStore from '../../context/ChatStore'
 import ConversationModule from '../../components/Chat/ConversationModule'
 import ConversationButton from '../../components/Chat/ConversationButton'
+import ContactsView from '../../components/Chat/ContacsView'
 import './Chat.css'
 
 // Componente principal Chat
@@ -22,24 +23,22 @@ const Chat = () => {
     setLocaluser
   } = useChatStore()
 
-  // Estado para almacenar el texto de la busqueda
-  const [searchText, setSearchText] = useState('')
   // Estado para almacenar la conversacion actual
   const [currentchat, setCurrentchat] = useState([])
   // Estado para controlar la posicion de la barra vertical
   const chatContainerRef = useRef(null)
+  const [showContacts, setShowContacts] = useState(false)
 
   // useEffect para obtener y configurar los datos del usuario local
   useEffect(() => {
     if (localStorage.getItem('user')) {
       const user = JSON.parse(localStorage.getItem('user'))
       setLocaluser(user)
-      console.log(user)
     }
   }, [setLocaluser])
 
-  const handleSearch = (event) => {
-    setSearchText(event.target.value)
+  const handleShowContactsClick = () => {
+    setShowContacts(false)
   }
 
   // Sección principal del componente Chat
@@ -53,14 +52,20 @@ const Chat = () => {
 
             {/* Botones de íconos */}
             <li>
-              <Link className='btn btn-ghost'>
+              <button
+                className='btn btn-ghost'
+                onClick={() => setShowContacts(false)}
+              >
                 <BsFillChatDotsFill className='text-white text-2xl' />
-              </Link>
+              </button>
             </li>
             <li>
-              <Link className='btn btn-ghost'>
+              <button
+                className='btn btn-ghost'
+                onClick={() => setShowContacts(true)}
+              >
                 <BsFillPeopleFill className='text-white text-2xl' />
-              </Link>
+              </button>
             </li>
             <li>
               <Link to='/home' className='btn btn-ghost'>
@@ -73,67 +78,70 @@ const Chat = () => {
           <Link to='/profile'>
             <img
               className='w-10 h-10 rounded-full'
-              src={localuser.profilePicture}
+              src={localuser.thumbnail}
             />
           </Link>
         </section>
 
-        {/* Panel lateral izquierdo en pantallas pequeñas */}
-        <section className='hidden md:w-60 lg:w-80 h-full bg-white md:flex flex-col justify-start items-center gap-18 p-4 py-8 pt-6'>
-          {/* Título y botones */}
-          <ul className='w-full flex flex-wrap items-center justify-around pb-2'>
-            <li>
-              <h2 className='font-bold text-slate-800 text-xl'>PawsChatea</h2>
-            </li>
-            <li>
-              <button className='btn btn-ghost'>
-                <BsPersonFillAdd className='text-slate-800 text-2xl' />
-              </button>
-            </li>
-          </ul>
+        {showContacts
+          ? (
+            <ContactsView
+              localuser={localuser}
+              currentchat={currentchat}
+              setCurrentchat={setCurrentchat}
+              showContacts={showContacts}
+              setShowContacts={handleShowContactsClick}
+            />)
+          : (
+            <section className='hidden md:w-60 lg:w-80 h-full bg-white md:flex flex-col justify-start items-center gap-18 p-4 py-8 pt-6'>
+              {/* Título y botones */}
+              <ul className='w-full flex flex-wrap items-center justify-around pb-2 pt-2'>
+                <li>
+                  <h2 className='font-bold text-slate-800 text-xl'>PawsChatea</h2>
+                </li>
+                <li>
+                  <BsChatFill className='text-slate-800 text-2xl' />
+                </li>
+              </ul>
 
-          {/* Búsqueda de conversaciones */}
-          <input
-            type='text'
-            placeholder='Buscar conversación'
-            className='input bg-gray-100 text-black rounded-md mt-4 w-full max-w-2xl placeholder:font-semibold'
-            value={searchText}
-            onChange={handleSearch}
-          />
-
-          {/* Lista de conversaciones */}
-          <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} />
-        </section>
+              {/* Lista de conversaciones */}
+              <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} />
+            </section>
+            )}
 
         {/* mobile menu */}
 
         <section className={`z-10 md:hidden w-full   h-full bg-white flex flex-col justify-start items-center gap-18 p-4 ${sideContactsStyle} transition-transform`}>
-          {/* Título y botones en menú móvil */}
-          <ul className='w-full flex flex-wrap items-center justify-start pb-2 gap-4'>
-            <li>
-              <h2 className='font-bold text-slate-800 text-xl'>Conversations</h2>
-            </li>
-            <li>
-              <button className='btn btn-ghost'>
-                <BsPersonFillAdd className='text-slate-800 text-2xl' />
-              </button>
-            </li>
-          </ul>
+          {showContacts
+            ? (
+              <ContactsView
+                localuser={localuser}
+                currentchat={currentchat}
+                setCurrentchat={setCurrentchat}
+                showContacts={showContacts}
+                setShowContacts={handleShowContactsClick}
+              />)
+            : (
+              <>
+                {/* Título y botones en menú móvil */}
+                <ul className='w-full flex flex-wrap items-center justify-start pb-2 pt-2 gap-4'>
+                  <li>
+                    <h2 className='font-bold text-slate-800 text-xl'>Conversations</h2>
+                  </li>
+                  <li>
+                    <li>
+                      <BsChatFill className='text-slate-800 text-2xl' />
+                    </li>
+                  </li>
+                </ul>
 
-          {/* Búsqueda de conversaciones en menú móvil */}
-          <section className='w-full h-[80%]'>
-            <input
-              type='text'
-              placeholder='Buscar conversación'
-              className='input bg-gray-100 text-black rounded-md mt-4 w-full max-w-2xl placeholder:font-semibold'
-              value={searchText}
-              onChange={handleSearch}
-            />
-
-            {/* Lista de conversaciones en menú móvil */}
-            <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} />
-          </section>
-
+                {/* Búsqueda de conversaciones en menú móvil */}
+                <section className='w-full h-[80%]'>
+                  {/* Lista de conversaciones en menú móvil */}
+                  <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} />
+                </section>
+              </>
+              )}
           {/* Sección final con botones en menú móvil */}
           <section className=' w-full bg-[#1B263B] flex flex-col justify-between items-center justify-self-end gap-4 p-4 rounded-lg'>
             <h1 className='font-bold text-white text-xl'>PawsPlorer Messenger</h1>
@@ -141,14 +149,20 @@ const Chat = () => {
 
               {/* Botones de íconos en menú móvil */}
               <li>
-                <Link className='btn btn-ghost'>
+                <button
+                  className='btn btn-ghost'
+                  onClick={() => setShowContacts(false)}
+                >
                   <BsFillChatDotsFill className='text-white text-2xl' />
-                </Link>
+                </button>
               </li>
               <li>
-                <Link className='btn btn-ghost'>
+                <button
+                  className='btn btn-ghost'
+                  onClick={() => setShowContacts(true)}
+                >
                   <BsFillPeopleFill className='text-white text-2xl' />
-                </Link>
+                </button>
               </li>
               <li>
                 <Link to='/home' className='btn btn-ghost'>

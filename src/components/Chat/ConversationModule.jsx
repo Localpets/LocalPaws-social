@@ -24,8 +24,14 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
     toggleHamburguerStyle
   } = useChatStore()
 
+  const reactionEmojis = {
+    Like: <img className='w-[1.4em]' src='https://em-content.zobj.net/source/facebook/355/thumbs-up_1f44d.png' />,
+    Heart: <img className='w-[1.4em]' src='https://em-content.zobj.net/thumbs/60/facebook/355/smiling-cat-with-heart-eyes_1f63b.webp' />,
+    Laugh: <img className='w-[1.4em]' src='https://em-content.zobj.net/source/facebook/355/grinning-cat_1f63a.png' />,
+    Cry: <img className='w-[1.4em]' src='https://em-content.zobj.net/thumbs/60/facebook/355/crying-cat_1f63f.webp' />
+  }
+
   const [reactions, setReactions] = useState([])
-  const [realtimeReactions, setRealtimeReactions] = useState([])
 
   const socket = useSocket()
 
@@ -150,29 +156,45 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
     setEditInputValue(text)
   }
 
-  // Manejador de envío de reacciones a la API
   const HandleReactions = async (event, messageId, userId, reactionType, messageRoom) => {
     event.preventDefault()
+    setOpenReactMenu(null)
     try {
+      // Obtener las reacciones existentes del usuario al mensaje
       const existingReactions = await makeRequest.get(`message/find/reaction/${messageId}`)
 
-      // Verifiac si el usuario ya ha reaccionado al mensaje
+      // Verificar si el usuario ya ha reaccionado al mensaje
       const userReaction = existingReactions.data.reactions.find(reaction => reaction.user_id === userId)
+
       if (userReaction) {
-        await HandleDeleteReactions(event, messageId, userId, userReaction.Reaction)
-        console.log('Reacción eliminada porque ya habia reaccionado exitosamente')
+        // Si el usuario ya ha reaccionado, eliminar su propia reacción anterior
+        const response = await makeRequest.delete(`message/remove-reaction/${userReaction.id}`, {
+          user_id: userId,
+          Reaction: userReaction.Reaction
+        })
+        const ReactionId = response.data.id
+
+        // Emitir el evento de eliminación solo para la reacción del usuario actual
+        socket.emit('removeReaction', {
+          id: ReactionId,
+          user_id: userId,
+          message_id: messageId,
+          Reaction: userReaction.Reaction,
+          room: messageRoom
+        })
       }
 
+      // Agregar la nueva reacción
       const response = await makeRequest.post(`message/add-reaction/${messageId}`, {
         user_id: userId,
         Reaction: reactionType
       })
 
       if (response.status === 200) {
-        const ReactionId = response.data.message.id
-        console.log('Reacción enviada exitosamente')
+        const ReactionId = response.data.id
         socket.emit('addReaction', {
           id: ReactionId,
+          user_id: userId,
           message_id: messageId,
           Reaction: reactionType,
           room: messageRoom
@@ -180,21 +202,6 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
       } else {
         console.error('Error al reaccionar al mensaje')
       }
-    } catch (error) {
-      console.error('Error de red:', error)
-    }
-  }
-
-  // Manejador para eliminar las reacciones de la API
-  const HandleDeleteReactions = async (event, messageId, userId, reactionType) => {
-    event.preventDefault()
-    try {
-      await makeRequest.delete(`message/remove-reaction/${messageId}`, {
-        user_id: userId,
-        Reaction: reactionType
-      })
-
-      console.log('Reacción eliminada exitosamente')
     } catch (error) {
       console.error('Error de red:', error)
     }
@@ -261,6 +268,37 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
     )
   }
 
+  // Función para renderizar las reacciones en un mensaje
+  const renderReactions = (messageId) => {
+    // Filtra las reacciones que corresponden al mensaje con el ID dado
+    const messageReactions = reactions.filter(
+      (reaction) => reaction.message_id === messageId
+    )
+
+    // Crea un objeto para contar las reacciones de cada tipo
+    const reactionCounts = {}
+    messageReactions.forEach((reaction) => {
+      if (reaction.Reaction in reactionCounts) {
+        reactionCounts[reaction.Reaction]++
+      } else {
+        reactionCounts[reaction.Reaction] = 1
+      }
+    })
+
+    // Mapea los conteos de reacciones a elementos JSX
+    const reactionElements = Object.keys(reactionCounts).map((reactionType) => {
+      const count = reactionCounts[reactionType]
+      const emoji = reactionEmojis[reactionType]
+      return (
+        <span key={reactionType}>
+          {emoji} {count > 1 ? `x${count}` : ''}
+        </span>
+      )
+    })
+
+    return reactionElements
+  }
+
   // Función para manejar la expansión o contracción de los mensajes
   const handleReadMore = (messageId) => {
     setExpandedMessageId(messageId)
@@ -295,23 +333,26 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
         console.log('Este es el mensaje traído desde el servidor', message)
         console.log(currentchat)
 
-        setCurrentchat((prevChat) => {
+        if (currentchat) {
+          setCurrentchat((prevChat) => {
           // Verifica si el mensaje ya existe en la conversación actual por su ID
-          const messageExists = prevChat.conversation.some((msg) => msg.id === message.id)
+            const messageExists = prevChat.conversation.some((msg) => msg.id === message.id)
 
-          if (!messageExists) {
+            if (!messageExists) {
             // Si el mensaje no existe, agrégalo a la conversación
-            prevChat.conversation.unshift(message)
+              prevChat.conversation.unshift(message)
 
-            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
-          }
+              chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+            }
 
-          return {
-            ...prevChat,
-            conversation: [...prevChat.conversation]
-          }
-        })
+            return {
+              ...prevChat,
+              conversation: [...prevChat.conversation]
+            }
+          })
+        }
       })
+
       socket.on('editedMessage', (message) => {
         setCurrentchat((prevChat) => {
           // Busca el mensaje actualizado en la conversación y actualiza solo su texto
@@ -325,6 +366,7 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
           }
         })
       })
+
       socket.on('deletedMessage', (message) => {
         setCurrentchat((prevChat) => {
           // Filtra los mensajes para eliminar el mensaje con el ID especificado
@@ -337,16 +379,59 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
           }
         })
       })
-      socket.on('addedReaction', (newReaction) => {
-        console.log('Reacción agregada en tiempo real:', newReaction)
 
-        // Actualiza el estado con las nuevas reacciones
-        setRealtimeReactions((prevReactions) => [...prevReactions, newReaction])
+      socket.on('addedReaction', (newReaction) => {
+        setReactions((prevReactions) => {
+          // Filtrar las reacciones del usuario actual en el mismo mensaje
+          const userReactionsInMessage = prevReactions.filter(
+            (reaction) =>
+              reaction.message_id === newReaction.message_id &&
+              reaction.user_id === newReaction.user_id
+          )
+
+          if (userReactionsInMessage.length > 0) {
+            // Si el usuario ya ha reaccionado, reemplazar la reacción existente
+            const updatedReactions = prevReactions.map((reaction) => {
+              if (
+                reaction.message_id === newReaction.message_id &&
+                reaction.user_id === newReaction.user_id
+              ) {
+                return newReaction
+              }
+              return reaction
+            })
+            return updatedReactions
+          } else {
+            // Si el usuario no ha reaccionado antes, agregar la nueva reacción
+            return [...prevReactions, newReaction]
+          }
+        })
+      })
+
+      socket.on('removedReaction', (deleteReaction) => {
+        setReactions((prevReactions) => {
+          // Encuentra la reacción existente del mismo usuario en el mismo mensaje
+          const existingReactionIndex = prevReactions.findIndex((reaction) => {
+            return (
+              reaction.message_id === deleteReaction.message_id &&
+              reaction.user_id === deleteReaction.user_id
+            )
+          })
+
+          if (existingReactionIndex !== -1) {
+            // Clona la lista de reacciones existentes para modificarla
+            const updatedReactions = [...prevReactions]
+            // Reemplaza la reacción existente con la nueva reacción
+            updatedReactions.splice(existingReactionIndex, 1, deleteReaction)
+            return updatedReactions
+          } else {
+            // Si no se encuentra la reacción existente, simplemente agrega la nueva reacción
+            return [...prevReactions, deleteReaction]
+          }
+        })
       })
     }
   }, [chatContainerRef, currentchat, message.id, reactions, setCurrentchat, socket])
-  console.log(reactions)
-
   return (
     <section className='border-2 flex flex-col justify-start flex-1 h-full w-full'>
 
@@ -405,8 +490,12 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
 
       {currentchat && currentchat.conversation && currentchat.conversation.length > 0
         ? <section className='h-full overflow-auto'>
+
           <div className='flex flex-col w-full h-full justify-end bg-[url("https://wallpapercave.com/wp/wp4410779.png")] bg-cover rounded-br-lg'>
             <section className='p-4 pb-6 overflow-auto' ref={chatContainerRef}>
+              <div className='flex justify-center text-lg text-[#1B263B]'>
+                <h1 className='w-[30em] text-center'>Chatea con tus amigos, reacciona a sus mensajes y socializa con toda la comunida de pawsplorer</h1>
+              </div>
               {Array.isArray(currentchat.conversation)
                 ? (
                     currentchat.conversation.slice().reverse().map(message => {
@@ -419,18 +508,6 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                         hour12: true // Formato de 12 horas
                       }
                       const formattedTime = date.toLocaleString('en-US', options)
-
-                      const reactionsForCurrentMessage = reactions.filter(
-                        (reaction) => reaction.message_id === message.id
-                      )
-
-                      const realtimeReactionsForCurrentMessage = realtimeReactions.filter(
-                        (reaction) => reaction.message_id === message.id
-                      )
-
-                      const allReactions = [...reactionsForCurrentMessage, ...realtimeReactionsForCurrentMessage]
-
-                      const Messagereactions = allReactions.map((reaction) => reaction.Reaction)
                       return (
                         <div
                           className={`flex flex-col chat ${message.sender_id === localuser.userId ? 'chat-end' : 'chat-start'}`}
@@ -463,12 +540,12 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                                         </svg>
                                       </button>
                                       {openReactMenu === message.id && (
-                                        <div className={`flex items-center w-[12em] justify-center h-4 menu-options absolute ${message.sender_id === localuser.userId ? 'left-[-12em] top-8' : 'right-[-12em] top-8'}`}>
+                                        <div className={`flex items-center w-[12em] justify-center h-4 rounded-2xl menu-options absolute ${message.sender_id === localuser.userId ? 'left-[-12em] top-8' : 'right-[-12em] top-8'}`}>
                                           <div>
-                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Like', message.room)}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/487/487535.png' /></button>
-                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Heart', message.room)}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/9717/9717576.png' /></button>
-                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Laugh', message.room)}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/8976/8976336.png ' /></button>
-                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Cry', message.room)}><img className='w-6 hover:w-8' src='https://cdn-icons-png.flaticon.com/512/9717/9717728.png' /></button>
+                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Like', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/source/facebook/355/thumbs-up_1f44d.png' /></button>
+                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Heart', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/thumbs/60/facebook/355/smiling-cat-with-heart-eyes_1f63b.webp' /></button>
+                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Laugh', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/source/facebook/355/grinning-cat_1f63a.png' /></button>
+                                            <button className='pr-2' onClick={() => HandleReactions(event, message.id, localuser.userId, 'Cry', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/thumbs/60/facebook/355/crying-cat_1f63f.webp' /></button>
                                           </div>
                                         </div>
                                       )}
@@ -492,29 +569,8 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
 
                           </div>
                           <div className={`bg-[#2a3d60cd] rounded-3xl p-[0.1em] relative top-[-0.5em] ${message.sender_id === localuser.userId ? 'left-[-0.2em]' : 'right-[-0.2em]'}`}>
-                            {Messagereactions.map((reaction, index, array) => {
-                              // Verifica si la reacción es duplicada
-                              const isDuplicated = array.indexOf(reaction) !== index
-
-                              // Si la reacción es duplicada, no la mostramos
-                              if (isDuplicated) {
-                                return null
-                              }
-
-                              // Verifica si hay más de una instancia de esta reacción
-                              const duplicates = array.filter((r) => r === reaction)
-
-                              // Si hay más de una instancia, agrega 'x2'
-                              const renderedReaction = duplicates.length > 1 ? `${reaction}x2` : reaction
-
-                              return (
-                                <span key={index} className='mr-2'>
-                                  {renderedReaction}
-                                </span>
-                              )
-                            })}
+                            {renderReactions(message.id)}
                           </div>
-
                         </div>
                       )
                     })

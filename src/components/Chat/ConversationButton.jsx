@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { BsClock } from 'react-icons/bs'
 import useChatStore from '../../context/ChatStore'
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { makeRequest } from '../../library/axios'
 import { useSocket } from '../../socket/socket'
 
@@ -9,7 +9,6 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
   const {
     toggleSideContactsStyle,
     toggleHamburguerStyle,
-    searchText,
     loadingchats,
     setLoadingchats,
     setAllchats,
@@ -19,6 +18,12 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
   } = useChatStore()
 
   const socket = useSocket()
+  const [searchText, setSearchText] = useState('')
+
+  const handleSearch = (event) => {
+    const searchText = event.target.value
+    setSearchText(searchText)
+  }
 
   // Función para cargar los mensajes de una conversación
   const loadConversationMessages = useCallback((conversation) => {
@@ -108,29 +113,38 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
   }, [currentchat, loadConversationMessages])
 
   return (
-    <ul className='flex flex-col w-full items-center justify-center gap-4 pt-8'>
+    <ul className='flex flex-col w-full items-center justify-center gap-4'>
+      {/* Búsqueda de conversaciones */}
+      <input
+        type='text'
+        placeholder='Buscar conversación'
+        className='input bg-gray-100 text-black rounded-md mt-4 w-full max-w-2xl placeholder:font-semibold'
+        value={searchText}
+        onChange={handleSearch}
+      />
+
       {/* Usar la función de filtro para mapear las conversaciones */}
       {loadingchats
         ? (
             allchats
               .filter((conversation) => {
-                const lastMessage = conversation[0]
-
-                if (lastMessage) {
-                  let otherUserId
-                  if (lastMessage.receiver_id === localuser.userId) {
-                    otherUserId = lastMessage.sender_id
-                  } else if (lastMessage.sender_id === localuser.userId) {
-                    otherUserId = lastMessage.receiver_id
-                  }
+                const filteredMessages = conversation.filter((message) => {
+                  const otherUserId =
+                    message.sender_id === localuser.userId
+                      ? message.receiver_id
+                      : message.sender_id
 
                   const otherUser = users.find((user) => user.user_id === otherUserId)
-                  return (
-                    otherUser && otherUser.username.toLowerCase().includes(searchText.toLowerCase())
-                  )
-                }
 
-                return false
+                  return (
+                    otherUser &&
+                    (otherUser.username.toLowerCase().includes(searchText.toLowerCase()) ||
+                      message.text.toLowerCase().includes(searchText.toLowerCase()))
+                  )
+                })
+
+                // Si hay mensajes que coinciden con la búsqueda en esta conversación, conservamos la conversación
+                return filteredMessages.length > 0
               })
               .map((conversation) => {
                 const lastMessage = conversation[0]
@@ -145,7 +159,7 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
                 const otherUser = users.find((user) => user.user_id === otherUserId)
                 const limitedUsername = otherUser ? otherUser.username.substring(0, 30) : ''
                 const limitedMessage =
-              lastMessage.text.length > 10 ? lastMessage.text.substring(0, 15) + '...' : lastMessage.text
+          lastMessage.text.length > 10 ? lastMessage.text.substring(0, 15) + '...' : lastMessage.text
 
                 return (
                   <li className='w-full' key={lastMessage.id}>
