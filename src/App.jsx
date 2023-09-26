@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Outlet, RootRoute, Route } from '@tanstack/router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { SocketProvider } from './socket/socket'
 import Layout from './containers/Layout'
 import Logout from './components/Misc/Logout'
 import Feed from './containers/Feed/Feed'
@@ -88,9 +89,11 @@ const queryClient = new QueryClient()
 function App () {
   return (
     <QueryClientProvider client={queryClient}>
-      <Layout>
-        <Outlet />
-      </Layout>
+      <SocketProvider>
+        <Layout>
+          <Outlet />
+        </Layout>
+      </SocketProvider>
     </QueryClientProvider>
   )
 }

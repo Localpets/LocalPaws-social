@@ -19,7 +19,7 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
 
   const socket = useSocket()
   const [searchText, setSearchText] = useState('')
-
+  const [updatedChats, setUpdatedChats] = useState([])
   const handleSearch = (event) => {
     const searchText = event.target.value
     setSearchText(searchText)
@@ -32,7 +32,7 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
 
   const handleJoinRoom = (otherUserId) => {
     // Concatenar los IDs de los usuarios para obtener el nuevo nombre de la sala
-    const newRoomName = `${Math.min(localuser.userId, otherUserId)}-${Math.max(localuser.userId, otherUserId)}`
+    const newRoomName = `${Math.min(localuser.user_id, otherUserId)}-${Math.max(localuser.user_id, otherUserId)}`
 
     // Obtener el nombre de la sala actual del usuario
     const currentRoomName = getCurrentRoomName()
@@ -42,15 +42,15 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
     if (currentRoomName && currentRoomName !== newRoomName) {
       // Salir de la sala anterior
       socket.emit('leaveRoom', currentRoomName)
-      console.log(`Usuario ${localuser.userId} salió de la sala: ${currentRoomName}`)
+      console.log(`Usuario ${localuser.user_id} salió de la sala: ${currentRoomName}`)
 
       // Unirse a la nueva sala
       socket.emit('joinRoom', newRoomName)
-      console.log(`Usuario ${localuser.userId} se unió a la sala: ${newRoomName}`)
+      console.log(`Usuario ${localuser.user_id} se unió a la sala: ${newRoomName}`)
     } else if (!currentRoomName) {
       // Si el usuario no está en ninguna sala actualmente, únete directamente a la nueva sala
       socket.emit('joinRoom', newRoomName)
-      console.log(`Usuario ${localuser.userId} se unió a la sala: ${newRoomName}`)
+      console.log(`Usuario ${localuser.user_id} se unió a la sala: ${newRoomName}`)
     }
   }
 
@@ -67,36 +67,40 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
   useEffect(() => {
     async function fetchAllChats () {
       try {
-        if (localuser.userId) {
+        if (localuser.user_id) {
         // Obtener mensajes de la API
           const response = await makeRequest.get(
-          `message/find/all/${localuser.userId}`
+          `message/find/all/${localuser.user_id}`
           )
           const chats = response.data.messages
 
+          if (allchats.length === 0) {
           // Crear un objeto para agrupar los mensajes por conversación
-          const conversationMap = {}
+            const conversationMap = {}
 
-          // Iterar a través de los mensajes y agruparlos en el objeto
-          chats.forEach(chat => {
-            const conversationKey = chat.room
+            // Iterar a través de los mensajes y agruparlos en el objeto
+            chats.forEach(chat => {
+              const conversationKey = chat.room
 
-            if (!conversationMap[conversationKey]) {
-              conversationMap[conversationKey] = []
-            }
+              if (!conversationMap[conversationKey]) {
+                conversationMap[conversationKey] = []
+              }
 
-            conversationMap[conversationKey].push(chat)
-          })
+              conversationMap[conversationKey].push(chat)
+            })
 
-          // Convertir el objeto en una lista de conversaciones
-          const conversationList = Object.values(conversationMap)
-          setAllchats(conversationList)
+            // Convertir el objeto en una lista de conversaciones
+            const conversationList = Object.values(conversationMap)
+            setAllchats(conversationList)
 
-          // Obtener información de usuarios de la API
-          const usersResponse = await makeRequest.get('user/find/all')
-          const userList = usersResponse.data.data
-          setUsers(userList)
-          setLoadingchats(true)
+            // Obtener información de usuarios de la API
+            const usersResponse = await makeRequest.get('user/find/all')
+            const userList = usersResponse.data.data
+            setUsers(userList)
+            setLoadingchats(true)
+          } else {
+            setLoadingchats(true)
+          }
         }
       } catch (error) {
         console.log('error:', error)
@@ -104,13 +108,98 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
     }
 
     fetchAllChats()
-  }, [localuser.userId, setAllchats, setLoadingchats, setUsers])
+
+    if (socket) {
+      socket.on('updateContacs', () => {
+        fetchAllChats()
+      })
+    }
+  }, [allchats.length, localuser.user_id, setAllchats, setLoadingchats, setUsers, socket])
 
   useEffect(() => {
     if (currentchat) {
       loadConversationMessages(currentchat)
     }
   }, [currentchat, loadConversationMessages])
+
+  // Efecto para inicializar updatedChats una vez que allchats esté disponible
+  useEffect(() => {
+    if (allchats.length > 0) {
+      setUpdatedChats(allchats)
+    }
+  }, [allchats])
+
+  // Efecto para manejar los mensajes en tiempo real
+  useEffect(() => {
+    if (socket) {
+      socket.on('MessageBtnUpdate', (message) => {
+        // Comprueba si el mensaje ya está en la conversación actual
+        if (
+          !currentchat ||
+          !currentchat.conversation ||
+          !Array.isArray(currentchat.conversation) ||
+          !currentchat.conversation.some((msg) => msg.id === message.id)
+        ) {
+          setUpdatedChats((prevChats) => {
+            const updatedChatsCopy = [...prevChats]
+
+            // Encuentra la conversación existente a la que pertenece el mensaje
+            const conversationToUpdate = updatedChatsCopy.find((conversation) =>
+              conversation.some((msg) => msg.room === message.room)
+            )
+
+            // Si la conversación existe, actualiza el último mensaje
+            if (conversationToUpdate) {
+              const updatedConversation = [...conversationToUpdate]
+              updatedConversation.unshift(message) // Agrega el nuevo mensaje al principio
+
+              // Encuentra la posición de la conversación en el arreglo y actualízala
+              const conversationIndex = updatedChatsCopy.findIndex((conversation) =>
+                conversation.some((msg) => msg.room === message.room)
+              )
+              updatedChatsCopy[conversationIndex] = updatedConversation
+            } else {
+              // Si no existe, crea una nueva conversación con el nuevo mensaje
+              updatedChatsCopy.push([message])
+            }
+
+            return updatedChatsCopy
+          })
+        }
+      })
+
+      socket.on('EditedBtnUpdate', (editedMessage) => {
+        setUpdatedChats((prevChats) => {
+          // Busca el mensaje a editar por su ID
+          const updatedChatsCopy = prevChats.map((conversation) =>
+            conversation.map((message) => {
+              if (message.id === editedMessage.id) {
+                // Actualiza el mensaje y su fecha
+                return {
+                  ...editedMessage,
+                  sender_id: message.sender_id,
+                  createdAt: editedMessage.createdAt // Reemplaza 'date' con el nombre de la propiedad de la fecha en tu objeto 'editedMessage'
+                }
+              } else {
+                return message
+              }
+            })
+          )
+          return updatedChatsCopy
+        })
+      })
+
+      socket.on('DeletedMsgBtnUpdate', (deletedMessageId) => {
+        setUpdatedChats((prevChats) => {
+          // Filtra los mensajes para eliminar el que tenga el ID correspondiente
+          const updatedChatsCopy = prevChats.map((conversation) =>
+            conversation.filter((message) => message.id !== deletedMessageId.id)
+          )
+          return updatedChatsCopy
+        })
+      })
+    }
+  }, [currentchat, socket])
 
   return (
     <ul className='flex flex-col w-full items-center justify-center gap-4'>
@@ -126,11 +215,11 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
       {/* Usar la función de filtro para mapear las conversaciones */}
       {loadingchats
         ? (
-            allchats
+            (updatedChats.length > 0 ? updatedChats : allchats)
               .filter((conversation) => {
                 const filteredMessages = conversation.filter((message) => {
                   const otherUserId =
-                    message.sender_id === localuser.userId
+                    message.sender_id === localuser.user_id
                       ? message.receiver_id
                       : message.sender_id
 
@@ -150,17 +239,15 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
                 const lastMessage = conversation[0]
 
                 let otherUserId
-                if (lastMessage.receiver_id === localuser.userId) {
+                if (lastMessage.receiver_id === localuser.user_id) {
                   otherUserId = lastMessage.sender_id
-                } else if (lastMessage.sender_id === localuser.userId) {
+                } else if (lastMessage.sender_id === localuser.user_id) {
                   otherUserId = lastMessage.receiver_id
                 }
 
                 const otherUser = users.find((user) => user.user_id === otherUserId)
                 const limitedUsername = otherUser ? otherUser.username.substring(0, 30) : ''
-                const limitedMessage =
-          lastMessage.text.length > 10 ? lastMessage.text.substring(0, 15) + '...' : lastMessage.text
-
+                const limitedMessage = lastMessage.text.length > 10 ? lastMessage.text.substring(0, 15) + '...' : lastMessage.text
                 return (
                   <li className='w-full' key={lastMessage.id}>
                     <button

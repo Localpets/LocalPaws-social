@@ -15,12 +15,14 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
 
   const {
     toggleSideContactsStyle,
-    toggleHamburguerStyle
+    toggleHamburguerStyle,
+    setAllchats,
+    allchats
   } = useChatStore()
 
   const socket = useSocket()
 
-  const UserId = localuser.userId
+  const UserId = localuser.user_id
 
   useEffect(() => {
     const getContacts = async () => {
@@ -37,42 +39,55 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
         console.log('El error es: ', error)
       }
     }
-    getContacts()
-  }, [UserId])
 
-  const sendMessage = async (receiver_id) => {
-    const RoomForUsers = `${Math.min(localuser.userId, receiver_id)}-${Math.max(localuser.userId, receiver_id)}`
-    const Message = 'hola <3'
-    try {
-      const response = await makeRequest.post('/message/create', {
-        sender_id: localuser.userId,
-        receiver_id,
-        text: Message,
-        room: RoomForUsers
-      })
-      if (response.status === 200) {
-        const messageId = response.data.message.id
-        const currentDateTime = new Date().toISOString()
-        console.log('mensaje enviado')
-        socket.emit('sendMessage', {
-          createdAt: currentDateTime,
-          edited: 0,
-          id: messageId,
-          receiver_id,
-          room: RoomForUsers,
-          sender_id: localuser.userId,
-          text: Message
-        })
-      } else {
-        console.log('no se pudo enviar el mensaje')
+    async function fetchAllChats () {
+      try {
+        if (localuser.user_id) {
+        // Obtener mensajes de la API
+          const response = await makeRequest.get(
+          `message/find/all/${localuser.user_id}`
+          )
+          const chats = response.data.messages
+
+          if (allchats.length === 0) {
+          // Crear un objeto para agrupar los mensajes por conversación
+            const conversationMap = {}
+
+            // Iterar a través de los mensajes y agruparlos en el objeto
+            chats.forEach(chat => {
+              const conversationKey = chat.room
+
+              if (!conversationMap[conversationKey]) {
+                conversationMap[conversationKey] = []
+              }
+
+              conversationMap[conversationKey].push(chat)
+            })
+
+            // Convertir el objeto en una lista de conversaciones
+            const conversationList = Object.values(conversationMap)
+            setAllchats(conversationList)
+          }
+        }
+      } catch (error) {
+        console.log('error:', error)
       }
-    } catch (error) {
-      console.log('El error es: ', error)
     }
-  }
+
+    getContacts()
+    fetchAllChats()
+
+    if (socket) {
+      socket.on('updateContacs', () => {
+        getContacts()
+        fetchAllChats()
+      })
+    }
+  }, [allchats.length, localuser.user_id, currentchat, setAllchats, UserId, socket])
+
   const handleJoinRoom = (otherUserId) => {
     // Concatenar los IDs de los usuarios para obtener el nuevo nombre de la sala
-    const newRoomName = `${Math.min(localuser.userId, otherUserId)}-${Math.max(localuser.userId, otherUserId)}`
+    const newRoomName = `${Math.min(localuser.user_id, otherUserId)}-${Math.max(localuser.user_id, otherUserId)}`
 
     // Obtener el nombre de la sala actual del usuario
     const currentRoomName = getCurrentRoomName()
@@ -82,15 +97,15 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
     if (currentRoomName && currentRoomName !== newRoomName) {
       // Salir de la sala anterior
       socket.emit('leaveRoom', currentRoomName)
-      console.log(`Usuario ${localuser.userId} salió de la sala: ${currentRoomName}`)
+      console.log(`Usuario ${localuser.user_id} salió de la sala: ${currentRoomName}`)
 
       // Unirse a la nueva sala
       socket.emit('joinRoom', newRoomName)
-      console.log(`Usuario ${localuser.userId} se unió a la sala: ${newRoomName}`)
+      console.log(`Usuario ${localuser.user_id} se unió a la sala: ${newRoomName}`)
     } else if (!currentRoomName) {
       // Si el usuario no está en ninguna sala actualmente, únete directamente a la nueva sala
       socket.emit('joinRoom', newRoomName)
-      console.log(`Usuario ${localuser.userId} se unió a la sala: ${newRoomName}`)
+      console.log(`Usuario ${localuser.user_id} se unió a la sala: ${newRoomName}`)
     }
   }
 
@@ -115,7 +130,6 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
     // Actualizar los resultados de búsqueda
     setSearchResults(filteredContacts)
   }
-
   return (
     <section className='hidden md:w-60 lg:w-80 h-full bg-white md:flex flex-col justify-start items-center gap-18 p-4 py-8 pt-6'>
       <ul className='w-full flex flex-wrap items-center justify-around pb-2 pt-2'>
@@ -146,6 +160,15 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
                 searchResults.length > 0
                   ? (
                       searchResults.map((contact) => {
+                        const otherUser = contacts.find((user) => user.user_id === contact.user_id)
+                        const limitedUsername = otherUser ? otherUser.username.substring(0, 30) : ''
+                        const existingChat = allchats.find(chat => {
+                          // Verifica si la conversación incluye al usuario actual y al usuario de contacto
+                          return chat.some(message =>
+                            (message.sender_id === localuser.user_id && message.receiver_id === contact.user_id) ||
+                            (message.sender_id === contact.user_id && message.receiver_id === localuser.user_id)
+                          )
+                        })
                         return (
                           <li key={contact.user_id}>
                             <button
@@ -153,10 +176,18 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
                               onClick={() => {
                                 toggleSideContactsStyle()
                                 toggleHamburguerStyle()
-                                setCurrentchat()
+                                setCurrentchat({
+                                  conversation: existingChat || {
+                                    0: {
+                                      receiver_id: otherUser.user_id,
+                                      sender_id: localuser.user_id
+                                    }
+                                  },
+                                  username: limitedUsername,
+                                  thumbnail: otherUser ? otherUser.thumbnail : ''
+                                })
                                 setShowContacts(false)
                                 handleJoinRoom(contact.user_id)
-                                sendMessage(contact.user_id)
                               }}
                             >
                               <div className='text-black flex gap-2 items-center'>
@@ -179,6 +210,15 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
                 contacts.length > 0
                   ? (
                       contacts.map((contact) => {
+                        const otherUser = contacts.find((user) => user.user_id === contact.user_id)
+                        const limitedUsername = otherUser ? otherUser.username.substring(0, 30) : ''
+                        const existingChat = allchats.find(chat => {
+                          // Verifica si la conversación incluye al usuario actual y al usuario de contacto
+                          return chat.some(message =>
+                            (message.sender_id === localuser.user_id && message.receiver_id === contact.user_id) ||
+                            (message.sender_id === contact.user_id && message.receiver_id === localuser.user_id)
+                          )
+                        })
                         return (
                           <li key={contact.user_id}>
                             <button
@@ -186,10 +226,19 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
                               onClick={() => {
                                 toggleSideContactsStyle()
                                 toggleHamburguerStyle()
-                                setCurrentchat()
-                                setShowContacts(false)
                                 handleJoinRoom(contact.user_id)
-                                sendMessage(contact.user_id)
+                                setCurrentchat({
+                                  conversation: existingChat || {
+                                    0: {
+                                      receiver_id: otherUser.user_id,
+                                      sender_id: localuser.user_id
+                                    }
+                                  },
+                                  username: limitedUsername,
+                                  thumbnail: otherUser ? otherUser.thumbnail : ''
+                                })
+                                setShowContacts(false)
+                                console.log(currentchat)
                               }}
                             >
                               <div className='text-black flex gap-2 items-center'>

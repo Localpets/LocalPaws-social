@@ -2,6 +2,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 import PropTypes from 'prop-types'
+import useAuthStore from '../context/AuthContext'
+import useFindUser from '../hooks/useFindUser'
 
 const SocketContext = createContext()
 
@@ -11,30 +13,38 @@ export function useSocket () {
 
 export function SocketProvider ({ children }) {
   const [socket, setSocket] = useState(null)
-  const [localUser, setLocalUser] = useState(null)
+  const [localuser, setLocaluser] = useState(null)
+
+  const { loggedUser } = useAuthStore()
+  const { user } = useFindUser(loggedUser)
 
   useEffect(() => {
-    const userFromLocalStorage = JSON.parse(localStorage.getItem('user'))
-    if (userFromLocalStorage) {
-      setLocalUser(userFromLocalStorage.userId)
+    if (user) {
+      setLocaluser(user)
     }
-  }, [])
+  }, [user])
 
   useEffect(() => {
-    if (localUser) {
+    if (localuser) {
       // Configura el socket solo si localUser tiene un valor definido
       const newSocket = io('http://localhost:8080', {
-        query: { userId: localUser }
+        query: { userId: localuser.user_id }
       })
       setSocket(newSocket)
       return () => {
         newSocket.disconnect()
       }
     }
-  }, [localUser])
+  }, [localuser])
+
+  useEffect(() => {
+    if (socket) {
+      socket.emit('PersonalRoom', localuser.user_id)
+    }
+  }, [localuser, socket])
 
   // Renderiza el componente solo si localUser tiene un valor definido
-  return localUser
+  return localuser
     ? (
       <SocketContext.Provider value={socket}>
         {children}
