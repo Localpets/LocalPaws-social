@@ -3,9 +3,10 @@ import useAuthStore from '../../context/AuthContext'
 import useFindUser from '../../hooks/useFindUser'
 import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
 
-const LeftBar = () => {
+const LeftBar = ({ isProfileView, toggleNewSection }) => {
   const { loggedUser } = useAuthStore()
   const { user } = useFindUser(loggedUser)
+
 
   return (
     <div className='flex fixed flex-col left-0 text-[#0D1B2A] h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-8 bg-white ml-10 md:justify-start'>
@@ -33,6 +34,18 @@ const LeftBar = () => {
           <i className='fa-solid fa-route text-xl' />
           <span className='icon hidden md:flex '>Mapa</span>
         </Link>
+
+        {isProfileView && (
+          <div className='profile-section'>
+            {
+            <button onClick={toggleNewSection} className='btn mb-3 btn-ghost flex items-center justify-start '>
+              <i className='fa-solid fa-route text-xl' />
+              <span className='icon hidden md:flex '>Pawstear</span>
+            </button>
+            }
+          </div>
+          )}
+
         <Link to='/profile/1' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <img
             className='w-10 h-10 rounded-full'
@@ -45,6 +58,7 @@ const LeftBar = () => {
           <i className='fa-solid fa-sign-out text-xl' />
           <span className='icon'>Cerrar sesión</span>
         </Link>
+        
       </nav>
     </div>
   )
