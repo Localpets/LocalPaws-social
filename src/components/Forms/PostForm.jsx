@@ -63,8 +63,10 @@ const PostForm = ({ addPost }) => {
     formData.append('category', values.category)
     formData.append('image', values.image)
     formData.append('post_user_id', user.user_id)
+    console.log('valores:', values)
 
     try {
+      console.log('formData:', formData)
       const response = await makeRequest.post('post/create', formData)
       setInitialPostValues(values)
       addPost(response.data.post)
@@ -146,11 +148,13 @@ const PostForm = ({ addPost }) => {
                 <button
                   type='submit'
                   disabled={isSubmitting}
-                  className='btn btn-primary h-8 max-w-xs self-start'
+                  className='btn btn-secondary h-8 max-w-xs self-start'
                 >
-                  <i className='fa-solid fa-paper-plane' />
+                  <i className='fa-solid fa-paper-plane text-white' />
                 </button>
               </div>
+
+              <div className='pt-6' />
 
               <div className={previewImage ? 'flex justify-center w-[90%] px-4 ml-2 mr-2 py-4' : 'hidden'}>
                 <img
@@ -159,17 +163,15 @@ const PostForm = ({ addPost }) => {
                   className={previewImage ? 'w-80 max-h-72 rounded-lg border-2 border-[#E0E1DD] object-cover' : 'hidden'}
                 />
                 <button className={previewImage ? 'relative right-[10%] self-start mt-3' : 'hidden'} type='button' onClick={handleDeleteImage}>
-                  <i className='fa-solid fa-trash text-purple-600 text-lg' />
+                  <i className='fa-solid fa-trash text-primary text-lg' />
                 </button>
               </div>
 
-              <div className='divider my-0 py-2 ml-4 mr-4' />
-
               <div className='flex justify-between items-center w-full px-2 mr-2'>
                 <div className='w-24 h-9'>
-                  <label htmlFor='image' className='badge rounded-lg cursor-pointer flex gap-2 h-full mx-auto bg-primary text-white border-primary ml-2'>
-                    <i className='fa-solid fa-image' />
-                    <h3>Imagen</h3>
+                  <label htmlFor='image' className='badge rounded-lg cursor-pointer flex gap-2 h-full mx-auto bg-secondary text-white ml-2'>
+                    <i className='fa-solid fa-image text-white' />
+                    <h3 className='text-white'>Imagen</h3>
                   </label>
                   <input
                     type='file'

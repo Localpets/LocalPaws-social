@@ -23,7 +23,7 @@ const RightBar = () => {
     const getUserlist = async () => {
       try {
         const res = await makeRequest.get('/user/find/all')
-        setUserlist(res.data.data)
+        setUserlist(res.data.users)
       } catch (err) {
         console.error(err)
       }

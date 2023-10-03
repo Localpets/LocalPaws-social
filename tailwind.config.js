@@ -9,6 +9,22 @@ export default {
   },
   plugins: [require('daisyui'), require('@tailwindcss/forms')],
   daisyui: {
-    themes: ['emerald', 'dark', 'forest', 'lofi', 'valentine', 'bumblebee', 'dracula', 'cupcake']
+    themes: [
+      {
+        mytheme: {
+
+          primary: '#779be7',
+
+          secondary: '#eda1b5',
+
+          accent: '#a7f9d3',
+
+          neutral: '#0D1B2A',
+
+          'base-100': '#779be7'
+        }
+      }
+    ]
+
   }
 }

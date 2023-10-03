@@ -14,9 +14,9 @@
 }
 
 .message-text {
-  max-width: 16em;
+  max-width: 26em;
   width: 16em;
-  max-height: 15em;
+  max-height: auto;
   line-height: 1.2em;
   width: 100%;
   overflow: hidden;

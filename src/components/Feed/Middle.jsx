@@ -59,9 +59,7 @@ const Middle = () => {
   }
 
   return (
-    <div className='w-full pl-[25%] pr-[25%] min-h-screen flex flex-col justify-start gap-4 items-center mt-8 px-10'>
-
-      <Stories />
+    <div className='w-full pl-[23%] pr-[22.7%] min-h-screen flex flex-col justify-start gap-4 items-center mt-8 px-10'>
 
       <PostForm addPost={addPost} />
 
