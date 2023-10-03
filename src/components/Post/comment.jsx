@@ -283,7 +283,7 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
               ? <div className='flex gap-2 items-center'>
                 <input type='text' defaultValue={comment.text} className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm' />
                 <button
-                  className='btn btn-square bg-white hover:bg-purple-700 border-white border-none'
+                  className='btn btn-square bg-white hover:bg-secondary border-white border-none'
                   onClick={handleEditClick}
                   disabled={commentLoading}
                 >

@@ -129,6 +129,7 @@ const PostPage = () => {
 
   useEffect(() => {
     const fetchLikes = async () => {
+      setLikeCreating(true)
       try {
         const response = await makeRequest.get(`/like/post/${postId}`)
         const likeData = response.data.likes
@@ -674,10 +675,10 @@ const PostPage = () => {
                 <input
                   type='text'
                   placeholder='Haz un comentario...'
-                  className='input input-bordered bg-white w-full commentInput text-black'
+                  className='border border-secondary bg-white w-full text-black active:border-secondary focus:border-secondary focus:ring-0'
                 />
                 <button
-                  className='btn btn-square bg-white hover:bg-purple-700 border-white border-none'
+                  className='btn btn-square border-secondary bg-white hover:bg-secondary'
                   onClick={submitComment}
                   disabled={commentLoading}
                 >
