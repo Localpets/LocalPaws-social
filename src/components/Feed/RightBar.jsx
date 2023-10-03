@@ -35,8 +35,10 @@ const RightBar = () => {
       if (localuser) {
         try {
           setLoading(true)
-          const res = await makeRequest.get(`/follow/find/followed/${localuser.user_id}`)
-          setUserFollows(res.data.follows)
+          if (localuser !== null) {
+            const res = await makeRequest.get(`/follow/find/followed/${localuser.user_id}`)
+            setUserFollows(res.data.follows)
+          }
           setLoading(false)
         } catch (err) {
           console.error(err)
@@ -50,7 +52,7 @@ const RightBar = () => {
   }, [setUserlist, localuser, setUserFollows])
 
   const getRandomUsers = () => {
-    if (localuser) {
+    if (localuser && userlist.length > 0) {
       const shuffledUsers = [...userlist].filter(user => user.user_id !== localuser.user_id).sort(() => 0.5 - Math.random())
       const selectedUsers = shuffledUsers.slice(0, 4)
       return selectedUsers
