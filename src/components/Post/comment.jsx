@@ -97,7 +97,7 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
   const deleteLike = async () => {
     setLikeCreating(true)
     if (currentUser) {
-      setLikeStyle('fa-solid fa-heart mr-2 text-lg text-purple-700')
+      setLikeStyle('fa-solid fa-heart mr-2 text-lg text-gray-400')
       setLikes(likes - 1)
       setLiked(false)
       setCurrentReaction(null)
@@ -153,12 +153,6 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
         })
         .then((res) => {
           setLikeCreating(false)
-          setUserLike({
-            like_type: type,
-            comment_id: comment.comment_id,
-            user_id: currentUser.userId,
-            like_id: res.data.newLike.like_id
-          })
           console.log('Response:', res)
           setLikeStyle(getLikeStyle(type))
           setUserLike({
