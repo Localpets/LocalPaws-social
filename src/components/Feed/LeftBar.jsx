@@ -25,7 +25,7 @@ const LeftBar = () => {
           <i className='fa-solid fa-envelope text-xl' />
           <span className='icon'>Mensajes</span>
         </Link>
-        <Link href='#' className='btn mb-3 btn-ghost flex items-center justify-start'>
+        <Link to='/search' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <i className='fa-solid fa-search text-xl' />
           <span className='icon'>Buscar</span>
         </Link>
