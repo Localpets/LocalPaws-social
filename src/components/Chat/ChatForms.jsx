@@ -46,11 +46,11 @@ const ChatForms = ({ issending, message, setMessage, handleSubmit, setSelectedIm
     <section>
       {previewImage
         ? (
-          <div className={previewImage ? 'flex justify-center w-full pt-2 bg-[#2a3d60cd] rounded-t-xl' : 'hidden'}>
+          <div className={previewImage ? 'flex justify-center w-full pt-2 bg-[#ddb89288] rounded-t-xl' : 'hidden'}>
             <img
               src={previewImage}
               alt='preview'
-              className={previewImage ? 'w-80 max-h-72 rounded-lg border-2 bg-[#ffffff35] border-[#E0E1DD] object-cover' : 'hidden'}
+              className={previewImage ? 'w-80 max-h-72 rounded-lg border-2 bg-[#ddb89288] border-[#E0E1DD] object-cover' : 'hidden'}
             />
             <button
               className={previewImage ? 'relative right-[23%] self-start mt-3 disabled:hidden' : 'hidden'}
@@ -63,17 +63,17 @@ const ChatForms = ({ issending, message, setMessage, handleSubmit, setSelectedIm
           </div>
           )
         : (
-          <div className={previewMsg ? 'flex items-center pt-6 p-4 h-28  bg-[#2a3d60cd] rounded-t-xl' : 'hidden'}>
+          <div className={previewMsg ? 'flex items-center pt-6 p-4 h-28  bg-[#ddb89288] rounded-t-xl' : 'hidden'}>
             <i className='p-8' />
-            <div className='h-24 max-h-72 w-full bg-[#1B263B] rounded-xl flex flex-col justify-center'>
-              <div className={`absolute w-2 h-24 rounded-s-xl ${previewMsg.sender_id === localuser.user_id ? 'bg-blue-300' : 'bg-green-400'}`} />
+            <div className='h-24 max-h-72 w-full bg-neutral rounded-xl flex flex-col justify-center'>
+              <div className={`absolute w-2 h-24 rounded-s-xl ${previewMsg.sender_id === localuser.user_id ? 'bg-yellow-500' : 'bg-orange-800'}`} />
               <div>
                 {currentchat.sender_id === message.sender_id
                   ? (
-                    <p className={previewMsg.sender_id === localuser.user_id ? 'hidden' : `${previewMsg.messageText === '' ? 'absolute' : ''} ml-4`}>Tu</p>
+                    <p className={previewMsg.sender_id === localuser.user_id ? 'hidden' : `${previewMsg.messageText === '' ? 'absolute' : ''} ml-4 text-white`}>Tu</p>
                     )
                   : (
-                    <p className={previewMsg.sender_id === localuser.user_id ? 'hidden' : `${previewMsg.messageText === '' ? 'absolute' : ''} ml-4`}>{currentchat.username}</p>
+                    <p className={previewMsg.sender_id === localuser.user_id ? 'hidden' : `${previewMsg.messageText === '' ? 'absolute' : ''} ml-4 text-white`}>{currentchat.username}</p>
                     )}
                 {previewMsg.messageText === ''
                   ? (
@@ -102,11 +102,11 @@ const ChatForms = ({ issending, message, setMessage, handleSubmit, setSelectedIm
           )}
 
       <form
-        className={previewImage || previewMsg ? 'p-4 pt-2 pb-4 flex bg-[#2a3d60cd] w-full items-center' : 'p-4 pt-0 pb-4 flex w-full items-center'}
+        className={previewImage || previewMsg ? 'p-4 pt-2 pb-4 flex bg-[#ddb89288] w-full items-center' : 'p-4 pt-0 pb-4 flex w-full items-center'}
         encType='multipart/form-data' // Configura el tipo de contenido como 'multipart/form-data'
       >
         <div className='mr-5 h-10'>
-          <label htmlFor='image' className='badge rounded-lg cursor-pointer flex gap-2 h-full mx-auto bg-[#0D1B2A] hover:bg-[#2a3d60cd] text-white border-[#0D1B2A] ml-2'>
+          <label htmlFor='image' className='badge rounded-lg cursor-pointer flex gap-2 h-full mx-auto bg-neutral hover:bg-[#4c3720cd] text-white ml-2'>
             <i className='fa-solid fa-image' />
           </label>
           <input
@@ -134,7 +134,7 @@ const ChatForms = ({ issending, message, setMessage, handleSubmit, setSelectedIm
           className='btn btn-ghost'
           onClick={(e) => handleSubmit(e, selectedImage, handleDeleteImage())}
         >
-          <BsFillSendFill className={previewImage ? 'text-white text-xl hover:text-primary' : 'text-[#0D1B2A] text-xl hover:text-[#2a3d60cd]'} />
+          <BsFillSendFill className={previewImage ? 'text-white text-xl hover:text-primary' : 'text-neutral text-xl hover:text-[#2a3d60cd]'} />
         </button>
       </form>
     </section>

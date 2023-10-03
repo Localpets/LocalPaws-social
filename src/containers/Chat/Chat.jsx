@@ -57,7 +57,7 @@ const Chat = () => {
   return (
     <section className='h-[100vh] flex w-full'>
       {/* Panel lateral izquierdo en pantallas medianas y grandes */}
-      <section className='hidden w-40 h-full border-r-2 bg-primary md:flex flex-col justify-between items-center gap-18 p-4 py-8'>
+      <section className='hidden w-40 h-full border-r-2 bg-neutral md:flex flex-col justify-between items-center gap-18 p-4 py-8'>
         <h1 className='font-bold text-white text-center text-xl'>PawsPlorer Messenger</h1>
         <ul className='flex flex-col items-center justify-center gap-8'>
 
@@ -117,7 +117,7 @@ const Chat = () => {
                 <h2 className='font-bold text-neutral text-xl'>PawsChatea</h2>
               </li>
               <li>
-                <BsChatFill className='text-primary text-2xl' />
+                <BsChatFill className='text-neutral text-2xl' />
               </li>
             </ul>
 
@@ -143,11 +143,11 @@ const Chat = () => {
               {/* Título y botones en menú móvil */}
               <ul className='w-full flex flex-wrap items-center justify-start pb-2 pt-2 gap-4'>
                 <li>
-                  <h2 className='font-bold text-slate-800 text-xl'>Conversations</h2>
+                  <h2 className='font-bold text-neutral text-xl'>Conversations</h2>
                 </li>
                 <li>
                   <li>
-                    <BsChatFill className='text-slate-800 text-2xl' />
+                    <BsChatFill className='text-neutral text-2xl' />
                   </li>
                 </li>
               </ul>
@@ -160,7 +160,8 @@ const Chat = () => {
             </>
             )}
         {/* Sección final con botones en menú móvil */}
-        <section className=' w-full bg-[#1B263B] flex flex-col justify-between items-center justify-self-end gap-4 p-4 rounded-lg'>
+        <section className=' w-full bg-primary flex flex-col justify-between items-center justify-self-end gap-4 p-4 rounded-lg'>
+
           <h1 className='font-bold text-white text-xl'>PawsPlorer Messenger</h1>
           <ul className='flex flex-row items-center justify-center'>
 

@@ -188,14 +188,14 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
   Socketsforchatsmodule(currentchat, setCurrentchat, chatContainerRef, setReactions)
 
   return (
-    <section className='border-2 flex flex-col justify-start flex-1 h-full w-full'>
+    <section className='flex flex-col justify-start flex-1 h-full w-full'>
 
       <ConversationHeader currentchat={currentchat} toggleSideContactsStyle={toggleSideContactsStyle} toggleHamburguerStyle={toggleHamburguerStyle} />
 
       {currentchat && currentchat.conversation
         ? <section className='h-full overflow-auto'>
 
-          <div className='flex flex-col w-full h-full justify-end bg-[url("https://th.bing.com/th/id/R.1ea0ebcbf8c6694d32ee696a9b2d6ebf?rik=ybM99YoaAJuoLg&pid=ImgRaw&r=0")] bg-cover rounded-br-lg'>
+          <div className='flex flex-col w-full h-full justify-end bg-[url("https://wallpapercave.com/wp/wp9599638.jpg")] bg-cover rounded-br-lg'>
             <section className='p-4 pb-6 overflow-auto' ref={chatContainerRef}>
               <div className='flex justify-center text-lg text-[#1B263B]'>
                 <h1 className='w-[30em] text-center bg-[#ffffffa6] rounded-3xl p-2'>Chatea con tus amigos, reacciona a sus mensajes y socializa con toda la comunida de pawsplorer</h1>
@@ -228,8 +228,8 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                             className={`flex flex-col chat ${message.sender_id === localuser.user_id ? 'chat-end' : 'chat-start'}`}
                             key={message.id}
                           >
-                            <div className='chat-bubble bg-[#1B263B] text-white flex items-start text-left gap-4'>
-                              <div className={`message-content ${message.image_url !== '' ? ' ' : ''}`}>
+                            <div className='chat-bubble bg-neutral text-white flex items-start text-left gap-4'>
+                              <div className={`message-content pt-1 ${message.image_url !== '' ? ' ' : ''}`}>
                                 {editingMessageId === message.id
                                   ? <>
                                     <input
@@ -246,14 +246,14 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                                   : (
                                     <section>
                                       {hasReplies && messageReplies[message.id].length > 0
-                                        ? <div className='bg-[#2a3d6087] rounded-xl pr-20 pb-2 text-left text-[#ffffff7a]'>
+                                        ? <div className='bg-[#8f6e4c88] rounded-xl pr-20 pb-2 text-left text-[#ffffff7a]'>
                                           {/* Renderiza el texto de la respuesta aquí */}
                                           {messageReplies[message.id].map(reply => {
                                             const ReplyUsername = users.find(user => user.user_id === reply.senderId)
                                             console.log(reply)
                                             return (
                                               <div key={reply.id} className='gap-2'>
-                                                <div className={`absolute h-14 w-2 rounded-s-xl ${reply.senderId === localuser.user_id ? 'bg-green-400' : 'bg-blue-300'}`} />
+                                                <div className={`absolute h-14 w-2 rounded-s-xl ${reply.senderId === localuser.user_id ? 'bg-orange-800' : 'bg-yellow-500'}`} />
                                                 <p className='pl-4 text-white'>{ReplyUsername.username}</p>
                                                 <p className='ml-8'>{reply.text}</p>
                                               </div>
@@ -274,17 +274,17 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                                               )}
                                           <button
                                             ref={buttonRef}
-                                            className={` hidden-button bg-[#2a3d60cd] text-sm rounded-xl top-2 ${message.sender_id === localuser.user_id ? '' : 'hidden'}`}
+                                            className={` hidden-button bg-[#ddb89288] text-sm text-neutral rounded-full p-1 ${message.sender_id === localuser.user_id ? '' : 'hidden'}`}
                                             onClick={() => toggleMenu(message.id)}
                                           > ⊚
                                           </button>
                                           <button
-                                            className={` hidden-button absolute bg-[#2a3d60cd] text-sm rounded-xl w-6 h-6 ${message.sender_id === localuser.user_id ? 'left-[-2em] top-2' : 'right-[-2em] top-2'}`}
+                                            className={` hidden-button absolute bg-[#ddb89288] text-sm text-neutral rounded-xl w-6 h-6 ${message.sender_id === localuser.user_id ? 'left-[-2em] top-2' : 'right-[-2em] top-2'}`}
                                             onClick={() => HandleReplyMsg(message.id, message.text, message.sender_id, message.image_url)}
                                           > ⤺
                                           </button>
                                           <button
-                                            className={` hidden-button absolute bg-[#2a3d60cd] rounded-xl w-6 h-6 p-1 ${message.sender_id === localuser.user_id ? 'left-[-4em] top-2' : 'right-[-4em] top-2'}`}
+                                            className={` hidden-button absolute bg-[#ddb89288] text-neutral rounded-xl w-6 h-6 p-1 ${message.sender_id === localuser.user_id ? 'left-[-4em] top-2' : 'right-[-4em] top-2'}`}
                                             onClick={() => toggleReactMenu(message.id)}
                                           >
                                             <svg viewBox='0 0 15 15' width='15' preserveAspectRatio='xMidYMid meet' className='' fill='none'>
