@@ -346,8 +346,10 @@ const PostPage = () => {
   }
 
   const submitComment = async () => {
+    console.log('submitComment')
+    const text = document.getElementById('commentInput').value
     if (currentUser) {
-      const text = document.querySelector('.commentInput').value
+      console.log(text)
       if (!text) {
         swal('Error', 'No puedes enviar un comentario vacío', 'error')
         return
@@ -365,7 +367,7 @@ const PostPage = () => {
         await makeRequest.post('/comment/create/', body)
           .then((res) => {
             setCommentCreating(false)
-            document.querySelector('.commentInput').value = ''
+            document.getElementById('commentInput').value = ''
             console.log(res)
             setComments([
               ...comments,
@@ -673,11 +675,12 @@ const PostPage = () => {
               <div className='input-group'>
                 <input
                   type='text'
+                  id='commentInput'
                   placeholder='Haz un comentario...'
-                  className='border border-secondary bg-white w-full text-black active:border-secondary focus:border-secondary focus:ring-0'
+                  className='border-secondary bg-white w-full text-black active:border-secondary focus:border-secondary focus:ring-0'
                 />
                 <button
-                  className='btn btn-square border-secondary bg-white hover:bg-secondary'
+                  className='btn btn-square border-secondary commentInput bg-white hover:bg-secondary'
                   onClick={submitComment}
                   disabled={commentLoading}
                 >
