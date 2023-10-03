@@ -6,7 +6,6 @@ import jwtDecode from 'jwt-decode'
 
 // Constantes de entorno
 // TODO: Cambiar por variables de entorno
-// const jwtCookie = Cookies.get('access_token') // Reemplaza 'nombre_de_tu_cookie' con el nombre real de tu cookie
 const secretKey = 'localpaws_api_key'
 
 export default function useFindUser (userId) {

@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import swal from 'sweetalert'
 import { Link } from '@tanstack/router'
 import { makeRequest } from '../../library/axios'
-import Comment from './Comment'
+import CommentSkeleton from './CommentSkeleton'
+import Comment from './comment'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import useFindUser from '../../hooks/useFindUser'
 import './Comments.css'
@@ -15,7 +16,7 @@ const PostPage = () => {
   const [currentUser, setCurrentUser] = useState(null)
   const [isCurrentUserCommentAuthor, setIsCurrentUserCommentAuthor] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false) // Nuevo estado de carga
-
+  const [friendsLiked, setFriendsLiked] = useState([])
   // Estados del post y sus props
   const [post, setPost] = useState({})
   const [postUser, setPostUser] = useState({})
@@ -24,14 +25,16 @@ const PostPage = () => {
   const [likes, setLikes] = useState(0)
   const [userLike, setUserLike] = useState(null)
   const [liked, setLiked] = useState(false)
+  const [likeCreating, setLikeCreating] = useState(false)
   const [isHoveringLike, setIsHoveringLike] = useState(false)
-  const [likeStyle, setLikeStyle] = useState('fa-solid fa-heart mr-2 text-lg')
+  const [likeStyle, setLikeStyle] = useState('fa-solid fa-heart mr-2 text-lg text-gray-400')
   const [currentReaction, setCurrentReaction] = useState(null)
 
   // Estados de comentarios
   const [comments, setComments] = useState(null)
   const [commentsLoading, setCommentsLoading] = useState(true)
   const [commentLoading, setCommentLoading] = useState(false)
+  const [commentCreating, setCommentCreating] = useState(false)
 
   // Constantes
 
@@ -51,7 +54,7 @@ const PostPage = () => {
         username: user.username,
         thumbnail: user.thumbnail
       })
-      console.log(currentUser, 'currentUser') // Agrega esta línea
+      // console.log(currentUser, 'currentUser') // Agrega esta línea
       if (currentUser && currentUser.userId === post.post_user_id) {
         setIsCurrentUserCommentAuthor(true)
       }
@@ -83,7 +86,7 @@ const PostPage = () => {
                 comment_id: comment.comment_id,
                 comment_user_id: comment.comment_user_id,
                 text: comment.text,
-                usuario: commentUser.username,
+                username: commentUser.username,
                 ImageUser: commentUser.thumbnail
               }
             }
@@ -164,19 +167,37 @@ const PostPage = () => {
       }
     }
 
+    const fetchFriendsLiked = async () => {
+      try {
+        const response = await makeRequest.get('/user/find/all')
+        const users = response.data.users
+        if (currentUser) {
+          const followers = await makeRequest.get(`/follow/find/followed/${currentUser.userId}`)
+          const friends = followers.data.follows.map((follow) => follow.user_id)
+          const friendsData = users.filter((user) => friends.includes(user.user_id))
+          // console.log(friendsData)
+          // filter people who liked this post
+          const likesData = await makeRequest.get(`/like/post/${postId}`)
+          const likes = likesData.data.likes
+          const friendsLiked = friendsData.filter((friend) => likes.some((like) => like.user_id === friend.user_id))
+          // set max 3 friends
+          setFriendsLiked(friendsLiked.slice(0, 3))
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchFriendsLiked()
     fetchLikes()
   }, [postId, currentUser])
 
   async function handleLike (type = 'Like') {
+    setLikeCreating(true)
     if (!liked && currentUser) {
       setLikes(likes + 1)
       setLiked(true)
       setCurrentReaction(type)
-      setUserLike({
-        like_type: type,
-        post_id: postId,
-        user_id: currentUser.userId
-      })
 
       if (typeof type !== 'string') {
         type = 'Like'
@@ -200,6 +221,13 @@ const PostPage = () => {
           }
         })
         .then((res) => {
+          setLikeCreating(false)
+          setUserLike({
+            like_type: type,
+            post_id: postId,
+            user_id: currentUser.userId,
+            like_id: res.data.newLike.like_id
+          })
           console.log('Response:', res)
           setLikeStyle(getLikeStyle(type))
         })
@@ -213,6 +241,7 @@ const PostPage = () => {
       makeRequest
         .delete(`/like/delete/${postId}/${currentUser.userId}`)
         .then((res) => {
+          setLikeCreating(false)
           console.log(res)
         })
         .catch((error) => {
@@ -237,6 +266,7 @@ const PostPage = () => {
           like_type: type
         })
         .then((res) => {
+          setLikeCreating(false)
           console.log(res)
         })
         .catch((error) => {
@@ -271,14 +301,21 @@ const PostPage = () => {
   }
 
   const deleteLike = async () => {
+    setLikeCreating(true)
     if (currentUser) {
       setLikeStyle('fa-solid fa-heart mr-2 text-lg')
       setLikes(likes - 1)
       setLiked(false)
       setCurrentReaction(null)
       setUserLike(null)
-      const res = await makeRequest.delete(`/like/delete/${postId}/${currentUser.userId}`)
-      console.log(res)
+      await makeRequest.delete(`/like/delete/${postId}/${currentUser.userId}`)
+        .then((res) => {
+          setLikeCreating(false)
+          console.log(res)
+        })
+        .catch((error) => {
+          console.error('Error deleting like:', error)
+        })
     }
   }
 
@@ -318,23 +355,26 @@ const PostPage = () => {
 
       try {
         setCommentLoading(true) // Habilitar la animación de carga
-
-        const res = await makeRequest.post('/comment/create/', body)
-        console.log(res)
-        setComments([
-          ...comments,
-          {
-            ImageUser: res.data.comment.user.avatar,
-            comment_user_id: res.data.comment.user.user_id,
-            comment_id: res.data.comment.comment_id,
-            text: res.data.comment.text,
-            usuario: res.data.comment.user.username
-          }
-        ])
-
-        if (res.status === 200) {
-          document.querySelector('.commentInput').value = ''
-        }
+        setCommentCreating(true)
+        await makeRequest.post('/comment/create/', body)
+          .then((res) => {
+            setCommentCreating(false)
+            document.querySelector('.commentInput').value = ''
+            console.log(res)
+            setComments([
+              ...comments,
+              {
+                ImageUser: res.data.comment.user.avatar,
+                comment_user_id: res.data.comment.user.user_id,
+                comment_id: res.data.comment.comment_id,
+                text: res.data.comment.text,
+                username: res.data.comment.user.username
+              }
+            ])
+          })
+          .catch((error) => {
+            console.error('Error creating comment:', error)
+          })
       } catch (error) {
         console.error(error)
       } finally {
@@ -358,6 +398,25 @@ const PostPage = () => {
   const handleSelector = (e) => {
     handleLike(e)
     setIsHoveringLike(false)
+  }
+
+  // Aquí puedes obtener la URL de la página actual, por ejemplo:
+  const pageUrl = window.location.href
+
+  // Función para manejar el clic del botón de compartir
+  const handleShareClick = () => {
+    // Puedes usar la función `navigator.share` para abrir un cuadro de diálogo de compartir si está disponible en el navegador.
+    if (navigator.share) {
+      navigator.share({
+        title: `${postUser.first_name} en PawsPlorer: ${post.text}`,
+        url: pageUrl
+      })
+        .then(() => console.log('Página compartida con éxito'))
+        .catch((error) => console.error('Error al compartir:', error))
+    } else {
+      // Si el navegador no admite la API de compartir, puedes proporcionar un mensaje alternativo o implementar una lógica personalizada.
+      alert(`Comparte esta página: ${pageUrl}`)
+    }
   }
 
   return (
@@ -487,58 +546,122 @@ const PostPage = () => {
                           <Comment comment={comment} deleteComment={deleteComment} key={comment.comment_id} reactions={ReactionsArray} currentUser={currentUser} />
                         ))
                       )
-                    : (
-                      <div className='mx-auto pt-20 w-full flex justify-center'>
-                        <p className='text-2xl text-gray-400'>Sé el primero en comentar!</p>
-                      </div>
-                      )}
+                    : !commentCreating && Array.isArray(comments) && comments.length === 0
+                        ? (
+                          <div className='mx-auto pt-20 w-full flex justify-center'>
+                            <p className='text-2xl text-gray-400'>Sé el primero en comentar!</p>
+                          </div>
+                          )
+                        : null}
+                  {commentCreating && (
+                    <CommentSkeleton />
+                  )}
                 </section>
                 )}
           </ul>
         </div>
         {isHoveringLike && (
-          <div className={post.image === 'no image' ? 'pb-2 ml-4 md:ml-[0.500rem] lg:ml-[4.75rem] w-[14rem] md:w-[16rem]' : 'pb-2 w-[14rem] md:w-[16rem]'} onMouseEnter={() => setIsHoveringLike(true)} onMouseLeave={() => setIsHoveringLike(false)}>
+          <div
+            className={post.image === 'no image' ? 'pb-2 ml-4 md:ml-[0.500rem] lg:ml-[4.75rem] w-[14rem] md:w-[16rem]' : 'pb-2 w-[14rem] md:w-[16rem]'} onMouseEnter={() => setIsHoveringLike(true)} onMouseLeave={() =>
+              setTimeout(() => {
+                setIsHoveringLike(false)
+              }, 800)}
+          >
             <ReactionBarSelector onSelect={handleSelector} reactions={ReactionsArray} iconSize='28px' />
           </div>
         )}
         <div className='flex flex-col'>
           <div className='flex justify-around items-center px-6 py-2 border-t'>
-            <button onClick={liked ? deleteLike : handleLike} onMouseEnter={() => setIsHoveringLike(true)}>
-              <i className={likeStyle} />
-              <span>{likes}</span>
+            {
+            likeCreating
+              ? (
+                <span className='loading loading-spinner' />
+                )
+              : (
+                <div>
+                  <button onClick={liked ? deleteLike : handleLike} onMouseEnter={() => setIsHoveringLike(true)}>
+                    <i className={likeStyle} />
+                  </button>
+                  <span>{likes}</span>
+                </div>
+                )
+            }
+            {/* Make a share button with page link */}
+            <button onClick={handleShareClick}>
+              <i className='fa-regular fa-share-square text-xl text-[#0D1B2A] p-2 cursor-pointer' />
             </button>
-            <i className='fa-regular fa-share-from-square text-xl text-[#0D1B2A] p-2 cursor-pointer' />
             <i className='fa-regular fa-bookmark text-xl text-[#0D1B2A] p-2 cursor-pointer' />
           </div>
-          {/* <div className='flex items-center px-4 pt-2 border-t'>
-            <div className='avatar-group -space-x-4 py-2'>
-              <div className='avatar'>
-                <div className='w-6'>
-                  <img src='https://pbs.twimg.com/profile_images/1683325380441128960/yRsRRjGO_400x400.jpg' />
-                </div>
-              </div>
-              <div className='avatar'>
-                <div className='w-6'>
-                  <img src='https://th.bing.com/th/id/R.56e0bc4e289568f1be79b4a1de53def6?rik=FTrHSGthAHS%2fwA&pid=ImgRaw&r=0' />
-                </div>
-              </div>
-              <div className='avatar'>
-                <div className='w-6'>
-                  <img src='https://pbs.twimg.com/profile_images/1512090674635542529/xZUiesiF_400x400.jpg' />
-                </div>
-              </div>
-              <div className='avatar'>
-                <div className='w-6'>
-                  <img src='https://pbs.twimg.com/profile_images/1635417140118290438/_O05STkG_400x400.jpg' />
-                </div>
-              </div>
-            </div>
+          {/* Montar las fotos un poco encima de otras */}
+          <div className='flex items-center px-4 pt-2 border-t '>
+            {
+              likes > 0 && (
+                friendsLiked > 0
+                  ? (
+                      friendsLiked.map((friend) => (
+                        <div className='avatar' key={friend.user_id}>
+                          <div className='w-6'>
+                            <img src={friend.thumbnail} className='rounded-xl' />
+                          </div>
+                        </div>
+                      ))
+                    )
+                  : userLike && friendsLiked.length > 0
+                    ? (
+                        friendsLiked.map((friend) => (
+                          <div className='avatar' key={friend.user_id}>
+                            <div className='w-6'>
+                              <img src={friend.thumbnail} className='rounded-xl' />
+                            </div>
+                          </div>
+                        ))
+                      )
+                    : !userLike && friendsLiked.length > 0 && likes > 0
+                        ? (
+                            friendsLiked.map((friend) => (
+                              <div className='avatar' key={friend.user_id}>
+                                <div className='w-6'>
+                                  <img src={friend.thumbnail} className='rounded-xl' />
+                                </div>
+                              </div>
+                            ))
+                          )
+                        : userLike
+                          ? (
+                            <div className='avatar'>
+                              <div className='w-6'>
+                                <img src={currentUser.thumbnail} className='rounded-xl' />
+                              </div>
+                            </div>
+                            )
+                          : null
+              )
+
+            }
             <div className='flex ml-2 text-black '>
               <p className='mb-0 text-sm'>
-                Le gusta a Brayan57963 y a 8K personas más
+                {
+                likes > 0 && friendsLiked.length > 0 && !userLike
+                  ? (
+                    <span>
+                      Le gusta a <span className='font-bold'>{friendsLiked.length === 3 ? friendsLiked[Math.floor(Math.random(friendsLiked.length))].first_name : null}</span> y <span className='font-bold'>{likes - 1} personas más</span>
+                    </span>
+                    )
+                  : userLike && friendsLiked.length > 0
+                    ? (
+                      <span className='font-bold'>Te gusta a ti y a {likes - 1} personas más</span>
+                      )
+                    : userLike
+                      ? (
+                        <span className='font-bold'>A ti te gusta esto</span>
+                        )
+                      : (
+                        <span className='font-bold'>Sé el primero en darle like!</span>
+                        )
+               }
               </p>
             </div>
-          </div> */}
+          </div>
           <div className='py-2'>
             <div className='form-control px-4'>
               <div className='input-group'>
