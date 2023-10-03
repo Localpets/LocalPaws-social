@@ -49,10 +49,10 @@ const Login = () => {
           try {
             await makeRequest.post('/auth/login', values)
               .then((res) => {
-                const { user_id } = res.data
+                const token = res.data.token
 
                 const localStorageData = {
-                  userId: user_id
+                  userId: token
                 }
 
                 localStorage.setItem('user', JSON.stringify(localStorageData))

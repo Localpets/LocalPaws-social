@@ -63,7 +63,6 @@ const PostForm = ({ addPost }) => {
     formData.append('category', values.category)
     formData.append('image', values.image)
     formData.append('post_user_id', user.user_id)
-
     try {
       const response = await makeRequest.post('post/create', formData)
       setInitialPostValues(values)

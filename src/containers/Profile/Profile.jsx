@@ -65,7 +65,7 @@ const Profile = () => {
     queryFn: async () => {
       return await makeRequest.get(`/user/find/id/${currentUser}`).then((res) => {
         setUserprofile(res.data.user)
-        
+
         return userprofile
       })
     }
@@ -78,21 +78,19 @@ const Profile = () => {
       try{
         const res = await makeRequest.get(`/follow/followed/count/${currentUser}`)
         setFollowed(res.data)
-      }
-      catch(error) { 
+      } catch (error) {
         console.log(error)
       }
     }
     getFollowed()
 
-/// RUTA SEGUIDORES
+    /// RUTA SEGUIDORES
 
     const getFollowers = async () => {
       try{
         const res = await makeRequest.get(`/follow/followers/count/${currentUser}`)
         setFollowers(res.data)
-      }
-      catch(error) { 
+      } catch (error) {
         console.log(error)
       }
     }
@@ -100,7 +98,7 @@ const Profile = () => {
     setLoading(false)
   }, [setFollowed])
 
-/// OBTENER DATOS DE USUARIO LOGUEADO
+  /// OBTENER DATOS DE USUARIO LOGUEADO
 
   useEffect(() => {
     if (localStorage.getItem('user')) {
@@ -144,7 +142,7 @@ const Profile = () => {
           <h1 className='text-black '>Cargando Perfil</h1>
           </div>
         ) : (
-        <div className='bg-white rounded-lg mt-8 mr-8 text-black'>
+        <div className='bg-white rounded-lg mt-8 pb-6 mr-8 text-black'>
           <div className=''>
             <div className='flex items-center pt-4 justify-center gap-20'>
             <label htmlFor='imageUpload' style={{ cursor: 'pointer' }}>
@@ -173,60 +171,15 @@ const Profile = () => {
                     <p className='text-left text-md'>Hola, me llamo ricardo, me gusta el anime y leer novelas de chinos coreanos. Espero te guste mi actitud</p>
                   </div>
                 </div>
-            </div>
-            <div className='flex gap-8 m-8 pt-2 mt-8  pb-8 mb-6'>
-              <div className=' gap-8'>
-                <div className='flex gap-4'>
-                  <div>
-                  <button
-                    className='w-[5vw] h-30 rounded-full'
-                    onClick={handleAddClick}
-                    >
-                    <img 
-                      className='w-[5vw] h-30 rounded-full'
-                      src='https://i.pinimg.com/564x/46/74/a3/4674a3e9525f7ad39e3e3c5d54673bfb.jpg'> 
-                    </img>
-                    </button>
-                  <div className='bg-black rounded-full w-20 h-20 flex justify-center items-center'>
-                    <button
-                      onClick={() => (
-                        swal.fire(
-                          'Good job!',
-                          'You clicked the button!',
-                          'success'
-                        )
-                      )}>
-                      <input type="file"  className='opacity-0' placeholder='qa'/>
-                      <i className='fa-solid fa-xmark'></i>
-                    </button>
-                  </div>
-                  
-                  <h1 className='flex justify-center font-semibold'>Add</h1>
-                  </div>
-                  <div>
-                  <button
-                    className='w-[5vw] h-30 rounded-full'
-                    onClick={handleAddClick}
-                    >
-                    <img 
-                      className='w-[5vw] h-30 rounded-full'
-                      src='https://i.pinimg.com/564x/46/74/a3/4674a3e9525f7ad39e3e3c5d54673bfb.jpg'> 
-                    </img>
-                  </button>
-                  
-                  <h1 className='flex justify-center font-semibold'>Add</h1>
-                  </div>
-                </div>          
-              </div>
-              
-            </div>
+            </div> 
           </div>
         </div>
+
         )}
         {showNewSection && (
           <section className='min-h-auto min-w-screen pr-8'>
           <div className='rounded-lg pt-2 text-black'>
-                    <section className='m-2 pb-4 mx-40'>
+                    <section className='  '>
                       <div className='rounded-lg flex justify-center bg-white'>
                         <PostForm />
                       </div>
@@ -235,17 +188,17 @@ const Profile = () => {
         </section> 
         
         )}
-        <section className='min-h-auto min-w-screen pr-8'>
-          <div className='rounded-lg pt-2 text-black'>
-                    <section className='m-2 mx-40'>
+        <section className='min-h-auto min-w-screen '>
+          <div className='rounded-lg pt- text-black '>
+                    <section className='mt-2 mr-8'>
                       <div className='rounded-lg border flex justify-center bg-white'>
                         <h1 className='mt-2 mb-2 font-bold'>Publicaciones</h1>
                       </div>
 
-                      <div className='flex flex-col pb-4 pt-4 items-center w-full gap-4 min-h-screen'>
+                      <div className='flex flex-col pb-4 pt-2 items-center gap-4 min-h-screen'>
                       {postloading ? (
                         <div className='flex justify-center gap-4 pt-8 '>
-                        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900' />
+                        <div className='animate-spin rounded-full h-8 border-b-2 border-gray-900' />
                         <h1 className='text-black '>Cargando Posts</h1>
                         </div>
                       ) : (

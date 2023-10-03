@@ -8,6 +8,27 @@
   --rounded-badge: 0px;
 }
 
+.iw {
+  border: 1px solid white;
+  border-radius: 5px;
+  font-size: 16px;
+  line-height: 16px;
+  padding: 3px;
+  break-inside: avoid;
+  display: flex;
+  align-items: center;
+}
+
+.gatoLlorando {
+  margin-right: 5px;
+  background-position: -48px -744px;
+  background: url(//cdn.fbicons.net/i2.webp?v=1573165257) no-repeat top left;
+  display: inline-block;
+  height: 24px;
+  width: 24px;
+  box-sizing: border-box;
+}
+
 .input:focus {
   border-color: rgb(
     98,
