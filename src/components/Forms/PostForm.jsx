@@ -168,8 +168,8 @@ const PostForm = ({ addPost }) => {
               </div>
 
               <div className='flex justify-between items-center w-full px-2 mr-2'>
-                <div className='w-24 h-9'>
-                  <label htmlFor='image' className='badge rounded-lg cursor-pointer flex gap-2 h-full mx-auto bg-secondary text-white ml-2'>
+                <div className='w-24 h-9 '>
+                  <label htmlFor='image' className='badge hover:bg-[#e49db0] rounded-lg cursor-pointer flex gap-2 h-full mx-auto border-secondary bg-secondary text-white ml-2'>
                     <i className='fa-solid fa-image text-white' />
                     <h3 className='text-white'>Imagen</h3>
                   </label>

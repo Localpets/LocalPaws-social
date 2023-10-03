@@ -48,7 +48,26 @@ const Search = () => {
     }
 
     fetchData()
-  }, [])
+
+    const getfollowers = async () => {
+      if (localuser) {
+        try {
+          setLoading(true)
+          if (localuser !== null) {
+            const res = await makeRequest.get(`/follow/find/followed/${localuser.user_id}`)
+            setUserFollows(res.data.follows)
+          }
+          setLoading(false)
+        } catch (err) {
+          console.error(err)
+        }
+      } else {
+        console.log('El usuario no está definido')
+      }
+    }
+
+    getfollowers()
+  }, [localuser])
 
   useEffect(() => {
     const combinedResults = []
@@ -162,7 +181,8 @@ const Search = () => {
                 <>
                   {searchResults.map((result) => {
                     const isUser = result.hasOwnProperty('user_id')
-
+                    const followeduser = userFollows.find((follows) => follows.user_id === result.user_id)
+                    console.log(followeduser)
                     return (
                       <div
                         key={result.user_id || result.post_id}
@@ -190,7 +210,7 @@ const Search = () => {
                         </Link>
                         {isUser && (
                           <button
-                            className={`ml-auto content-end ${loading[result.user_id] ? 'button-loading' : ''}`}
+                            className={`ml-auto content-end ${loading[result.user_id] ? 'bg-black' : ''}`}
                             onClick={() => {
                               FollowClick(result, result.followeduser, localuser)
                             }}
@@ -215,12 +235,13 @@ const Search = () => {
                                   </svg>
                                 </div>
                                 )
-                              : result.followeduser
+                              : followeduser
                                 ? (
                                   <PiUserCircleMinusDuotone className='text-[2em] text-red-500' />
                                   )
                                 : (
                                   <PiUserCirclePlusDuotone className='text-[2em] text-green-500' />
+
                                   )}
                           </button>
                         )}
