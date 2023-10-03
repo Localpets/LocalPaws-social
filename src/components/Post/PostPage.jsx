@@ -129,7 +129,6 @@ const PostPage = () => {
 
   useEffect(() => {
     const fetchLikes = async () => {
-      setLikeCreating(true)
       try {
         const response = await makeRequest.get(`/like/post/${postId}`)
         const likeData = response.data.likes
