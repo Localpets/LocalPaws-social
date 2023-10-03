@@ -5,30 +5,40 @@ import useFindUser from '../../hooks/useFindUser'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import PropTypes from 'prop-types'
 
-const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
+const Comment = ({ comment, deleteComment, reactions, currentUser, isActive, setActiveComment }) => {
   const { user } = useFindUser()
 
-  // State variables
-  const [isHovering, setIsHovering] = useState(false)
-  const [loadingUser, setLoadingUser] = useState(true)
-  const [likeCreating, setLikeCreating] = useState(false)
+  // user variables
   const isCurrentUserCommentAuthor = user !== null && comment.comment_user_id === user.user_id
+
+  // Like variables
+  const [likeCreating, setLikeCreating] = useState(false)
   const [likes, setLikes] = useState(0)
   const [userLike, setUserLike] = useState(null)
   const [liked, setLiked] = useState(false)
   const [likeStyle, setLikeStyle] = useState('fa-solid fa-heart mr-2 text-lg text-gray-400')
-  const [currentReaction, setCurrentReaction] = useState(null)
+
+  // Comment variables
   const [commentLoading, setCommentLoading] = useState(false)
-  const [isHoveringLike, setIsHoveringLike] = useState(false)
+  const [isHovering, setIsHovering] = useState(false)
+
+  // Input variables
   const [isEditing, setIsEditing] = useState(false)
+  const [loadingUser, setLoadingUser] = useState(true)
+
+  // Reaction bar variables
+  const [isReactionBarOpen, setIsReactionBarOpen] = useState(false)
+  const [closeTimeout, setCloseTimeout] = useState(null)
+  const [currentReaction, setCurrentReaction] = useState(null)
 
   useEffect(() => {
     // Fetch likes for the comment when the component mounts
     fetchLikesForComment()
+    setIsReactionBarOpen(isActive)
     if (currentUser) {
       setLoadingUser(false)
     }
-  }, [])
+  }, [isActive])
 
   // Fetch likes for the comment
   const fetchLikesForComment = async () => {
@@ -223,7 +233,7 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
   // Handle reaction selector
   const handleSelector = (type) => {
     console.log(type)
-    setIsHoveringLike(false)
+    handleMouseLeave()
     handleLike(type)
   }
   // Handle edit comment
@@ -259,6 +269,23 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
       setIsEditing(false)
       setCommentLoading(false)
     }
+  }
+
+  // Handle mouse enter event on the button
+  const handleMouseEnter = () => {
+    clearTimeout(closeTimeout) // Cancelar cualquier temporizador de cierre pendiente
+    setIsReactionBarOpen(true)
+    setActiveComment(comment.comment_id)
+  }
+
+  // Handle mouse leave event on the ReactionBar or the button
+  const handleMouseLeave = () => {
+    // Establecer un temporizador para cerrar la barra después de 500ms (ajusta el valor según desees)
+    const timeoutId = setTimeout(() => {
+      setIsReactionBarOpen(false)
+      setActiveComment(null)
+    }, 700)
+    setCloseTimeout(timeoutId)
   }
 
   return (
@@ -343,7 +370,11 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
                 )
               : (
                 <div>
-                  <button onClick={liked ? deleteLike : handleLike} onMouseEnter={() => setIsHoveringLike(true)}>
+                  <button
+                    onClick={liked ? deleteLike : handleLike}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
                     <i className={likeStyle} />
                   </button>
                   <span>{likes}</span>
@@ -352,12 +383,9 @@ const Comment = ({ comment, deleteComment, reactions, currentUser }) => {
             }
           </section>
           {
-          isHoveringLike && (
+          isReactionBarOpen && (
             <div
-              className='relative' onMouseEnter={() => setIsHoveringLike(true)} onMouseLeave={() =>
-                setTimeout(() => {
-                  setIsHoveringLike(false)
-                }, 800)}
+              className='relative' onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
             >
               <ReactionBarSelector onSelect={handleSelector} reactions={reactions} iconSize='18px' />
             </div>
@@ -373,7 +401,9 @@ Comment.propTypes = {
   comment: PropTypes.object.isRequired,
   deleteComment: PropTypes.func.isRequired,
   reactions: PropTypes.array.isRequired,
-  currentUser: PropTypes.object.isRequired
+  currentUser: PropTypes.object.isRequired,
+  isActive: PropTypes.bool.isRequired,
+  setActiveComment: PropTypes.func.isRequired
 }
 
 export default Comment

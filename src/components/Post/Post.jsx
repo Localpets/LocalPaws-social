@@ -12,25 +12,30 @@ const Post = ({ post, postUser, deletePost }) => {
   // Initialization of states
   // userState
   const { user } = useFindUser()
-
   const [currentUser, setCurrentUser] = useState(null)
   const [isCurrentUserCommentAuthor, setIsCurrentUserCommentAuthor] = useState(false)
+
   // imageLoaded state
   const [imageLoaded, setImageLoaded] = useState(false)
   const [componentStyle, setComponentStyle] = useState('border p-4 bg-white rounded-lg w-full h-auto')
+
   // like states
   const [likes, setLikes] = useState(0)
   const [liked, setLiked] = useState(false)
   const [likeStyle, setLikeStyle] = useState('fa-solid fa-heart mr-2 text-lg text-gray-400')
   const [userLike, setUserLike] = useState(null)
-  const [isHoveringLike, setIsHoveringLike] = useState(false)
+  const [isReactionBarOpen, setIsReactionBarOpen] = useState(false)
   const [currentReaction, setCurrentReaction] = useState(null)
+  const [closeTimeout, setCloseTimeout] = useState(null)
   const [likeCreating, setLikeCreating] = useState(false)
+
   // post props
   const { text, image, category, createdAt, post_id, post_user_id } = post
+
   // post user props
   const { first_name, last_name, thumbnail } = postUser
   const dateToLocal = new Date(createdAt).toLocaleDateString()
+
   // coments states
   const [comments, setComments] = useState(0)
 
@@ -244,7 +249,7 @@ const Post = ({ post, postUser, deletePost }) => {
 
   const handleSelector = (e) => {
     handleLike(e)
-    setIsHoveringLike(false)
+    setIsReactionBarOpen(false)
   }
 
   function resetLikeState () {
@@ -253,6 +258,21 @@ const Post = ({ post, postUser, deletePost }) => {
     setLiked(false)
     setCurrentReaction(null)
     setUserLike(null)
+  }
+
+  // Handle mouse enter event on the button
+  const handleMouseEnter = () => {
+    clearTimeout(closeTimeout) // Cancelar cualquier temporizador de cierre pendiente
+    setIsReactionBarOpen(true)
+  }
+
+  // Handle mouse leave event on the ReactionBar or the button
+  const handleMouseLeave = () => {
+    // Establecer un temporizador para cerrar la barra después de 500ms (ajusta el valor según desees)
+    const timeoutId = setTimeout(() => {
+      setIsReactionBarOpen(false)
+    }, 700)
+    setCloseTimeout(timeoutId)
   }
 
   // Aquí puedes obtener la URL de la página actual, por ejemplo:
@@ -339,12 +359,9 @@ const Post = ({ post, postUser, deletePost }) => {
           />
         )}
         <footer className='relative'>
-          {isHoveringLike && (
+          {isReactionBarOpen && (
             <div
-              className='pb-2 w-[14rem] md:w-[14rem] absolute -top-16 -left-5' onMouseEnter={() => setIsHoveringLike(true)} onMouseLeave={() =>
-                setTimeout(() => {
-                  setIsHoveringLike(false)
-                }, 800)}
+              className='pb-2 w-[14rem] md:w-[14rem] absolute -top-12 -left-4' onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
             >
               <ReactionBarSelector onSelect={handleSelector} reactions={ReactionsArray} iconSize='28px' />
             </div>
@@ -357,7 +374,7 @@ const Post = ({ post, postUser, deletePost }) => {
                 )
               : (
                 <div>
-                  <button onClick={liked ? deleteLike : handleLike} onMouseEnter={() => setIsHoveringLike(true)}>
+                  <button onClick={liked ? deleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
                     <i className={likeStyle} />
                   </button>
                   <span>{likes}</span>

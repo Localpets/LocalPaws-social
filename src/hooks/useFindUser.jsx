@@ -19,15 +19,17 @@ export default function useFindUser (userId) {
     const getCookie = () => {
       try {
         const formLS = JSON.parse(window.localStorage.getItem('user'))
-        // console.log(formLS, 'formLS')
-        const decoded = jwtDecode(formLS.userId, secretKey)
+        if (formLS) {
+          // console.log(formLS, 'formLS')
+          const decoded = jwtDecode(formLS.userId, secretKey)
 
-        // El JWT es válido y se ha descifrado correctamente
-        // Puedes acceder al ID de usuario desde el objeto decodificado
-        const userId = decoded.id
-        // console.log(userId, 'userId')
-        // Realiza cualquier acción que necesites con el ID de usuario (por ejemplo, mostrar contenido autenticado)
-        return userId
+          // El JWT es válido y se ha descifrado correctamente
+          // Puedes acceder al ID de usuario desde el objeto decodificado
+          const userId = decoded.id
+          // console.log(userId, 'userId')
+          // Realiza cualquier acción que necesites con el ID de usuario (por ejemplo, mostrar contenido autenticado)
+          return userId
+        }
       } catch (error) {
         // El JWT no es válido o ha expirado
         console.error('Error al verificar el JWT:', error)

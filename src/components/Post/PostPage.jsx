@@ -26,13 +26,15 @@ const PostPage = () => {
   const [userLike, setUserLike] = useState(null)
   const [liked, setLiked] = useState(false)
   const [likeCreating, setLikeCreating] = useState(false)
-  const [isHoveringLike, setIsHoveringLike] = useState(false)
   const [likeStyle, setLikeStyle] = useState('fa-solid fa-heart mr-2 text-lg text-gray-400')
   const [currentReaction, setCurrentReaction] = useState(null)
+  const [closeTimeout, setCloseTimeout] = useState(null)
+  const [isReactionBarOpen, setIsReactionBarOpen] = useState(false)
 
   // Estados de comentarios
   const [comments, setComments] = useState(null)
   const [commentsLoading, setCommentsLoading] = useState(true)
+  const [activeComment, setActiveComment] = useState(null)
   const [commentLoading, setCommentLoading] = useState(false)
   const [commentCreating, setCommentCreating] = useState(false)
 
@@ -405,7 +407,23 @@ const PostPage = () => {
 
   const handleSelector = (e) => {
     handleLike(e)
-    setIsHoveringLike(false)
+    setIsReactionBarOpen(false)
+  }
+
+  // Handle mouse enter event on the button
+  const handleMouseEnter = () => {
+    clearTimeout(closeTimeout) // Cancelar cualquier temporizador de cierre pendiente
+    setIsReactionBarOpen(true)
+  }
+
+  // Handle mouse leave event on the ReactionBar or the button
+  const handleMouseLeave = () => {
+    // Establecer un temporizador para cerrar la barra después de 500ms (ajusta el valor según desees)
+    const timeoutId = setTimeout(() => {
+      setIsReactionBarOpen(false)
+      setActiveComment(null)
+    }, 700)
+    setCloseTimeout(timeoutId)
   }
 
   // Aquí puedes obtener la URL de la página actual, por ejemplo:
@@ -551,7 +569,15 @@ const PostPage = () => {
                   {Array.isArray(comments) && comments.length > 0
                     ? (
                         comments.map((comment) => (
-                          <Comment comment={comment} deleteComment={deleteComment} key={comment.comment_id} reactions={ReactionsArray} currentUser={currentUser} />
+                          <Comment
+                            key={comment.comment_id}
+                            comment={comment}
+                            deleteComment={deleteComment}
+                            reactions={ReactionsArray}
+                            currentUser={currentUser}
+                            isActive={comment.comment_id === activeComment}
+                            setActiveComment={setActiveComment}
+                          />
                         ))
                       )
                     : !commentCreating && Array.isArray(comments) && comments.length === 0
@@ -568,12 +594,9 @@ const PostPage = () => {
                 )}
           </ul>
         </div>
-        {isHoveringLike && (
+        {isReactionBarOpen && (
           <div
-            className={post.image === 'no image' ? 'pb-2 ml-4 md:ml-[0.500rem] lg:ml-[4.75rem] w-[14rem] md:w-[16rem]' : 'pb-2 w-[14rem] md:w-[16rem]'} onMouseEnter={() => setIsHoveringLike(true)} onMouseLeave={() =>
-              setTimeout(() => {
-                setIsHoveringLike(false)
-              }, 800)}
+            className={post.image === 'no image' ? 'pb-2 ml-4 md:ml-[0.500rem] lg:ml-[4.75rem] w-[14rem] md:w-[16rem]' : 'pb-2 w-[14rem] md:w-[16rem]'} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
           >
             <ReactionBarSelector onSelect={handleSelector} reactions={ReactionsArray} iconSize='28px' />
           </div>
@@ -587,7 +610,7 @@ const PostPage = () => {
                 )
               : (
                 <div>
-                  <button onClick={liked ? deleteLike : handleLike} onMouseEnter={() => setIsHoveringLike(true)}>
+                  <button onClick={liked ? deleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
                     <i className={likeStyle} />
                   </button>
                   <span>{likes}</span>
