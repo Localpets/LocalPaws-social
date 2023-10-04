@@ -7,6 +7,8 @@ import { useQuery } from '@tanstack/react-query'
 import { makeRequest } from '../../library/axios'
 import PostQueryWrapper from '../../components/Post/PostQueryWrapper'
 import PostForm from '../../components/Forms/PostForm'
+import swal from 'sweetalert'
+import ProfileSettings from './ProfileSettings'
 
 const Profile = () => {
   const [userLogged, setUserLogged] = useState({})
@@ -17,8 +19,11 @@ const Profile = () => {
   const [loading, setLoading] = useState(true)
   const [userpost, setUserpost] = useState([])
   const [postloading, setPostLoading] = useState(true)
-  const [uploadedImage, setUploadedImage] = useState(null)
-  const [showNewSection, setShowNewSection] = useState(false)
+  const [loadedImage, setLoadedImage] = useState(null)
+  const [showLoadedImage, setShowLoadedImage] = useState(false)
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [showNewSection, setShowNewSection] = useState(false);
+  const [settings, setSettings] = useState(false)
 
   /// MOSTRAR PAWSTEAR EN VISTA DE PERFIL
 
@@ -26,7 +31,25 @@ const Profile = () => {
     setShowNewSection(!showNewSection) // Cambia el estado showNewSection
   }
 
-  /// MOSTRAR HISTORIAS DE PERFIL
+/// MOSTRAR VISTA DE SETTINGS
+  const toggleSettings = () => {
+    setSettings(!settings)
+  }
+
+/// MOSTRAR HISTORIAS DE PERFIL
+
+  // Manejador de clic en la imagen y el texto "Add"
+  const handleAddClick = () => {
+    // Aquí puedes cargar la imagen, por ejemplo, desde un formulario o una API.
+    // Supongamos que cargamos una imagen de ejemplo.
+    const imageUrl = 'https://i.pinimg.com/564x/46/74/a3/4674a3e9525f7ad39e3e3c5d54673bfb.jpg';
+
+    localStorage.setItem('loadedImage', imageUrl);
+    // Actualiza el estado de la imagen cargada
+    setLoadedImage(imageUrl);
+    // Muestra la imagen cargada y el botón
+    setShowLoadedImage(true);
+  };
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0]
@@ -108,49 +131,55 @@ const Profile = () => {
 
   return (
     <section className='min-h-screen min-w-screen pb-8'>
+      {settings && (
+        <ProfileSettings />
+      )}
       <Header />
       <section className='pl-[25%] pt-16'>
-        <LeftBar user={userLogged} isProfileView toggleNewSection={toggleNewSection} />
-        {loading
-          ? (
-            <div className='flex justify-center gap-4 pt-8 '>
-              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900' />
-              <h1 className='text-black '>Cargando Perfil</h1>
-            </div>
-            )
-          : (
-            <div className='bg-white rounded-lg mt-8 pb-6 mr-8 text-black'>
-              <div className=''>
-                <div className='flex items-center pt-4 justify-center gap-20'>
-                  <label htmlFor='imageUpload' style={{ cursor: 'pointer' }}>
-                    <img
-                      className='w-[10vw] h-[10vw] rounded-full'
-                      src={uploadedImage || userprofile.thumbnail}
-                      alt='user-thumbnail'
-                    />
-                    <input
-                      type='file'
-                      id='imageUpload'
-                      accept='image/*'
-                      style={{ display: 'none' }}
-                      onChange={handleImageUpload}
-                    />
-                  </label>
-                  <div className='flex flex-col gap-2 pt-8'>
-                    <h1 className='text-lg text-left font-bold'>{userprofile.first_name} {userprofile.last_name}</h1>
-                    <h2 className='text-left text-lg'>{userprofile.username}</h2>
+        <LeftBar user={userLogged} isProfileView={true} toggleNewSection={toggleNewSection} />
+        {loading ? (
+          <div className='flex justify-center gap-4 pt-8 '>
+          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900' />
+          <h1 className='text-black '>Cargando Perfil</h1>
+          </div>
+        ) : (
+        <div className='bg-white rounded-lg mt-8 pb-6 mr-8 text-black'>
+          <div className=''>
+            <div className='flex items-center pt-4 justify-center gap-10'>
+            <label htmlFor='imageUpload' style={{ cursor: 'pointer' }}>
+              <img
+                className='w-[10vw] h-[10vw] rounded-full'
+                src={uploadedImage || userprofile.thumbnail}
+                alt='user-thumbnail'
+              />
+              <input
+                type='file'
+                id='imageUpload'
+                accept='image/*'
+                style={{ display: 'none' }}
+                onChange={handleImageUpload}
+              />
+            </label>
+                <div className='flex flex-col gap-2 pt-8'>
+                  <h1 className='text-lg text-left font-bold'>{userprofile.first_name} {userprofile.last_name}</h1>
+                  <h2 className='text-left text-lg'>{userprofile.username}</h2>
                     <div className='flex gap-4 text-[0.8em]'>
                       <h2 className=''><span className='font-bold'>{followers.followersCount}</span> Seguidores</h2>
                       <h2 className=''><span className='font-bold'>{followed.followedCount}</span> Seguidos</h2>
                     </div>
-                    <div className='max-w-[35vw]'>
-                      <h2 className='font-bold text-left text-lg'>Biografia</h2>
-                      <p className='text-left text-md'>Hola, me llamo ricardo, me gusta el anime y leer novelas de chinos coreanos. Espero te guste mi actitud</p>
-                    </div>
+                  <div className='max-w-[35vw]'>
+                    <h2 className='font-bold text-left text-lg'>Biografia</h2>
+                    <p className='text-left text-md'>Hola, me llamo ricardo, me gusta el anime y leer novelas de chinos coreanos. Espero te guste mi actitud</p>
                   </div>
                 </div>
-              </div>
-            </div>
+                <section className='h-full flex self-start pt-8'>
+                  <button onClick={toggleSettings} className='btn btn-ghost justify-self-start rounded-lg cursor-pointer flex gap-2 bg-primary text-white border-primary '>
+                    <h1>Edit profile</h1>
+                  </button>
+                </section>
+            </div> 
+          </div>
+        </div>
 
             )}
         {showNewSection && (
