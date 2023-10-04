@@ -11,6 +11,7 @@ import PostQueryWrapper from '../../components/Post/PostQueryWrapper'
 import Middle from '../../components/Feed/Middle'
 import PostForm from '../../components/Forms/PostForm'
 import swal from 'sweetalert'
+import ProfileSettings from './ProfileSettings'
 
 const Profile = () => {
   const [userLogged, setUserLogged] = useState({})
@@ -25,12 +26,18 @@ const Profile = () => {
   const [showLoadedImage, setShowLoadedImage] = useState(false)
   const [uploadedImage, setUploadedImage] = useState(null);
   const [showNewSection, setShowNewSection] = useState(false);
+  const [settings, setSettings] = useState(false)
 
 /// MOSTRAR PAWSTEAR EN VISTA DE PERFIL
 
   const toggleNewSection = () => {
     setShowNewSection(!showNewSection); // Cambia el estado showNewSection
   };
+
+/// MOSTRAR VISTA DE SETTINGS
+  const toggleSettings = () => {
+    setSettings(!settings)
+  }
 
 /// MOSTRAR HISTORIAS DE PERFIL
 
@@ -133,6 +140,9 @@ const Profile = () => {
 
   return (
     <section className='min-h-screen min-w-screen pb-8'>
+      {settings && (
+        <ProfileSettings />
+      )}
       <Header />
       <section className='pl-[25%] pt-16'>
         <LeftBar user={userLogged} isProfileView={true} toggleNewSection={toggleNewSection} />
@@ -144,7 +154,7 @@ const Profile = () => {
         ) : (
         <div className='bg-white rounded-lg mt-8 pb-6 mr-8 text-black'>
           <div className=''>
-            <div className='flex items-center pt-4 justify-center gap-20'>
+            <div className='flex items-center pt-4 justify-center gap-10'>
             <label htmlFor='imageUpload' style={{ cursor: 'pointer' }}>
               <img
                 className='w-[10vw] h-[10vw] rounded-full'
@@ -171,6 +181,11 @@ const Profile = () => {
                     <p className='text-left text-md'>Hola, me llamo ricardo, me gusta el anime y leer novelas de chinos coreanos. Espero te guste mi actitud</p>
                   </div>
                 </div>
+                <section className='h-full flex self-start pt-8'>
+                  <button onClick={toggleSettings} className='btn btn-ghost justify-self-start rounded-lg cursor-pointer flex gap-2 bg-primary text-white border-primary '>
+                    <h1>Edit profile</h1>
+                  </button>
+                </section>
             </div> 
           </div>
         </div>
