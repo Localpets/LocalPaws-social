@@ -5,7 +5,7 @@ import useFindUser from '../../hooks/useFindUser'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import PropTypes from 'prop-types'
 
-const Comment = ({ slaveComment, reactions, currentUser, isActive, setActiveComment, handleDeleteComment }) => {
+const SlaveComment = ({ slaveComment, reactions, currentUser, isActive, setActiveComment, handleDeleteComment }) => {
   const { user } = useFindUser()
   const isCurrentUserCommentAuthor = user && user.userId === slaveComment.comment_user_id
 
@@ -404,7 +404,7 @@ const Comment = ({ slaveComment, reactions, currentUser, isActive, setActiveComm
   )
 }
 
-Comment.propTypes = {
+SlaveComment.propTypes = {
   slaveComment: PropTypes.object.isRequired,
   reactions: PropTypes.array.isRequired,
   currentUser: PropTypes.object,
@@ -413,4 +413,4 @@ Comment.propTypes = {
   handleDeleteComment: PropTypes.func.isRequired
 }
 
-export default Comment
+export default SlaveComment
