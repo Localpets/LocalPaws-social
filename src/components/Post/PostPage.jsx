@@ -398,6 +398,7 @@ const PostPage = () => {
               ])
             } else {
               setCommentCreating(false)
+              setParentCommentForReply(null)
               document.getElementById('commentInput').value = ''
               console.log(res)
               const siblingsCommentList = [...newSlaveComments, res.data.comment]
@@ -772,12 +773,19 @@ const PostPage = () => {
                         : (
                           <span className='font-bold'>Sé el primero en darle like!</span>
                           )
-                 }
+            }
                 </p>
               </div>
             </div>
             <div className='py-2'>
               <div className='form-control px-4'>
+                {
+                  parentCommentForReply && (
+                    <div className='flex items-center'>
+                      <p>Respondiendo al comentario {parentCommentForReply}</p>
+                    </div>
+                  )
+                }
                 <div className='input-group'>
                   <input
                     type='text'
