@@ -14,7 +14,6 @@ export function SocketProvider ({ children }) {
   const [socket, setSocket] = useState(null)
 
   useEffect(() => {
-    // Función para obtener el token almacenado en localStorage y decodificarlo
     const getTokenFromLocalStorage = () => {
       try {
         const tokenData = JSON.parse(localStorage.getItem('user'))
@@ -28,7 +27,6 @@ export function SocketProvider ({ children }) {
     }
 
     const token = getTokenFromLocalStorage()
-    console.log(token)
 
     if (token) {
       const decodedToken = jwtDecode(token)
