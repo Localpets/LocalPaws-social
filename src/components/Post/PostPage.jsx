@@ -4,7 +4,7 @@ import swal from 'sweetalert'
 import { Link } from '@tanstack/router'
 import { makeRequest } from '../../library/axios'
 import CommentSkeleton from './CommentSkeleton'
-import Comment from './comment'
+import Comment from './Comment'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import useFindUser from '../../hooks/useFindUser'
 import './Comments.css'
@@ -12,16 +12,19 @@ import './Comments.css'
 const PostPage = () => {
   const postId = new URL(window.document.location).pathname.split('/').pop()
   const { user } = useFindUser()
-  // Estados del componente
+  // Estados del Usuario
   const [currentUser, setCurrentUser] = useState(null)
   const [isCurrentUserCommentAuthor, setIsCurrentUserCommentAuthor] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false) // Nuevo estado de carga
-  const [friendsLiked, setFriendsLiked] = useState([])
+
   // Estados del post y sus props
   const [post, setPost] = useState({})
   const [postUser, setPostUser] = useState({})
+  const [editingLoading, setEditingLoading] = useState(false) // Nuevo estado de carga
+  const [isEditingPost, setIsEditingPost] = useState(false)
+  const [isDeletingPost, setIsDeletingPost] = useState(false) // Nuevo estado de carga
 
   // Estados de likes
+  const [friendsLiked, setFriendsLiked] = useState([])
   const [likes, setLikes] = useState(0)
   const [userLike, setUserLike] = useState(null)
   const [liked, setLiked] = useState(false)
@@ -37,6 +40,7 @@ const PostPage = () => {
   const [activeComment, setActiveComment] = useState(null)
   const [commentLoading, setCommentLoading] = useState(false)
   const [commentCreating, setCommentCreating] = useState(false)
+  const [parentCommentForReply, setParentCommentForReply] = useState(null)
 
   // Constantes
 
@@ -301,17 +305,17 @@ const PostPage = () => {
   }
 
   function resetLikeState () {
-    setLikeStyle('fa-solid fa-heart mr-2 text-lg')
+    setLikeStyle('fa-solid fa-heart mr-2 text-lg text-gray-400')
     setLikes(likes - 1)
     setLiked(false)
     setCurrentReaction(null)
     setUserLike(null)
   }
 
-  const deleteLike = async () => {
+  const handleDeleteLike = async () => {
     setLikeCreating(true)
     if (currentUser) {
-      setLikeStyle('fa-solid fa-heart mr-2 text-lg')
+      setLikeStyle('fa-solid fa-heart mr-2 text-lg text-gray-400')
       setLikes(likes - 1)
       setLiked(false)
       setCurrentReaction(null)
@@ -327,8 +331,8 @@ const PostPage = () => {
     }
   }
 
-  const deletePost = async (postId) => {
-    setIsDeleting(true) // Habilitar la animación de carga
+  const handleDeletePost = async (postId) => {
+    setIsDeletingPost(true) // Habilitar la animación de carga
     try {
       await makeRequest.delete(`/post/delete/${postId}/${user.user_id}`)
       console.log('Post eliminado')
@@ -338,7 +342,7 @@ const PostPage = () => {
       console.error(err)
     } finally {
       // Deshabilita la vista de carga después de completar la eliminación, ya sea con éxito o error
-      setIsDeleting(false)
+      setIsDeletingPost(false)
 
       // Redirige o realiza otras acciones después de la eliminación del post
       setTimeout(() => {
@@ -347,8 +351,45 @@ const PostPage = () => {
     }
   }
 
-  const submitComment = async () => {
-    console.log('submitComment')
+  const handleEditPost = async () => {
+    console.log('Editing Post...')
+    setIsEditingPost(true)
+    console.log('isEditingPost:', isEditingPost)
+    setEditingLoading(true) // Habilitar la animación de carga
+    try {
+      const text = document.getElementById('postText').value
+      const body = {
+        text
+      }
+      console.log('Data being sent:', body, post.post_id, currentUser.userId)
+      await makeRequest.put(`/post/update/${post.post_id}/${currentUser.userId}`, body)
+        .then((res) => {
+          console.log(res)
+          setPost({
+            ...post,
+            text
+          })
+          setEditingLoading(false)
+          setIsEditingPost(false)
+          console.log('isEditingPost:', isEditingPost)
+        })
+        .catch((error) => {
+          console.error('Error updating post:', error)
+        })
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setEditingLoading(false) // Deshabilitar la animación de carga después de completar la solicitud
+    }
+  }
+
+  const handleCancelEditPost = () => {
+    setIsEditingPost(false)
+  }
+
+  const handleCommentSubmit = async () => {
+    console.log('handleCommentSubmit')
+    // If i press enter, submit the comment
     const text = document.getElementById('commentInput').value
     if (currentUser) {
       console.log(text)
@@ -359,7 +400,7 @@ const PostPage = () => {
       const body = {
         comment_post_id: postId,
         comment_user_id: currentUser.userId,
-        parent_comment_id: null,
+        parent_comment_id: parentCommentForReply,
         text
       }
 
@@ -393,7 +434,13 @@ const PostPage = () => {
     }
   }
 
-  const deleteComment = async (commnet_id) => {
+  const handleSelectParentComment = (comment_id) => {
+    setParentCommentForReply(comment_id)
+    console.log('handleSelectParentComment', comment_id)
+    document.getElementById('commentInput').focus()
+  }
+
+  const handleDeleteComment = async (commnet_id) => {
     if (currentUser) {
       try {
         setComments(comments.filter((comment) => comment.comment_id !== commnet_id))
@@ -447,7 +494,7 @@ const PostPage = () => {
 
   return (
     <div className='Comments py-10'>
-      {isDeleting && (
+      {isDeletingPost && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-50'>
           <div className='flex flex-col items-center text-white'>
             <div className='spinner-border mb-2' role='status'>
@@ -517,16 +564,30 @@ const PostPage = () => {
                 <ul tabIndex={0} className='dropdown-content z-[1] menu p-2 shadow bg-white rounded-box w-52'>
                   <li>
                     <button
-                      onClick={() => deletePost(post.post_id)}
+                      onClick={() => handleDeletePost(post.post_id)}
                       className='text-black hover:text-red-600 dark:hover:text-red-600'
                     >
-                      <p>Eliminar publicación</p><i className='fa-solid fa-trash text-md' />
+                      <p>Eliminar publicación</p>
+                      <i className='fa-solid fa-trash text-md' />
                     </button>
                   </li>
                   <li>
-                    <button className='text-black hover:text-blue-600 dark:hover:text-blue-600'>
-                      <p>Editar publicación</p><i className='fa-solid fa-edit text-md' />
-                    </button>
+                    {
+                        isEditingPost
+                          ? (
+                            <button className='text-black hover:text-blue-600 dark:hover:text-yellow-600' onClick={handleCancelEditPost}>
+                              <p>Cancelar edición</p>
+                              <i className='fa-solid fa-x text-md' />
+                            </button>
+                            )
+                          : (
+                            <button className='text-black hover:text-blue-600 dark:hover:text-blue-600' onClick={handleEditPost}>
+                              <p>Editar publicación</p>
+                              <i className='fa-solid fa-edit text-md' />
+                            </button>
+                            )
+                        }
+
                   </li>
                 </ul>
               </div>
@@ -551,9 +612,43 @@ const PostPage = () => {
                     alt='imagen-perfil-usuario'
                   />
                 </Link>
-                <div className='contenido-comentario ml-2 text-left text-md'>
-                  {post.text}
-                </div>
+                {
+                  isEditingPost
+                    ? (
+                      <div className='w-full px-4 ml-2 flex gap-4'>
+                        <textarea
+                          className='w-[85%] rounded-lg border border-gray-300 focus:border-secondary focus:ring-0'
+                          defaultValue={post.text}
+                          id='postText'
+                        />
+                        <button
+                          className='btn btn-square bg-white hover:bg-secondary border-white border-none'
+                          onClick={handleEditPost}
+                          disabled={editingLoading}
+                        >
+                          {editingLoading
+                            ? (
+                              <span className='loading loading-sm' /> // Mostrar animación de carga
+                              )
+                            : (
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                height='1em'
+                                viewBox='0 0 512 512'
+                                color='#ffffff'
+                              >
+                                <path d='M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z' />
+                              </svg> // Mostrar "Comentar" cuando no se está cargando
+                              )}
+                        </button>
+                      </div>
+                      )
+                    : (
+                      <div className='contenido-comentario ml-2 text-left text-md'>
+                        {post.text}
+                      </div>
+                      )
+                }
               </div>
             </li>
 
@@ -577,11 +672,12 @@ const PostPage = () => {
                           <Comment
                             key={comment.comment_id}
                             comment={comment}
-                            deleteComment={deleteComment}
+                            handleDeleteComment={handleDeleteComment}
                             reactions={ReactionsArray}
                             currentUser={currentUser}
                             isActive={comment.comment_id === activeComment}
                             setActiveComment={setActiveComment}
+                            handleSelectParentComment={handleSelectParentComment}
                           />
                         ))
                       )
@@ -616,7 +712,7 @@ const PostPage = () => {
                   )
                 : (
                   <div>
-                    <button onClick={liked ? deleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+                    <button onClick={liked ? handleDeleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
                       <i className={likeStyle} />
                     </button>
                     <span>{likes}</span>
@@ -709,7 +805,7 @@ const PostPage = () => {
                   />
                   <button
                     className='btn btn-square border-secondary commentInput bg-white hover:bg-secondary'
-                    onClick={submitComment}
+                    onClick={handleCommentSubmit}
                     disabled={commentLoading}
                   >
                     {commentLoading
