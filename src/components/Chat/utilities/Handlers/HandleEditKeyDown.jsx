@@ -1,6 +1,6 @@
 import { makeRequest } from '../../../../library/axios'
 
-export async function handleEditKeyDown (event, messageRoom, messageId, userId, receiverId, createdAt, editInputValue, setEditingMessageId, setOpenMenuId, socket) {
+export async function handleEditKeyDown (event, messageRoom, messageId, messageImage, userId, receiverId, createdAt, editInputValue, setEditingMessageId, setOpenMenuId, socket) {
   if (event.key === 'Enter') {
     event.preventDefault()
     try {
@@ -16,6 +16,7 @@ export async function handleEditKeyDown (event, messageRoom, messageId, userId, 
           user_id: userId,
           receiver_id: receiverId,
           text: editInputValue,
+          image_url: messageImage,
           edited: 1,
           room: messageRoom,
           createdAt

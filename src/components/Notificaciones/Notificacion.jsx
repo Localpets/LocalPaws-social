@@ -18,7 +18,6 @@ const Notificaciones = () => {
   const { loggedUser } = useAuthStore()
 
   const { user } = useFindUser(loggedUser)
-  console.log(user)
 
   const Types = {
     Like: likeIcon,
@@ -38,8 +37,7 @@ const Notificaciones = () => {
   const { isLoading, error, data } = useQuery({
     queryKey: ['notification'],
     queryFn: async () => {
-      const id = user.user_id
-      return await makeRequest.get(`/notification/find/id/receiver/${id}`).then((res) => {
+      return await makeRequest.get(`/notification/find/id/receiver/${user.user_id}`).then((res) => {
         setNotification(res.data.notifications)
         console.log(res.data.notifications)
 

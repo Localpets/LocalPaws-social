@@ -6,6 +6,7 @@ import {
   BsFillDoorOpenFill,
   BsChatFill
 } from 'react-icons/bs'
+import { HiUserGroup } from 'react-icons/hi'
 import { Link } from '@tanstack/router'
 import useChatStore from '../../context/ChatStore'
 import ConversationModule from '../../components/Chat/ConversationModule'
@@ -15,12 +16,14 @@ import useAuthStore from '../../context/AuthContext'
 import useFindUser from '../../hooks/useFindUser'
 import { useSocket } from '../../socket/socket'
 import './Chat.css'
+import GroupsView from '../../components/Chat/GroupsView'
 
 // Componente principal Chat
 const Chat = () => {
   const [currentchat, setCurrentchat] = useState([])
   const chatContainerRef = useRef(null)
   const [showContacts, setShowContacts] = useState(false)
+  const [showGroups, setShowGroups] = useState(false)
   const [localuser, setLocaluser] = useState([])
 
   const { loggedUser } = useAuthStore()
@@ -65,7 +68,10 @@ const Chat = () => {
           <li>
             <button
               className='btn btn-ghost'
-              onClick={() => setShowContacts(false)}
+              onClick={() => {
+                setShowContacts(false)
+                setShowGroups(false)
+              }}
             >
               <BsFillChatDotsFill className='text-white text-2xl' />
             </button>
@@ -75,10 +81,22 @@ const Chat = () => {
               className='btn btn-ghost'
               onClick={() => {
                 setShowContacts(true)
+                setShowGroups(false)
                 handleUpdateContacs()
               }}
             >
               <BsFillPeopleFill className='text-white text-2xl' />
+            </button>
+          </li>
+          <li>
+            <button
+              className='btn btn-ghost'
+              onClick={() => {
+                setShowGroups(true)
+                setShowContacts(false)
+              }}
+            >
+              <HiUserGroup className='text-white text-2xl' />
             </button>
           </li>
           <li>
@@ -109,22 +127,29 @@ const Chat = () => {
             showContacts={showContacts}
             setShowContacts={handleShowContactsClick}
           />)
-        : (
-          <section className='hidden md:w-60 lg:w-80 h-full bg-white md:flex flex-col justify-start items-center gap-18 p-4 py-8 pt-6'>
-            {/* Título y botones */}
-            <ul className='w-full flex flex-wrap items-center justify-around pb-2 pt-2'>
-              <li>
-                <h2 className='font-bold text-neutral text-xl'>PawsChatea</h2>
-              </li>
-              <li>
-                <BsChatFill className='text-neutral text-2xl' />
-              </li>
-            </ul>
+        : null}
+      {showGroups
+        ? <GroupsView />
 
-            {/* Lista de conversaciones */}
-            <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} />
+        : null}
+
+      {!showContacts && !showGroups
+        ? <section className='hidden md:w-60 lg:w-80 h-full bg-white md:flex flex-col justify-start items-center gap-18 p-4 py-8 pt-6'>
+          {/* Título y botones */}
+          <ul className='w-full flex flex-wrap items-center justify-around pb-2 pt-2'>
+            <li>
+              <h2 className='font-bold text-neutral text-xl'>PawsChatea</h2>
+            </li>
+            <li>
+              <BsChatFill className='text-neutral text-2xl' />
+            </li>
+          </ul>
+          <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} />
+          {/* eslint-disable-next-line react/jsx-indent */}
           </section>
-          )}
+        : null}
+
+      {/* Lista de conversaciones */}
 
       {/* mobile menu */}
 
