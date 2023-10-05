@@ -7,12 +7,14 @@ import toast, { Toaster } from 'react-hot-toast'
 import UserLoggedModal from '../../components/Auth/UserLoggedModal'
 import useAuthStore from '../../context/AuthContext'
 import cover from './assets/pexels-sam-lion-6001183.jpg'
+import useFindUser from '../../hooks/useFindUser'
 
 const Login = () => {
   const [error, setError] = useState(false)
   const [success, setSuccess] = useState(false)
   const [userLogged, setUserLogged] = useState(false)
 
+  const { user } = useFindUser()
   const { login } = useAuthStore()
 
   useEffect(() => {
@@ -33,13 +35,11 @@ const Login = () => {
   }, [error, success])
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'))
-
     if (user) {
       login(user.userId, true)
       setUserLogged(true)
     }
-  }, [login])
+  }, [login, user])
 
   return (
     <section className='bg-white min-h-screen'>
@@ -62,6 +62,7 @@ const Login = () => {
                 setSubmitting(false)
               })
             setSuccess(true)
+            setError(null)
 
             setTimeout(() => {
               window.location.href = '/home'

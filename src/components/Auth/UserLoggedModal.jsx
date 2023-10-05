@@ -2,9 +2,18 @@ import { Link } from '@tanstack/router'
 import useFindUser from '../../hooks/useFindUser'
 import Skeleton from 'react-loading-skeleton'
 import '../../../node_modules/react-loading-skeleton/dist/skeleton.css'
+import { useEffect } from 'react'
 
 const UserLoggedModal = () => {
   const { user } = useFindUser()
+
+  useEffect(() => {
+    if (user) {
+      console.log('user', user)
+    }
+  }, [user])
+
+  if (user === 1) return null
 
   return (
     <article className='fixed z-50 inset-0 overflow-y-auto'>

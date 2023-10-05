@@ -34,6 +34,7 @@ const Comment = ({ comment, deleteComment, reactions, currentUser, isActive, set
   useEffect(() => {
     // Fetch likes for the comment when the component mounts
     fetchLikesForComment()
+    // Set the initial state of the reaction bar
     setIsReactionBarOpen(isActive)
     if (currentUser) {
       setLoadingUser(false)
