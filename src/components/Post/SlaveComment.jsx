@@ -2,16 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/router'
 import { makeRequest } from '../../library/axios'
 import useFindUser from '../../hooks/useFindUser'
-import SlaveComment from './SlaveComment'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import PropTypes from 'prop-types'
 
-const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActive, setActiveComment, handleSelectParentComment, slaveCommentList }) => {
+const SlaveComment = ({ slaveComment, reactions, currentUser, handleDeleteComment }) => {
   const { user } = useFindUser()
-
-  // user variables
-  const isCurrentUserCommentAuthor = user !== null && comment.comment_user_id === user.user_id
-
+  const isCurrentUserCommentAuthor = user && user.userId === slaveComment.comment_user_id
+  console.log(slaveComment)
   // Like variables
   const [likeCreating, setLikeCreating] = useState(false)
   const [likes, setLikes] = useState(0)
@@ -22,7 +19,7 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
   // Comment variables
   const [commentLoading, setCommentLoading] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
-  const [slaveComments, setSlaveComments] = useState([])
+
   // Input variables
   const [isEditing, setIsEditing] = useState(false)
   const [loadingUser, setLoadingUser] = useState(true)
@@ -35,25 +32,17 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
   useEffect(() => {
     // Fetch likes for the comment when the component mounts
     fetchLikesForComment()
-    fetchSlavesForComment()
     // Set the initial state of the reaction bar
-    setIsReactionBarOpen(isActive)
     if (currentUser) {
       setLoadingUser(false)
     }
-
-    // If i submit a comment in PostPage component i need to update the slaveCommentList for this comment
-    if (slaveCommentList.length > 0) {
-      console.log('Updating slaveCommentList', slaveCommentList)
-      setSlaveComments(slaveCommentList)
-    }
-  }, [isActive, slaveCommentList])
+  }, [])
 
   // Fetch likes for the comment
   const fetchLikesForComment = async () => {
     try {
       // Replace 'comment_id' with the actual key to access the comment's ID in your 'comment' object
-      const response = await makeRequest.get(`/comment/likes/${comment.comment_id}`)
+      const response = await makeRequest.get(`/comment/likes/${slaveComment.comment_id}`)
         .catch((error) => {
           console.error('Error fetching likes for comment:', error)
         })
@@ -94,21 +83,6 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
     }
   }
 
-  // Fetch the slaves for the comment
-  const fetchSlavesForComment = async () => {
-    try {
-      const response = await makeRequest.get(`/comment/find/parent/${comment.comment_id}`)
-        .catch((error) => {
-          console.error('Error fetching slaves for comment:', error)
-        })
-
-      const slaves = response.data.comments
-      setSlaveComments(slaves)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
   // Get like style
   function getLikeStyle (type) {
     switch (type) {
@@ -137,7 +111,7 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
       setCurrentReaction(null)
       setUserLike(null)
       await makeRequest
-        .delete(`/comment/like/delete/${comment.comment_id}/${currentUser.userId}`)
+        .delete(`/comment/like/delete/${slaveComment.comment_id}/${currentUser.userId}`)
         .then((res) => {
           setLikeCreating(false)
           console.log(res)
@@ -171,12 +145,12 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
       // Debug logging
       console.log('Data being sent:', {
         like_type: likeForDto,
-        comment_id: comment.comment_id,
+        comment_id: slaveComment.comment_id,
         user_id: currentUser.userId
       })
 
       await makeRequest
-        .post(`/comment/like/create/${comment.comment_id}`, {
+        .post(`/comment/like/create/${slaveComment.comment_id}`, {
           like_type: likeForDto,
           user_id: currentUser.userId
         }, {
@@ -191,7 +165,7 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
           setUserLike({
             like_type: type,
             like_id: res.data.like.like_id,
-            comment_id: comment.comment_id,
+            comment_id: slaveComment.comment_id,
             user_id: currentUser.userId
           })
         })
@@ -203,7 +177,7 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
     if (liked && type === currentReaction && !loadingUser) {
       resetLikeState()
       makeRequest
-        .delete(`/comment/like/delete/${comment.comment_id}/${currentUser.userId}`)
+        .delete(`/comment/like/delete/${slaveComment.comment_id}/${currentUser.userId}`)
         .then((res) => {
           setLikeCreating(false)
           console.log(res)
@@ -217,13 +191,13 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
       setCurrentReaction(type)
       console.log('Data being sent:', {
         like_type: type,
-        comment_id: comment.comment_id,
+        comment_id: slaveComment.comment_id,
         like_id: userLike.like_id,
         user_id: currentUser.userId
       })
 
       makeRequest
-        .put(`/comment/like/update/${comment.comment_id}`, {
+        .put(`/comment/like/update/${slaveComment.comment_id}`, {
           like_id: userLike.like_id,
           user_id: currentUser.userId,
           like_type: type
@@ -242,7 +216,7 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
   const handleDeleteClick = () => {
     // Lógica para eliminar el comentario, pasa el comentario como argumento
     if (isCurrentUserCommentAuthor && !loadingUser) {
-      handleDeleteComment(comment.comment_id)
+      handleDeleteComment(slaveComment.comment_id)
     }
   }
   // Handle reaction selector
@@ -261,17 +235,17 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
     const previousSibling = e.target.previousSibling
     if (previousSibling && previousSibling.value !== undefined) {
       const updatedCommentText = previousSibling.value
-      if (updatedCommentText === comment.text || updatedCommentText === null) {
+      if (updatedCommentText === slaveComment.text || updatedCommentText === null) {
         setIsEditing(false)
         setCommentLoading(false)
         return
       }
       try {
-        await makeRequest.put(`/comment/update/${comment.comment_id}`, {
+        await makeRequest.put(`/comment/update/${slaveComment.comment_id}`, {
           text: updatedCommentText
         }).then((res) => {
           console.log(res)
-          comment.text = updatedCommentText
+          slaveComment.text = updatedCommentText
         })
         setIsEditing(false)
       } catch (error) {
@@ -290,7 +264,6 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
   const handleMouseEnter = () => {
     clearTimeout(closeTimeout) // Cancelar cualquier temporizador de cierre pendiente
     setIsReactionBarOpen(true)
-    setActiveComment(comment.comment_id)
   }
 
   // Handle mouse leave event on the ReactionBar or the button
@@ -298,26 +271,25 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
     // Establecer un temporizador para cerrar la barra después de 500ms (ajusta el valor según desees)
     const timeoutId = setTimeout(() => {
       setIsReactionBarOpen(false)
-      setActiveComment(null)
     }, 700)
     setCloseTimeout(timeoutId)
   }
 
   return (
-    <li className='py-2'>
-      <article className='flex flex-col w-full justify-center py-2' onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+    <li className='border-l-2 ml-4 pl-4'>
+      <div className='flex flex-col w-full justify-center py-2' onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
         <div className='flex gap-2'>
-          <Link to={`/profile/${comment.comment_user_id}`}>
+          <Link to={`/profile/${slaveComment.user.user_id}`}>
             <img
               className='h-8 w-8 rounded-full'
-              src={comment.user.avatar}
+              src={slaveComment.user.avatar}
               alt='imagen-perfil-usuario'
             />
           </Link>
           <div className='ml-2 text-left text-md max-w-[65%] lg:max-w-75% lg:items-center gap-2 flex flex-col lg:flex-row'>
-            {comment.user.username}: {isEditing
+            {slaveComment.user.username}: {isEditing
               ? <div className='flex gap-2 items-center'>
-                <input type='text' defaultValue={comment.text} className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm' />
+                <input type='text' defaultValue={slaveComment.text} className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm' />
                 <button
                   className='btn btn-square bg-white hover:bg-secondary border-white border-none'
                   onClick={handleEditClick}
@@ -340,7 +312,7 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
                 </button>
                 {/* eslint-disable-next-line react/jsx-closing-tag-location */}
               </div>
-              : comment.text}
+              : slaveComment.text}
           </div>
           {/* Mostrar el botón de eliminación solo si el usuario actual es el autor del comentario */}
           {isCurrentUserCommentAuthor && isHovering && (
@@ -393,26 +365,23 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
           )}
         </div>
         {/* Display the number of likes and the like button */}
-        <footer className='flex gap-2 py-2 items-center ml-12 h-12'>
-          <section className='w-40'>
+        <div className='flex gap-2 py-2 items-center ml-12 h-12'>
+          <section>
             {
             likeCreating
               ? (
                 <span className='loading loading-spinner' />
                 )
               : (
-                <div className='flex justify-between'>
-                  <div>
-                    <button
-                      onClick={liked ? deleteLike : handleLike}
-                      onMouseEnter={handleMouseEnter}
-                      onMouseLeave={handleMouseLeave}
-                    >
-                      <i className={likeStyle} />
-                    </button>
-                    <span>{likes}</span>
-                  </div>
-                  <button onClick={() => handleSelectParentComment(comment.comment_id)}>Responder</button>
+                <div>
+                  <button
+                    onClick={liked ? deleteLike : handleLike}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <i className={likeStyle} />
+                  </button>
+                  <span>{likes}</span>
                 </div>
                 )
             }
@@ -426,34 +395,17 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
             </div>
           )
           }
-        </footer>
-        <ul>
-          {
-            slaveComments.map((slaveComment) => (
-              <SlaveComment
-                key={slaveComment.comment_id}
-                slaveComment={slaveComment}
-                handleDeleteComment={handleDeleteComment}
-                reactions={reactions}
-                currentUser={currentUser}
-              />
-            ))
-          }
-        </ul>
-      </article>
+        </div>
+      </div>
     </li>
   )
 }
 
-Comment.propTypes = {
-  comment: PropTypes.object.isRequired,
-  handleDeleteComment: PropTypes.func.isRequired,
+SlaveComment.propTypes = {
+  slaveComment: PropTypes.object.isRequired,
   reactions: PropTypes.array.isRequired,
-  currentUser: PropTypes.object.isRequired,
-  isActive: PropTypes.bool.isRequired,
-  setActiveComment: PropTypes.func.isRequired,
-  handleSelectParentComment: PropTypes.func.isRequired,
-  slaveCommentList: PropTypes.array.isRequired
+  currentUser: PropTypes.object,
+  handleDeleteComment: PropTypes.func.isRequired
 }
 
-export default Comment
+export default SlaveComment

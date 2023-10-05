@@ -4,7 +4,7 @@ import swal from 'sweetalert'
 import { Link } from '@tanstack/router'
 import { makeRequest } from '../../library/axios'
 import CommentSkeleton from './CommentSkeleton'
-import Comment from './comment'
+import Comment from './Comment'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import useFindUser from '../../hooks/useFindUser'
 import './Comments.css'
@@ -12,16 +12,19 @@ import './Comments.css'
 const PostPage = () => {
   const postId = new URL(window.document.location).pathname.split('/').pop()
   const { user } = useFindUser()
-  // Estados del componente
+  // Estados del Usuario
   const [currentUser, setCurrentUser] = useState(null)
   const [isCurrentUserCommentAuthor, setIsCurrentUserCommentAuthor] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false) // Nuevo estado de carga
-  const [friendsLiked, setFriendsLiked] = useState([])
+
   // Estados del post y sus props
   const [post, setPost] = useState({})
   const [postUser, setPostUser] = useState({})
+  const [editingLoading, setEditingLoading] = useState(false) // Nuevo estado de carga
+  const [isEditingPost, setIsEditingPost] = useState(false)
+  const [isDeletingPost, setIsDeletingPost] = useState(false) // Nuevo estado de carga
 
   // Estados de likes
+  const [friendsLiked, setFriendsLiked] = useState([])
   const [likes, setLikes] = useState(0)
   const [userLike, setUserLike] = useState(null)
   const [liked, setLiked] = useState(false)
@@ -37,6 +40,8 @@ const PostPage = () => {
   const [activeComment, setActiveComment] = useState(null)
   const [commentLoading, setCommentLoading] = useState(false)
   const [commentCreating, setCommentCreating] = useState(false)
+  const [parentCommentForReply, setParentCommentForReply] = useState(null)
+  const [newSlaveComments, setNewSlaveComments] = useState([])
 
   // Constantes
 
@@ -78,30 +83,8 @@ const PostPage = () => {
         const response = await makeRequest.get(`/comment/find/post/${postId}`)
         const commentsData = response.data.comments
 
-        const validComments = await Promise.all(
-          commentsData.map(async (comment) => {
-            if (comment.comment_user_id) {
-              const userResponse = await makeRequest.get(`/user/find/id/${comment.comment_user_id}`)
-              const commentUser = userResponse.data.user
-
-              return {
-                comment_id: comment.comment_id,
-                comment_user_id: comment.comment_user_id,
-                text: comment.text,
-                username: commentUser.username,
-                ImageUser: commentUser.thumbnail
-              }
-            }
-            return null
-          })
-        )
-
         // Cuando no hay comentarios, establecer comments en un array vacío
-        if (validComments.length === 0) {
-          setComments([])
-        } else {
-          setComments(validComments.filter(Boolean))
-        }
+        setComments(commentsData)
 
         // Después de cargar los comentarios y usuarios, establecer commentsLoading en false
         setCommentsLoading(false)
@@ -301,17 +284,17 @@ const PostPage = () => {
   }
 
   function resetLikeState () {
-    setLikeStyle('fa-solid fa-heart mr-2 text-lg')
+    setLikeStyle('fa-solid fa-heart mr-2 text-lg text-gray-400')
     setLikes(likes - 1)
     setLiked(false)
     setCurrentReaction(null)
     setUserLike(null)
   }
 
-  const deleteLike = async () => {
+  const handleDeleteLike = async () => {
     setLikeCreating(true)
     if (currentUser) {
-      setLikeStyle('fa-solid fa-heart mr-2 text-lg')
+      setLikeStyle('fa-solid fa-heart mr-2 text-lg text-gray-400')
       setLikes(likes - 1)
       setLiked(false)
       setCurrentReaction(null)
@@ -327,8 +310,8 @@ const PostPage = () => {
     }
   }
 
-  const deletePost = async (postId) => {
-    setIsDeleting(true) // Habilitar la animación de carga
+  const handleDeletePost = async (postId) => {
+    setIsDeletingPost(true) // Habilitar la animación de carga
     try {
       await makeRequest.delete(`/post/delete/${postId}/${user.user_id}`)
       console.log('Post eliminado')
@@ -338,7 +321,7 @@ const PostPage = () => {
       console.error(err)
     } finally {
       // Deshabilita la vista de carga después de completar la eliminación, ya sea con éxito o error
-      setIsDeleting(false)
+      setIsDeletingPost(false)
 
       // Redirige o realiza otras acciones después de la eliminación del post
       setTimeout(() => {
@@ -347,8 +330,45 @@ const PostPage = () => {
     }
   }
 
-  const submitComment = async () => {
-    console.log('submitComment')
+  const handleEditPost = async () => {
+    console.log('Editing Post...')
+    setIsEditingPost(true)
+    console.log('isEditingPost:', isEditingPost)
+    setEditingLoading(true) // Habilitar la animación de carga
+    try {
+      const text = document.getElementById('postText').value
+      const body = {
+        text
+      }
+      console.log('Data being sent:', body, post.post_id, currentUser.userId)
+      await makeRequest.put(`/post/update/${post.post_id}/${currentUser.userId}`, body)
+        .then((res) => {
+          console.log(res)
+          setPost({
+            ...post,
+            text
+          })
+          setEditingLoading(false)
+          setIsEditingPost(false)
+          console.log('isEditingPost:', isEditingPost)
+        })
+        .catch((error) => {
+          console.error('Error updating post:', error)
+        })
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setEditingLoading(false) // Deshabilitar la animación de carga después de completar la solicitud
+    }
+  }
+
+  const handleCancelEditPost = () => {
+    setIsEditingPost(false)
+  }
+
+  const handleCommentSubmit = async () => {
+    console.log('handleCommentSubmit')
+    // If i press enter, submit the comment
     const text = document.getElementById('commentInput').value
     if (currentUser) {
       console.log(text)
@@ -359,7 +379,7 @@ const PostPage = () => {
       const body = {
         comment_post_id: postId,
         comment_user_id: currentUser.userId,
-        parent_comment_id: null,
+        parent_comment_id: parentCommentForReply,
         text
       }
 
@@ -368,19 +388,22 @@ const PostPage = () => {
         setCommentCreating(true)
         await makeRequest.post('/comment/create/', body)
           .then((res) => {
-            setCommentCreating(false)
-            document.getElementById('commentInput').value = ''
-            console.log(res)
-            setComments([
-              ...comments,
-              {
-                ImageUser: res.data.comment.user.avatar,
-                comment_user_id: res.data.comment.user.user_id,
-                comment_id: res.data.comment.comment_id,
-                text: res.data.comment.text,
-                username: res.data.comment.user.username
-              }
-            ])
+            if (!parentCommentForReply) {
+              setCommentCreating(false)
+              document.getElementById('commentInput').value = ''
+              console.log(res)
+              setComments([
+                ...comments,
+                res.data.comment
+              ])
+            } else {
+              setCommentCreating(false)
+              setParentCommentForReply(null)
+              document.getElementById('commentInput').value = ''
+              console.log(res)
+              const siblingsCommentList = [...newSlaveComments, res.data.comment]
+              setNewSlaveComments(siblingsCommentList)
+            }
           })
           .catch((error) => {
             console.error('Error creating comment:', error)
@@ -393,7 +416,13 @@ const PostPage = () => {
     }
   }
 
-  const deleteComment = async (commnet_id) => {
+  const handleSelectParentComment = (comment_id) => {
+    setParentCommentForReply(comment_id)
+    console.log('handleSelectParentComment', comment_id)
+    document.getElementById('commentInput').focus()
+  }
+
+  const handleDeleteComment = async (commnet_id) => {
     if (currentUser) {
       try {
         setComments(comments.filter((comment) => comment.comment_id !== commnet_id))
@@ -447,8 +476,8 @@ const PostPage = () => {
 
   return (
     <div className='Comments py-10'>
-      {isDeleting && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
+      {isDeletingPost && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-50'>
           <div className='flex flex-col items-center text-white'>
             <div className='spinner-border mb-2' role='status'>
               <span className='sr-only'>Eliminando publicación...</span>
@@ -470,13 +499,13 @@ const PostPage = () => {
           : (
             <img
               id='img-post'
-              className='w-10 max-h-screen flex rounded-l-xl'
+              className='w-10 max-h-screen flex bg-white rounded-l-xl'
               src={post.image}
             />
             )
       }
-      <div className={post.image === 'no image' ? 'flex flex-col w-[80vw] mx-auto bg-white h-full rounded-r-xl rounded-l-xl' : 'flex flex-col w-full bg-white h-full rounded-r-xl'}>
-        <div className='flex items-center justify-between border-b px-4 py-4 h-20'>
+      <article className={post.image === 'no image' ? 'flex flex-col w-[80vw] mx-auto bg-white h-full rounded-r-xl rounded-l-xl' : 'flex flex-col w-full bg-white h-full rounded-r-xl'}>
+        <header className='flex items-center justify-between border-b px-4 py-4 h-20'>
           <div className='flex items-center'>
             <div className='flex'>
               <img
@@ -517,11 +546,30 @@ const PostPage = () => {
                 <ul tabIndex={0} className='dropdown-content z-[1] menu p-2 shadow bg-white rounded-box w-52'>
                   <li>
                     <button
-                      onClick={() => deletePost(post.post_id)}
-                      className='text-gray-400 hover:text-red-600 dark:hover:text-red-600'
+                      onClick={() => handleDeletePost(post.post_id)}
+                      className='text-black hover:text-red-600 dark:hover:text-red-600'
                     >
-                      <p>Eliminar publicación</p><i className='fa-solid fa-trash text-md' />
+                      <p>Eliminar publicación</p>
+                      <i className='fa-solid fa-trash text-md' />
                     </button>
+                  </li>
+                  <li>
+                    {
+                        isEditingPost
+                          ? (
+                            <button className='text-black hover:text-blue-600 dark:hover:text-yellow-600' onClick={handleCancelEditPost}>
+                              <p>Cancelar edición</p>
+                              <i className='fa-solid fa-x text-md' />
+                            </button>
+                            )
+                          : (
+                            <button className='text-black hover:text-blue-600 dark:hover:text-blue-600' onClick={handleEditPost}>
+                              <p>Editar publicación</p>
+                              <i className='fa-solid fa-edit text-md' />
+                            </button>
+                            )
+                        }
+
                   </li>
                 </ul>
               </div>
@@ -530,7 +578,7 @@ const PostPage = () => {
           <a href='/home' className='flex justify-between items-center cursor-pointer '>
             <i className='fa-solid fa-close text-xl text-[#0D1B2A] pr-6' />
           </a>
-        </div>
+        </header>
         <div
           id='style-7'
           className='h-[40em] w-full p-[1em] flex text-black overflow-auto'
@@ -546,9 +594,43 @@ const PostPage = () => {
                     alt='imagen-perfil-usuario'
                   />
                 </Link>
-                <div className='contenido-comentario ml-2 text-left text-md'>
-                  {post.text}
-                </div>
+                {
+                  isEditingPost
+                    ? (
+                      <div className='w-full px-4 ml-2 flex gap-4'>
+                        <textarea
+                          className='w-[85%] rounded-lg border border-gray-300 focus:border-secondary focus:ring-0'
+                          defaultValue={post.text}
+                          id='postText'
+                        />
+                        <button
+                          className='btn btn-square bg-white hover:bg-secondary border-white border-none'
+                          onClick={handleEditPost}
+                          disabled={editingLoading}
+                        >
+                          {editingLoading
+                            ? (
+                              <span className='loading loading-sm' /> // Mostrar animación de carga
+                              )
+                            : (
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                height='1em'
+                                viewBox='0 0 512 512'
+                                color='#ffffff'
+                              >
+                                <path d='M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z' />
+                              </svg> // Mostrar "Comentar" cuando no se está cargando
+                              )}
+                        </button>
+                      </div>
+                      )
+                    : (
+                      <div className='contenido-comentario ml-2 text-left text-md'>
+                        {post.text}
+                      </div>
+                      )
+                }
               </div>
             </li>
 
@@ -572,11 +654,13 @@ const PostPage = () => {
                           <Comment
                             key={comment.comment_id}
                             comment={comment}
-                            deleteComment={deleteComment}
+                            handleDeleteComment={handleDeleteComment}
                             reactions={ReactionsArray}
                             currentUser={currentUser}
                             isActive={comment.comment_id === activeComment}
                             setActiveComment={setActiveComment}
+                            handleSelectParentComment={handleSelectParentComment}
+                            slaveCommentList={newSlaveComments}
                           />
                         ))
                       )
@@ -594,50 +678,41 @@ const PostPage = () => {
                 )}
           </ul>
         </div>
-        {isReactionBarOpen && (
-          <div
-            className={post.image === 'no image' ? 'pb-2 ml-4 md:ml-[0.500rem] lg:ml-[4.75rem] w-[14rem] md:w-[16rem]' : 'pb-2 w-[14rem] md:w-[16rem]'} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
-          >
-            <ReactionBarSelector onSelect={handleSelector} reactions={ReactionsArray} iconSize='28px' />
-          </div>
-        )}
-        <div className='flex flex-col'>
-          <div className='flex justify-around items-center px-6 py-2 border-t'>
-            {
-            likeCreating
-              ? (
-                <span className='loading loading-spinner' />
-                )
-              : (
-                <div>
-                  <button onClick={liked ? deleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                    <i className={likeStyle} />
-                  </button>
-                  <span>{likes}</span>
-                </div>
-                )
-            }
-            {/* Make a share button with page link */}
-            <button onClick={handleShareClick}>
-              <i className='fa-regular fa-share-square text-xl text-[#0D1B2A] p-2 cursor-pointer' />
-            </button>
-            <i className='fa-regular fa-bookmark text-xl text-[#0D1B2A] p-2 cursor-pointer' />
-          </div>
-          {/* Montar las fotos un poco encima de otras */}
-          <div className='flex items-center px-4 pt-2 border-t '>
-            {
-              likes > 0 && (
-                friendsLiked > 0
-                  ? (
-                      friendsLiked.map((friend) => (
-                        <div className='avatar' key={friend.user_id}>
-                          <div className='w-6'>
-                            <img src={friend.thumbnail} className='rounded-xl' />
-                          </div>
-                        </div>
-                      ))
-                    )
-                  : userLike && friendsLiked.length > 0
+        <footer>
+          {isReactionBarOpen && (
+            <div
+              className={post.image === 'no image' ? 'pb-2 ml-4 md:ml-[0.500rem] lg:ml-[4.75rem] w-[14rem] md:w-[16rem]' : 'pb-2 w-[14rem] md:w-[16rem]'} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
+            >
+              <ReactionBarSelector onSelect={handleSelector} reactions={ReactionsArray} iconSize='28px' />
+            </div>
+          )}
+          <div className='flex flex-col'>
+            <div className='flex justify-around items-center px-6 py-2 border-t'>
+              {
+              likeCreating
+                ? (
+                  <span className='loading loading-spinner' />
+                  )
+                : (
+                  <div>
+                    <button onClick={liked ? handleDeleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+                      <i className={likeStyle} />
+                    </button>
+                    <span>{likes}</span>
+                  </div>
+                  )
+              }
+              {/* Make a share button with page link */}
+              <button onClick={handleShareClick}>
+                <i className='fa-regular fa-share-square text-xl text-[#0D1B2A] p-2 cursor-pointer' />
+              </button>
+              <i className='fa-regular fa-bookmark text-xl text-[#0D1B2A] p-2 cursor-pointer' />
+            </div>
+            {/* Montar las fotos un poco encima de otras */}
+            <div className='flex items-center px-4 pt-2 border-t '>
+              {
+                likes > 0 && (
+                  friendsLiked > 0
                     ? (
                         friendsLiked.map((friend) => (
                           <div className='avatar' key={friend.user_id}>
@@ -647,86 +722,103 @@ const PostPage = () => {
                           </div>
                         ))
                       )
-                    : !userLike && friendsLiked.length > 0 && likes > 0
-                        ? (
-                            friendsLiked.map((friend) => (
-                              <div className='avatar' key={friend.user_id}>
-                                <div className='w-6'>
-                                  <img src={friend.thumbnail} className='rounded-xl' />
-                                </div>
-                              </div>
-                            ))
-                          )
-                        : userLike
-                          ? (
-                            <div className='avatar'>
+                    : userLike && friendsLiked.length > 0
+                      ? (
+                          friendsLiked.map((friend) => (
+                            <div className='avatar' key={friend.user_id}>
                               <div className='w-6'>
-                                <img src={currentUser.thumbnail} className='rounded-xl' />
+                                <img src={friend.thumbnail} className='rounded-xl' />
                               </div>
                             </div>
+                          ))
+                        )
+                      : !userLike && friendsLiked.length > 0 && likes > 0
+                          ? (
+                              friendsLiked.map((friend) => (
+                                <div className='avatar' key={friend.user_id}>
+                                  <div className='w-6'>
+                                    <img src={friend.thumbnail} className='rounded-xl' />
+                                  </div>
+                                </div>
+                              ))
                             )
-                          : null
-              )
-
-            }
-            <div className='flex ml-2 text-black '>
-              <p className='mb-0 text-sm'>
-                {
-                likes > 0 && friendsLiked.length > 0 && !userLike
-                  ? (
-                    <span>
-                      Le gusta a <span className='font-bold'>{friendsLiked.length === 3 ? friendsLiked[Math.floor(Math.random(friendsLiked.length))].first_name : null}</span> y <span className='font-bold'>{likes - 1} personas más</span>
-                    </span>
-                    )
-                  : userLike && friendsLiked.length > 0
+                          : userLike
+                            ? (
+                              <div className='avatar'>
+                                <div className='w-6'>
+                                  <img src={currentUser.thumbnail} className='rounded-xl' />
+                                </div>
+                              </div>
+                              )
+                            : null
+                )
+              }
+              <div className='flex ml-2 text-black '>
+                <p className='mb-0 text-sm'>
+                  {
+                  likes > 0 && friendsLiked.length > 0 && !userLike
                     ? (
-                      <span className='font-bold'>Te gusta a ti y a {likes - 1} personas más</span>
+                      <span>
+                        Le gusta a <span className='font-bold'>{friendsLiked.length === 3 ? friendsLiked[Math.floor(Math.random(friendsLiked.length))].first_name : null}</span> y <span className='font-bold'>{likes - 1} personas más</span>
+                      </span>
                       )
-                    : userLike
+                    : userLike && friendsLiked.length > 0
                       ? (
-                        <span className='font-bold'>A ti te gusta esto</span>
+                        <span className='font-bold'>Te gusta a ti y a {likes - 1} personas más</span>
+                        )
+                      : userLike
+                        ? (
+                          <span className='font-bold'>A ti te gusta esto</span>
+                          )
+                        : (
+                          <span className='font-bold'>Sé el primero en darle like!</span>
+                          )
+            }
+                </p>
+              </div>
+            </div>
+            <div className='py-2'>
+              <div className='form-control px-4'>
+                {
+                  parentCommentForReply && (
+                    <div className='flex items-center'>
+                      <p>Respondiendo al comentario {parentCommentForReply}</p>
+                    </div>
+                  )
+                }
+                <div className='input-group'>
+                  <input
+                    type='text'
+                    id='commentInput'
+                    placeholder='Haz un comentario...'
+                    className='border-secondary bg-white w-full text-black active:border-secondary focus:border-secondary focus:ring-0'
+                  />
+                  <button
+                    className='btn btn-square border-secondary commentInput bg-white hover:bg-secondary'
+                    onClick={handleCommentSubmit}
+                    disabled={commentLoading}
+                  >
+                    {commentLoading
+                      ? (
+                        <span className='loading loading-sm' /> // Mostrar animación de carga
                         )
                       : (
-                        <span className='font-bold'>Sé el primero en darle like!</span>
-                        )
-               }
-              </p>
-            </div>
-          </div>
-          <div className='py-2'>
-            <div className='form-control px-4'>
-              <div className='input-group'>
-                <input
-                  type='text'
-                  id='commentInput'
-                  placeholder='Haz un comentario...'
-                  className='border-secondary bg-white w-full text-black active:border-secondary focus:border-secondary focus:ring-0'
-                />
-                <button
-                  className='btn btn-square border-secondary commentInput bg-white hover:bg-secondary'
-                  onClick={submitComment}
-                  disabled={commentLoading}
-                >
-                  {commentLoading
-                    ? (
-                      <span className='loading loading-sm' /> // Mostrar animación de carga
-                      )
-                    : (
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        height='1em'
-                        viewBox='0 0 512 512'
-                        color='#ffffff'
-                      >
-                        <path d='M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z' />
-                      </svg> // Mostrar "Comentar" cuando no se está cargando
-                      )}
-                </button>
+                        <svg
+                          xmlns='http://www.w3.org/2000/svg'
+                          height='1em'
+                          viewBox='0 0 512 512'
+                          color='#ffffff'
+                        >
+                          <path d='M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z' />
+                        </svg> // Mostrar "Comentar" cuando no se está cargando
+                        )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </footer>
+      </article>
     </div>
   )
 }
