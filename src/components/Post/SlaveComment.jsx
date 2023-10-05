@@ -5,10 +5,10 @@ import useFindUser from '../../hooks/useFindUser'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import PropTypes from 'prop-types'
 
-const SlaveComment = ({ slaveComment, reactions, currentUser, isActive, setActiveComment, handleDeleteComment }) => {
+const SlaveComment = ({ slaveComment, reactions, currentUser, handleDeleteComment }) => {
   const { user } = useFindUser()
   const isCurrentUserCommentAuthor = user && user.userId === slaveComment.comment_user_id
-
+  console.log(slaveComment)
   // Like variables
   const [likeCreating, setLikeCreating] = useState(false)
   const [likes, setLikes] = useState(0)
@@ -33,11 +33,10 @@ const SlaveComment = ({ slaveComment, reactions, currentUser, isActive, setActiv
     // Fetch likes for the comment when the component mounts
     fetchLikesForComment()
     // Set the initial state of the reaction bar
-    setIsReactionBarOpen(isActive)
     if (currentUser) {
       setLoadingUser(false)
     }
-  }, [isActive])
+  }, [])
 
   // Fetch likes for the comment
   const fetchLikesForComment = async () => {
@@ -265,7 +264,6 @@ const SlaveComment = ({ slaveComment, reactions, currentUser, isActive, setActiv
   const handleMouseEnter = () => {
     clearTimeout(closeTimeout) // Cancelar cualquier temporizador de cierre pendiente
     setIsReactionBarOpen(true)
-    setActiveComment(slaveComment.comment_id)
   }
 
   // Handle mouse leave event on the ReactionBar or the button
@@ -273,7 +271,6 @@ const SlaveComment = ({ slaveComment, reactions, currentUser, isActive, setActiv
     // Establecer un temporizador para cerrar la barra después de 500ms (ajusta el valor según desees)
     const timeoutId = setTimeout(() => {
       setIsReactionBarOpen(false)
-      setActiveComment(null)
     }, 700)
     setCloseTimeout(timeoutId)
   }
@@ -408,8 +405,6 @@ SlaveComment.propTypes = {
   slaveComment: PropTypes.object.isRequired,
   reactions: PropTypes.array.isRequired,
   currentUser: PropTypes.object,
-  isActive: PropTypes.bool.isRequired,
-  setActiveComment: PropTypes.func.isRequired,
   handleDeleteComment: PropTypes.func.isRequired
 }
 

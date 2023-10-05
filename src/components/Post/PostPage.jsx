@@ -41,6 +41,7 @@ const PostPage = () => {
   const [commentLoading, setCommentLoading] = useState(false)
   const [commentCreating, setCommentCreating] = useState(false)
   const [parentCommentForReply, setParentCommentForReply] = useState(null)
+  const [newSlaveComments, setNewSlaveComments] = useState([])
 
   // Constantes
 
@@ -82,30 +83,8 @@ const PostPage = () => {
         const response = await makeRequest.get(`/comment/find/post/${postId}`)
         const commentsData = response.data.comments
 
-        const validComments = await Promise.all(
-          commentsData.map(async (comment) => {
-            if (comment.comment_user_id) {
-              const userResponse = await makeRequest.get(`/user/find/id/${comment.comment_user_id}`)
-              const commentUser = userResponse.data.user
-
-              return {
-                comment_id: comment.comment_id,
-                comment_user_id: comment.comment_user_id,
-                text: comment.text,
-                username: commentUser.username,
-                ImageUser: commentUser.thumbnail
-              }
-            }
-            return null
-          })
-        )
-
         // Cuando no hay comentarios, establecer comments en un array vacío
-        if (validComments.length === 0) {
-          setComments([])
-        } else {
-          setComments(validComments.filter(Boolean))
-        }
+        setComments(commentsData)
 
         // Después de cargar los comentarios y usuarios, establecer commentsLoading en false
         setCommentsLoading(false)
@@ -409,19 +388,21 @@ const PostPage = () => {
         setCommentCreating(true)
         await makeRequest.post('/comment/create/', body)
           .then((res) => {
-            setCommentCreating(false)
-            document.getElementById('commentInput').value = ''
-            console.log(res)
-            setComments([
-              ...comments,
-              {
-                ImageUser: res.data.comment.user.avatar,
-                comment_user_id: res.data.comment.user.user_id,
-                comment_id: res.data.comment.comment_id,
-                text: res.data.comment.text,
-                username: res.data.comment.user.username
-              }
-            ])
+            if (!parentCommentForReply) {
+              setCommentCreating(false)
+              document.getElementById('commentInput').value = ''
+              console.log(res)
+              setComments([
+                ...comments,
+                res.data.comment
+              ])
+            } else {
+              setCommentCreating(false)
+              document.getElementById('commentInput').value = ''
+              console.log(res)
+              const siblingsCommentList = [...newSlaveComments, res.data.comment]
+              setNewSlaveComments(siblingsCommentList)
+            }
           })
           .catch((error) => {
             console.error('Error creating comment:', error)
@@ -678,6 +659,7 @@ const PostPage = () => {
                             isActive={comment.comment_id === activeComment}
                             setActiveComment={setActiveComment}
                             handleSelectParentComment={handleSelectParentComment}
+                            slaveCommentList={newSlaveComments}
                           />
                         ))
                       )

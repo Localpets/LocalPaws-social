@@ -6,7 +6,7 @@ import SlaveComment from './SlaveComment'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import PropTypes from 'prop-types'
 
-const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActive, setActiveComment, handleSelectParentComment }) => {
+const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActive, setActiveComment, handleSelectParentComment, slaveCommentList }) => {
   const { user } = useFindUser()
 
   // user variables
@@ -41,7 +41,13 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
     if (currentUser) {
       setLoadingUser(false)
     }
-  }, [isActive])
+
+    // If i submit a comment in PostPage component i need to update the slaveCommentList for this comment
+    if (slaveCommentList.length > 0) {
+      console.log('Updating slaveCommentList', slaveCommentList)
+      setSlaveComments(slaveCommentList)
+    }
+  }, [isActive, slaveCommentList])
 
   // Fetch likes for the comment
   const fetchLikesForComment = async () => {
@@ -87,6 +93,7 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
       console.error(error)
     }
   }
+
   // Fetch the slaves for the comment
   const fetchSlavesForComment = async () => {
     try {
@@ -303,12 +310,12 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
           <Link to={`/profile/${comment.comment_user_id}`}>
             <img
               className='h-8 w-8 rounded-full'
-              src={comment.ImageUser}
+              src={comment.user.avatar}
               alt='imagen-perfil-usuario'
             />
           </Link>
           <div className='ml-2 text-left text-md max-w-[65%] lg:max-w-75% lg:items-center gap-2 flex flex-col lg:flex-row'>
-            {comment.username}: {isEditing
+            {comment.user.username}: {isEditing
               ? <div className='flex gap-2 items-center'>
                 <input type='text' defaultValue={comment.text} className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm' />
                 <button
@@ -427,8 +434,6 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
                 key={slaveComment.comment_id}
                 slaveComment={slaveComment}
                 handleDeleteComment={handleDeleteComment}
-                isActive={isActive}
-                setActiveComment={setActiveComment}
                 reactions={reactions}
                 currentUser={currentUser}
               />
@@ -447,7 +452,8 @@ Comment.propTypes = {
   currentUser: PropTypes.object.isRequired,
   isActive: PropTypes.bool.isRequired,
   setActiveComment: PropTypes.func.isRequired,
-  handleSelectParentComment: PropTypes.func.isRequired
+  handleSelectParentComment: PropTypes.func.isRequired,
+  slaveCommentList: PropTypes.array.isRequired
 }
 
 export default Comment
