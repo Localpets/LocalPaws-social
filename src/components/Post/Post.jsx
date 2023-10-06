@@ -297,16 +297,16 @@ const Post = ({ post, postUser, deletePost }) => {
   return (
     <article className={componentStyle}>
       <header className='flex w-full'>
-        <Link to={`/post/${post_id}`} className='flex p-4 w-[50%]'>
+        <Link to={`/post/${post_id}`} className='flex p-4 w-full'>
           <img
             className='h-9 w-9 rounded-full '
             src={thumbnail}
             alt='user-thumbnail'
           />
-          <p className='ml-2 flex flex-shrink-0 items-center font-medium'>
+          <p className='ml-2 flex w-full items-center font-medium'>
             {first_name} {last_name}
-            <span className='ml-1 text-sm leading-5 '>
-              {dateToLocal} · {category}
+            <span className='ml-1 text-sm'>
+              · {category}
             </span>
           </p>
         </Link>

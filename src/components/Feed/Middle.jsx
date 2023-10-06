@@ -1,12 +1,11 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-unused-vars */
-import React from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { makeRequest } from '../../library/axios.js'
 import useAuthStore from '../../context/AuthContext'
 import useFindUser from '../../hooks/useFindUser'
 import PostQueryWrapper from '../Post/PostQueryWrapper.jsx'
-import Stories from '../Story/Stories.jsx'
 import 'react-loading-skeleton/dist/skeleton.css'
 import PostForm from '../Forms/PostForm.jsx'
 
@@ -15,8 +14,20 @@ const Middle = () => {
 
   const { user } = useFindUser(loggedUser)
 
-  const [postsRef, setPostsRef] = React.useState([])
+  const [postsRef, setPostsRef] = useState([])
 
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (!user) return {} // Devuelve un objeto vacío si no necesitas datos
+      const { user_id } = user
+      return makeRequest.get(`post/find/follows/user/${user_id}`).then((res) => {
+        const sortedPosts = res.data.posts.sort((a, b) => b.post_id - a.post_id)
+        setPostsRef(sortedPosts)
+        return res.data
+      })
+    }
+    fetchPosts()
+  }, [user])
   // Función para agregar una nueva publicación al estado
   const addPost = (newPost) => {
     setPostsRef([newPost, ...postsRef])
@@ -59,7 +70,7 @@ const Middle = () => {
   }
 
   return (
-    <div className='w-full pl-[23%] pr-[22.7%] min-h-screen flex flex-col justify-start gap-4 items-center mt-8 px-10'>
+    <div className='w-full lg:pl-[23%] lg:pr-[22.7%] min-h-screen flex flex-col justify-start gap-4 items-center mt-8 px-10'>
 
       <PostForm addPost={addPost} />
 

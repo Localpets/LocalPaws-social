@@ -7,10 +7,14 @@ const Feed = () => {
   return (
     <div className='text-black w-full min-h-screen'>
       <Header />
-      <section className='flex py-16'>
-        <LeftBar />
+      <section className='flex py-16 w-full'>
+        <div className='hidden lg:flex'>
+          <LeftBar />
+        </div>
         <Middle />
-        <RightBar />
+        <div className='hidden lg:flex'>
+          <RightBar />
+        </div>
       </section>
     </div>
   )
