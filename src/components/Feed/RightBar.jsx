@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { makeRequest } from '../../library/axios'
 import { PiUserCirclePlusDuotone, PiUserCircleMinusDuotone, PiUserSwitchDuotone } from 'react-icons/pi'
 import useFindUser from '../../hooks/useFindUser'
+import useAuthStore from '../../context/AuthContext'
+import { FaSpinner } from 'react-icons/fa'
+
 
 const RightBar = () => {
   const [localuser, setLocaluser] = useState({})
@@ -9,61 +12,79 @@ const RightBar = () => {
   const [userFollows, setUserFollows] = useState([])
   const [loading, setLoading] = useState(false)
   const [randomUsers, setRandomUsers] = useState([])
-  const [members, setMembers] = useState ([])
+  const [members, setMembers] = useState([])
+  const [loadingPersonas, setLoadingPersonas] = useState(false);
+  const [loadingVeterinarias, setLoadingVeterinarias] = useState(false);
 
-  const userFromDB = useFindUser()
+
+  const { loggedUser } = useAuthStore()
+  const { user } = useFindUser(loggedUser)
 
   useEffect(() => {
-    if (localStorage.getItem('user')) {
-      const user = userFromDB.user
+    if (user) {
       setLocaluser(user)
     }
-  }, [setLocaluser, userFromDB])
+  }, [user])
 
   useEffect(() => {
-    if (userFromDB.user !== null && userFromDB.user !== undefined) {
-      const user = userFromDB.user;
-      setLocaluser(user);
-    }
-  }, [setLocaluser, userFromDB]);
+    const selectedRandomUsers = getRandomUsers();
+    setRandomUsers(selectedRandomUsers);
+  }, [userlist]);
   
 
   useEffect(() => {
     const getUserlist = async () => {
-  try {
-    const res = await makeRequest.get('/user/find/all');
-    console.log("Datos del servidor:", res.data); // Aquí se imprime los datos del servidor
-    setUserlist(res.data.users);
-    setMembers(res.data.users); // Asegúrate de que los datos se están recibiendo correctamente
-  } catch (err) {
-    console.error(err);
-  }
-  
-};
-
+      try {
+        setLoadingPersonas(true);
+        const res = await makeRequest.get('/user/find/all');
+        if (Array.isArray(res.data.users)) {
+          setUserlist(res.data.users);
+          setMembers(res.data.users);
+        }
+        setLoadingPersonas(false);
+      } catch (err) {
+        console.error(err);
+        setLoadingPersonas(false);
+      }
+    };
+    
     getUserlist()
 
-    const getfollowers = async () => {
-      if (localuser) {
+    const fetchData = async () => {
+      try {
+        setLoadingPersonas(true);
+        const res = await makeRequest.get('/user/find/all');
+        setUserlist(res.data.users);
+        setMembers(res.data.users);
+        setLoadingPersonas(false);
+  
+        // Obtener usuarios aleatorios aquí
+        const selectedRandomUsers = getRandomUsers(res.data.users);
+        setRandomUsers(selectedRandomUsers);
+      } catch (err) {
+        console.error(err);
+        setLoadingPersonas(false);
+      }
+    };
+  
+    fetchData();
+  
+    const getFollowers = async () => {
+      if (localuser.user_id) {
         try {
-          setLoading(true);
-          // Usar localuser en lugar de user
+          setLoadingVeterinarias(true);
           const res = await makeRequest.get(`/follow/find/followed/${localuser.user_id}`);
           setUserFollows(res.data.follows);
-          setLoading(false);
+          setLoadingVeterinarias(false);
         } catch (err) {
           console.error(err);
-          setLoading(false);
+          setLoadingVeterinarias(false);x 
         }
-      } else {
-        console.log('El usuario no está definido');
-        setLoading(false);
       }
-      
     };
-
-    getfollowers()
-  }, [setUserlist, localuser, setUserFollows])
+  
+    getFollowers();
+  }, [localuser]); 
 
   const getRandomUsers = () => {
     if (localuser && userlist.length > 0) {
@@ -73,73 +94,79 @@ const RightBar = () => {
     }
   }
 
-  useEffect(() => {
-    const selectedRandomUsers = getRandomUsers()
-    setRandomUsers(selectedRandomUsers)
-  }, [userlist])
+  
 
- const FollowClick = async (user, userFollows, setUserFollows, localuser, followeduser) => {
+  useEffect(() => {
+    const selectedRandomUsers = getRandomUsers();
+    setRandomUsers(selectedRandomUsers);
+  }, [userlist]);
+  
+
+  const FollowClick = async (user, userFollows, setUserFollows, localuser, followeduser) => {
     try {
       if (user && user.user_id && localuser && localuser.user_id) {
         setLoading(prevLoading => ({
           ...prevLoading,
           [user.user_id]: true
-        }));
+        }))
 
         const response = followeduser
           ? await makeRequest.delete(`/follow/delete/${localuser.user_id}/${user.user_id}`)
           : await makeRequest.post('/follow/create', {
-              followedId: user.user_id,
-              followerId: localuser.user_id
-            });
+            followedId: user.user_id,
+            followerId: localuser.user_id
+          })
 
         if (response.status === 200 || response.status === 201) {
-          console.log(`Seguidor ${followeduser ? 'eliminado' : 'añadido'} correctamente`, localuser.user_id, user.user_id);
+          console.log(`Seguidor ${followeduser ? 'eliminado' : 'añadido'} correctamente`, localuser.user_id, user.user_id)
           const updatedFollows = followeduser
             ? userFollows.filter(follow => follow.user_id !== user.user_id)
-            : [...userFollows, { user_id: user.user_id }];
-          setUserFollows(updatedFollows);
+            : [...userFollows, { user_id: user.user_id }]
+          setUserFollows(updatedFollows)
         } else {
-          console.error('Error en la solicitud al servidor');
+          console.error('Error en la solicitud al servidor')
         }
 
         setLoading(prevLoading => ({
           ...prevLoading,
           [user.user_id]: false
-        }));
+        }))
       } else {
-        console.log('El usuario, user_id o localuser es null o no está definido correctamente.');
+        console.log('El usuario, user_id o localuser es null o no está definido correctamente.')
       }
     } catch (err) {
-      console.log('Error en FollowClick:', err);
+      console.log('Error en FollowClick:', err)
       setLoading(prevLoading => ({
         ...prevLoading,
         [user.user_id]: false
-      }));
+      }))
     }
-  };
-  
+  }
   
 
-  return (
-    <section className='hidden fixed right-0 w-[20%] xl:flex xl:flex-col items-center justify-center gap-5 h-auto text-[#0D1B2AS] text-left mt-10 mr-8'>
-      <div className='bg-white w-full h-auto text-[#0D1B2AS] text-left border-2 rounded-lg border-[#E0E1DD] px-4 py-4'>
-        <h3 className='text-[#0D1B2AS] font-bold dark:border-dim-200'>
-          Personas populares
-        </h3>
-        <div>
-          <div className='p-2 dark:border-dim-200 flex flex-col'>
-            {randomUsers
-              ? randomUsers.map(user => {
-                const followeduser = userFollows.find((follows) => follows.user_id === user.user_id)
+    return (
+      <section className='hidden fixed right-0 w-[20%] xl:flex xl:flex-col items-center justify-center gap-5 h-auto text-[#0D1B2AS] text-left mt-10 mr-8'>
+        <div className='bg-white w-full h-auto text-[#0D1B2AS] text-left border-2 rounded-lg border-[#E0E1DD] px-4 py-4'>
+          <h3 className='text-[#0D1B2AS] font-bold dark:border-dim-200'>
+            Personas populares
+          </h3>
+          {loading || !userlist || userlist.length === 0 ? (
+            <div className='flex flex-col items-center justify-center space-x-2'>
+            <FaSpinner className='animate-spin text-blue-400 p-2' />
+          </div>
+          ) : (
+            <div className='p-2 dark:border-dim-200 flex flex-col'>
+              {randomUsers && randomUsers.length > 0 && randomUsers.filter(user => user.type === 'USER')
+              .map(user => {
+                const followeduser = userFollows.find(follows => follows.user_id === user.user_id);
                 const FollowStatus = followeduser
                   ? <PiUserCircleMinusDuotone className='text-[2em] text-red-500' />
-                  : <PiUserCirclePlusDuotone className='text-[2em] text-green-500' />
-
+                  : <PiUserCirclePlusDuotone className='text-[2em] text-green-500' />;
+    
                 return user.user_id === localuser.user_id
                   ? null
-                  : (<div key={user.user_id}>
-                    <div className='flex items-center mb-2 justify-between'>
+                  : (
+                    <div key={user.user_id} className='flex items-center mb-2 justify-between'>
                       <div className='flex items-center '>
                         <img
                           className='w-10 h-10 rounded-full'
@@ -155,50 +182,49 @@ const RightBar = () => {
                       </div>
                       <div className='flex items-center'>
                         {loading[user.user_id]
-                          ? (<PiUserSwitchDuotone className='animate-spin rounded-full text-[2em]' />
-                            )
-                          : <button
+                          ? (<PiUserSwitchDuotone className='animate-spin rounded-full text-[2em]' />)
+                          : (
+                            <button
                               className='ml-auto content-end'
                               onClick={() => {
-                                FollowClick(user, userFollows, setUserFollows, localuser, followeduser)
+                                FollowClick(user, userFollows, setUserFollows, localuser, followeduser);
                               }}
                               disabled={Object.values(loading).some(value => value)}
                             >
-                            {FollowStatus}
-                            {/* eslint-disable-next-line react/jsx-closing-tag-location */}
-                          </button>}
+                              {FollowStatus}
+                            </button>
+                          )}
                       </div>
-
                     </div>
-                    {/* eslint-disable-next-line react/jsx-closing-tag-location */}
-                  </div>
-                    )
-              })
-              : null}
-          </div>
-
+                  );
+              })}
+            </div>
+          )}
           <div className='text-blue-400 cursor-pointer p-2'>Ver más</div>
         </div>
-      </div>
-      <div className='bg-white w-full h-auto text-[#0D1B2AS] text-left border-2 rounded-lg border-[#E0E1DD] px-4 py-4'>
-        <h3 className='text-[#0D1B2AS] font-bold dark:border-dim-200'>
-          Veterinarias populares
-        </h3>
-        <div>
-          <div className='p-2 dark:border-dim-200 flex flex-col'>
-            {members
-              
-              .map(user => {
-                const followeduser = userFollows.find((follows) => follows.user_id === user.user_id)
-                console.log("holas", user)
-                const FollowStatus = followeduser
-                  ? <PiUserCircleMinusDuotone className='text-[2em] text-red-500' />
-                  : <PiUserCirclePlusDuotone className='text-[2em] text-green-500' />
-
-                return user.user_id === localuser.user_id
-                  ? <div>hola</div>
-                  : (<div key={user.user_id}>
-                      <div className='flex items-center mb-2 justify-between'>
+    
+        <div className='bg-white w-full  h-auto text-[#0D1B2AS] text-left border-2 rounded-lg border-[#E0E1DD] px-4 py-4'>
+          <h3 className='text-[#0D1B2AS] font-bold dark:border-dim-200'>
+            Miembros populares
+          </h3>
+          {loadingVeterinarias ? (
+            <div className='flex  items-center justify-center space-x-2 '>
+              <FaSpinner className='animate-spin text-blue-400 ' />
+            </div>
+          ) : (
+            <div className='p-2 dark:border-dim-200 flex flex-col'>
+              {members
+                .filter(user => user.type === 'member')
+                .map(user => {
+                  const followeduser = userFollows.find(follows => follows.user_id === user.user_id);
+                  const FollowStatus = followeduser
+                    ? <PiUserCircleMinusDuotone className='text-[2em] text-red-500' />
+                    : <PiUserCirclePlusDuotone className='text-[2em] text-green-500' />;
+    
+                  return user.user_id === localuser.user_id
+                    ? null
+                    : (
+                      <div key={user.user_id} className='flex items-center mb-2 justify-between'>
                         <div className='flex items-center '>
                           <img
                             className='w-10 h-10 rounded-full'
@@ -215,27 +241,27 @@ const RightBar = () => {
                         <div className='flex items-center'>
                           {loading[user.user_id]
                             ? (<PiUserSwitchDuotone className='animate-spin rounded-full text-[2em]' />)
-                            : <button
+                            : (
+                              <button
                                 className='ml-auto content-end'
                                 onClick={() => {
-                                  FollowClick(user, userFollows, setUserFollows, localuser, followeduser)
+                                  FollowClick(user, userFollows, setUserFollows, localuser, followeduser);
                                 }}
                                 disabled={Object.values(loading).some(value => value)}
                               >
                                 {FollowStatus}
-                              </button>}
+                              </button>
+                            )}
                         </div>
                       </div>
-                    </div>
-                  )
-              })}
-          </div>
+                    );
+                })}
+            </div>
+          )}
           <div className='text-blue-400 cursor-pointer p-2'>Ver más</div>
         </div>
-
-      </div>
-    </section>
-  )
+        </section>
+  );
 }
 
-export default RightBar
+export default RightBar;
