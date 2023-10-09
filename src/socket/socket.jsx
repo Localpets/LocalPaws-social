@@ -12,6 +12,7 @@ export function useSocket () {
 
 export function SocketProvider ({ children }) {
   const [socket, setSocket] = useState(null)
+  const [isSocketConfigured, setIsSocketConfigured] = useState(false)
 
   useEffect(() => {
     const getTokenFromLocalStorage = () => {
@@ -41,20 +42,29 @@ export function SocketProvider ({ children }) {
       })
 
       setSocket(newSocket)
+      setIsSocketConfigured(true)
 
       return () => {
         newSocket.disconnect()
       }
+    } else {
+      setIsSocketConfigured(true)
     }
   }, [])
 
-  return socket
-    ? (
-      <SocketContext.Provider value={socket}>
+  if (!isSocketConfigured) {
+    return (
+      <SocketContext.Provider value={null}>
         {children}
       </SocketContext.Provider>
-      )
-    : null
+    )
+  }
+
+  return (
+    <SocketContext.Provider value={socket}>
+      {children}
+    </SocketContext.Provider>
+  )
 }
 
 SocketProvider.propTypes = {

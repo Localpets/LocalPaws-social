@@ -131,9 +131,6 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
     // Llama a la función para obtener las respuestas
     getRepliesForMessages()
   }, [currentchat.conversation])
-
-  console.log(messageReplies)
-
   // Función para renderizar las reacciones en un mensaje
   const renderReactions = (messageId) => {
     // Filtra las reacciones que corresponden al mensaje con el ID dado
