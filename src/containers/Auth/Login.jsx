@@ -15,6 +15,7 @@ const Login = () => {
   const [userLogged, setUserLogged] = useState(false)
 
   const { user } = useFindUser()
+  console.log(user)
   const { login } = useAuthStore()
 
   useEffect(() => {

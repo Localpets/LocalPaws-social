@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/router'
 import { makeRequest } from '../../library/axios'
-import useFindUser from '../../hooks/useFindUser'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import PropTypes from 'prop-types'
 
 const SlaveComment = ({ slaveComment, reactions, currentUser, handleDeleteComment }) => {
-  const { user } = useFindUser()
-  const isCurrentUserCommentAuthor = user && user.userId === slaveComment.comment_user_id
-  console.log(slaveComment)
+  const isCurrentUserCommentAuthor = currentUser && currentUser.userId === slaveComment.comment_user_id
+
   // Like variables
   const [likeCreating, setLikeCreating] = useState(false)
   const [likes, setLikes] = useState(0)
@@ -137,6 +135,9 @@ const SlaveComment = ({ slaveComment, reactions, currentUser, handleDeleteCommen
     if (!liked && !loadingUser) {
       setLikes(likes + 1)
       setLiked(true)
+      if (typeof type !== 'string') {
+        type = 'Like'
+      }
       setCurrentReaction(type)
 
       const likeForDto = type
@@ -216,13 +217,14 @@ const SlaveComment = ({ slaveComment, reactions, currentUser, handleDeleteCommen
   const handleDeleteClick = () => {
     // Lógica para eliminar el comentario, pasa el comentario como argumento
     if (isCurrentUserCommentAuthor && !loadingUser) {
-      handleDeleteComment(slaveComment.comment_id)
+      handleDeleteComment(slaveComment)
     }
   }
   // Handle reaction selector
   const handleSelector = (type) => {
     console.log(type)
     handleMouseLeave()
+    setIsReactionBarOpen(false)
     handleLike(type)
   }
   // Handle edit comment

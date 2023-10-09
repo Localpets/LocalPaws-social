@@ -43,19 +43,13 @@
   background-size: contain;
   background-position: center;
   background-color: white;
-  width: 100%;
-
-  object-fit: fill;
-  aspect-ratio: 3 / 4;
-  overflow-x: auto;
-  overflow-y: hidden;
-  max-width: inherit;
+  aspect-ratio: 1/1;
+  object-fit: cover;
 }
 
 .Comments {
   display: flex;
   width: 90%;
-  height: 100vh;
   margin: 0 auto;
   /*border: solid 1px #915656;
   */border-radius: 8px;
