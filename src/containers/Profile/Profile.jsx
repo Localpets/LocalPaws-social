@@ -1,8 +1,6 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { useState, useEffect } from 'react'
 import LeftBar from '../../components/Feed/LeftBar'
 import Header from '../../components/Header/Header'
-import useAuthStore from '../../context/AuthContext'
 import { useQuery } from '@tanstack/react-query'
 import { makeRequest } from '../../library/axios'
 import PostQueryWrapper from '../../components/Post/PostQueryWrapper'
@@ -11,9 +9,9 @@ import swal from 'sweetalert'
 import ProfileSettings from './ProfileSettings'
 
 const Profile = () => {
+  const profileId = new URL(window.document.location).pathname.split('/').pop()
   const [userLogged, setUserLogged] = useState({})
   const [userprofile, setUserprofile] = useState({})
-  const { setUser } = useAuthStore()
   const [followed, setFollowed] = useState({})
   const [followers, setFollowers] = useState({})
   const [loading, setLoading] = useState(true)
@@ -28,7 +26,7 @@ const Profile = () => {
   /// MOSTRAR PAWSTEAR EN VISTA DE PERFIL
 
   const toggleNewSection = () => {
-    setShowNewSection(!showNewSection) // Cambia el estado showNewSection
+    setShowNewSection(!showNewSection)
   }
 
 /// MOSTRAR VISTA DE SETTINGS
@@ -51,25 +49,14 @@ const Profile = () => {
     setShowLoadedImage(true);
   };
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0]
-    if (file) {
-      const imageUrl = URL.createObjectURL(file)
-      setUploadedImage(imageUrl)
-      // También puedes enviar la imagen al servidor en este punto si es necesario
-    }
-  }
 
-  ///
-
-  const currentUser = 48
+  /// OBTENER USUARIO
 
   const { error, data } = useQuery({
     queryKey: ['usuarios'],
     queryFn: async () => {
-      return await makeRequest.get(`/user/find/id/${currentUser}`).then((res) => {
+      return await makeRequest.get(`/user/find/id/${profileId}`).then((res) => {
         setUserprofile(res.data.user)
-
         return userprofile
       })
     }
@@ -80,7 +67,7 @@ const Profile = () => {
   useEffect(() => {
     const getFollowed = async () => {
       try {
-        const res = await makeRequest.get(`/follow/followed/count/${currentUser}`)
+        const res = await makeRequest.get(`/follow/followed/count/${profileId}`)
         setFollowed(res.data)
       } catch (error) {
         console.log(error)
@@ -92,7 +79,7 @@ const Profile = () => {
 
     const getFollowers = async () => {
       try {
-        const res = await makeRequest.get(`/follow/followers/count/${currentUser}`)
+        const res = await makeRequest.get(`/follow/followers/count/${profileId}`)
         setFollowers(res.data)
       } catch (error) {
         console.log(error)
@@ -102,23 +89,15 @@ const Profile = () => {
     setLoading(false)
   }, [setFollowed])
 
-  /// OBTENER DATOS DE USUARIO LOGUEADO
-
-  useEffect(() => {
-    if (localStorage.getItem('user')) {
-      setUserLogged(JSON.parse(localStorage.getItem('user')))
-    } else {
-      setUserLogged(useAuthStore.getState().user)
-    }
-  }, [setUser])
-
   /// OBTENER POST DE USUARIO
 
   const { } = useQuery({
     queryKey: ['posts'],
     queryFn: async () => {
       // eslint-disable-next-line camelcase
-      return makeRequest.get(`/post/user/${currentUser}`).then((res) => {
+      return makeRequest.get(`/post/user/${profileId}`)
+      .then((res) => {
+      
         // sort posts by id descending
         const sortedPosts = res.data.posts.sort((a, b) => b.post_id - a.post_id)
         setUserpost(sortedPosts)
@@ -132,11 +111,11 @@ const Profile = () => {
   return (
     <section className='min-h-screen min-w-screen pb-8'>
       {settings && (
-        <ProfileSettings />
+        <ProfileSettings setUploadedImage={setUploadedImage} profileId={profileId} uploadedImage={uploadedImage} userprofile={userprofile}/>
       )}
       <Header />
       <section className='pl-[25%] pt-16'>
-        <LeftBar user={userLogged} isProfileView={true} toggleNewSection={toggleNewSection} />
+        <LeftBar isProfileView={true} toggleNewSection={toggleNewSection} profileUser={profileId}  />
         {loading ? (
           <div className='flex justify-center gap-4 pt-8 '>
           <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900' />
@@ -157,7 +136,6 @@ const Profile = () => {
                 id='imageUpload'
                 accept='image/*'
                 style={{ display: 'none' }}
-                onChange={handleImageUpload}
               />
             </label>
                 <div className='flex flex-col gap-2 pt-8'>
