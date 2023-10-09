@@ -70,18 +70,9 @@ const RightBar = () => {
       if (localuser.user_id) {
         try {
           setLoadingVeterinarias(true)
-          setLoadingPersonas(true)
-          await makeRequest.get(`/follow/find/followed/${localuser.user_id}`)
-            .then((res) => {
-              setUserFollows(res.data.follows)
-              setLoadingVeterinarias(false)
-              setLoadingPersonas(false)
-            })
-            .catch((err) => {
-              console.error(err)
-              setLoadingVeterinarias(false)
-              setLoadingPersonas(false)
-            })
+          const res = await makeRequest.get(`/follow/find/followed/${localuser.user_id}`)
+          setUserFollows(res.data.follows)
+          setLoadingVeterinarias(false)
         } catch (err) {
           console.error(err)
           setLoadingVeterinarias(false)
