@@ -2,8 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 import PropTypes from 'prop-types'
-import useAuthStore from '../context/AuthContext'
-import useFindUser from '../hooks/useFindUser'
+import jwtDecode from 'jwt-decode'
 
 const SocketContext = createContext()
 
@@ -13,44 +12,59 @@ export function useSocket () {
 
 export function SocketProvider ({ children }) {
   const [socket, setSocket] = useState(null)
-  const [localuser, setLocaluser] = useState(null)
-
-  const { loggedUser } = useAuthStore()
-  const { user } = useFindUser(loggedUser)
+  const [isSocketConfigured, setIsSocketConfigured] = useState(false)
 
   useEffect(() => {
-    if (user) {
-      setLocaluser(user)
+    const getTokenFromLocalStorage = () => {
+      try {
+        const tokenData = JSON.parse(localStorage.getItem('user'))
+        if (tokenData && tokenData.userId) {
+          return tokenData.userId
+        }
+      } catch (error) {
+        console.error('Error al verificar el token en localStorage:', error)
+      }
+      return null
     }
-  }, [user])
 
-  useEffect(() => {
-    if (localuser) {
-      // Configura el socket solo si localUser tiene un valor definido
+    const token = getTokenFromLocalStorage()
+
+    if (token) {
+      const decodedToken = jwtDecode(token)
+
       const newSocket = io('http://localhost:8080', {
-        query: { userId: localuser.user_id }
+        query: { userId: decodedToken.id }
       })
+
+      // Emitir el evento 'PersonalRoom' después de la conexión del socket
+      newSocket.on('connect', () => {
+        newSocket.emit('PersonalRoom', decodedToken.id)
+      })
+
       setSocket(newSocket)
+      setIsSocketConfigured(true)
+
       return () => {
         newSocket.disconnect()
       }
+    } else {
+      setIsSocketConfigured(true)
     }
-  }, [localuser])
+  }, [])
 
-  useEffect(() => {
-    if (socket) {
-      socket.emit('PersonalRoom', localuser.user_id)
-    }
-  }, [localuser, socket])
-
-  // Renderiza el componente solo si localUser tiene un valor definido
-  return localuser
-    ? (
-      <SocketContext.Provider value={socket}>
+  if (!isSocketConfigured) {
+    return (
+      <SocketContext.Provider value={null}>
         {children}
       </SocketContext.Provider>
-      )
-    : null
+    )
+  }
+
+  return (
+    <SocketContext.Provider value={socket}>
+      {children}
+    </SocketContext.Provider>
+  )
 }
 
 SocketProvider.propTypes = {
