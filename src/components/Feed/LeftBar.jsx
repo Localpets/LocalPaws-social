@@ -1,16 +1,19 @@
 /* eslint-disable react/prop-types */
+import { useState } from 'react'
 import { Link } from '@tanstack/router'
 import useAuthStore from '../../context/AuthContext'
 import useFindUser from '../../hooks/useFindUser'
-import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
+import logo from '../../assets/NewIcons/pawsplorer marron.png'
+import UnreadMessageCounter from './utilities/fetchUnreadMessages'
 
 const LeftBar = ({ isProfileView, toggleNewSection }) => {
   const { loggedUser } = useAuthStore()
   const { user } = useFindUser(loggedUser)
+  const [unreadmsg, setUnreadmsg] = useState([])
 
   return (
     <div className='flex fixed flex-col left-0 text-neutral h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-10 bg-white ml-10 md:justify-start'>
-      <Link to='/home' className='link-active my-2 w-28 h-20 mx-auto'>
+      <Link to='/home' className='link-active mt-4 mb-1 w-28 h-20 mx-auto'>
         <img src={logo} alt='Logo PawsPlorer' className='w-24 h-20 max-w-none mx-auto' />
       </Link>
       <nav className='mt-2 flex flex-col'>
@@ -24,6 +27,7 @@ const LeftBar = ({ isProfileView, toggleNewSection }) => {
         </Link>
         <Link to='/chat' className='btn mb-3 btn-ghost flex items-center justify-start'>
           <i className='fa-solid fa-envelope text-xl' />
+          <UnreadMessageCounter setUnreadmsg={setUnreadmsg} unreadmsg={unreadmsg} user={user} />
           <span className='icon'>Mensajes</span>
         </Link>
         <Link to='/search' className='btn mb-3 btn-ghost flex items-center justify-start'>

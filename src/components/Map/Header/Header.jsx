@@ -15,7 +15,7 @@ const Header = () => {
       <nav id='nav'>
 
         {/* Barra de navegación */}
-        <div className='navbar relative bg-base-100 flex justify-between items-center px-4 py-4'>
+        <div className='navbar relative bg-primary flex justify-between items-center px-4 py-6'>
 
           {/* Sección de inicio de la barra de navegación */}
           <div className='navbar-start'>

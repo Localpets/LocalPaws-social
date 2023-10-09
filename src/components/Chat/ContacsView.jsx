@@ -2,13 +2,13 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { FaUserFriends } from 'react-icons/fa'
 import useChatStore from '../../context/ChatStore'
 import { useSocket } from '../../socket/socket'
 import ContactListItem from './Structures/ContacsSkeleton'
 import { fetchAllChats } from './utilities/FetchChats_Contacs'
 import { getContacts } from './utilities/FetchUsers_Contacs'
 import { handleJoinRoom } from './utilities/Handlers/HandleJoinRoom'
+import { BsClock } from 'react-icons/bs'
 
 const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts }) => {
   const [contacts, setContacts] = useState([])
@@ -55,27 +55,19 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
   }
 
   return (
-    <section className='hidden md:w-60 lg:w-80 h-full bg-white md:flex flex-col justify-start items-center gap-18 p-4 py-8 pt-6'>
-      <ul className='w-full flex flex-wrap items-center justify-around pb-2 pt-2'>
-        <li>
-          <h2 className='font-bold text-slate-800 text-xl'>PawsAmigos</h2>
-        </li>
-        <li>
-          <FaUserFriends className='text-primary text-2xl' />
-        </li>
-      </ul>
+    <section className='w-full md:w-60 lg:w-80 h-full bg-white md:flex flex-col justify-start items-center gap-18 pt-4 md:p-4'>
       <input
         type='text'
         placeholder='Buscar contacto'
-        className='input bg-gray-100 text-black rounded-md mt-4 w-full max-w-2xl placeholder:font-semibold'
+        className='input bg-gray-100 text-black rounded-md w-full max-w-2xl placeholder:font-semibold'
         value={searchText}
         onChange={handleSearch} // Asignar la función de búsqueda al evento onChange
       />
       <ul className='bg-white flex w-full flex-col gap-4 pt-6'>
         {loadingcontacts
           ? (
-            <div className='flex items-center justify-center'>
-              cargando
+            <div className='flex items-center mt-12 justify-center gap-2'>
+              <BsClock className='animate-spin text-black' /> <h1 className='text-black'>Cargando amigos</h1>
               {/* eslint-disable-next-line react/jsx-indent */}
             </div>
             )
