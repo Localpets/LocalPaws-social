@@ -59,8 +59,6 @@ const Profile = () => {
 
   ///
 
-  const currentUser = 48
-
   const { error, data } = useQuery({
     queryKey: ['usuarios'],
     queryFn: async () => {
@@ -104,7 +102,7 @@ const Profile = () => {
     queryKey: ['posts'],
     queryFn: async () => {
       // eslint-disable-next-line camelcase
-      return makeRequest.get(`/post/user/${currentUser}`).then((res) => {
+      return makeRequest.get(`/post/user/${profileId}`).then((res) => {
         // sort posts by id descending
         const sortedPosts = res.data.posts.sort((a, b) => b.post_id - a.post_id)
         setUserpost(sortedPosts)
@@ -118,7 +116,7 @@ const Profile = () => {
   return (
     <section className='min-h-screen min-w-screen pb-8'>
       {settings && (
-        <ProfileSettings />
+        <ProfileSettings profileId={profileId} userprofile={userprofile} />
       )}
       <Header />
       <section className='pl-[25%] pt-16'>

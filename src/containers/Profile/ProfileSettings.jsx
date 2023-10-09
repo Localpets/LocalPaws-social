@@ -1,9 +1,8 @@
+/* eslint-disable react/prop-types */
 import React, { useState } from 'react'
 import { makeRequest } from '../../library/axios.js'
 
-const ProfileSettings = ({ setUploadImage, profileId, uploadImage, userprofile }) => {
-
-
+const ProfileSettings = ({ profileId, userprofile }) => {
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [bio, setBio] = useState('')
@@ -27,15 +26,16 @@ const ProfileSettings = ({ setUploadImage, profileId, uploadImage, userprofile }
 
     try {
       console.log(formData)
-      await makeRequest.put(`/user/update/profile-picture/${profileId}`, formData, 
-      {headers: {
-        'Content-Type': 'multipart/form-data'
-      }})
+      await makeRequest.put(`/user/update/profile-picture/${profileId}`, formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
       setValues(values)
     } catch (error) {
       console.log(error)
     }
-
   }
 
   const [values, setValues] = useState({
@@ -66,15 +66,14 @@ const ProfileSettings = ({ setUploadImage, profileId, uploadImage, userprofile }
 
   const handleForm = (event) => {
     event.preventDefault()
-
   }
 
   const handleInputChange = (event) => {
-    const {name, value} = event.target
-      setValues({
-        ...values,
-        [name]: value,
-      })
+    const { name, value } = event.target
+    setValues({
+      ...values,
+      [name]: value
+    })
   }
 
   const toggleShowImgProfile = () => {
@@ -86,51 +85,53 @@ const ProfileSettings = ({ setUploadImage, profileId, uploadImage, userprofile }
       setImgStyle('w-[8vw] h-[8vw] rounded-full transform')
     }
   }
-  console.log(imageprofile)
+  console.log(userprofile)
   return (
-  <form onSubmit={handleForm}>
-    <div className='w-full h-full bg-white'>
-      <div className='fixed ml-[35vw] h-[55vh] top-[5em] mx-auto rounded-lg bg-white border-primary border-4 w-[35vw]'>
+    <form onSubmit={handleForm}>
+      <div className='w-full h-full bg-white'>
+        <div className='fixed ml-[35vw] h-[55vh] top-[5em] mx-auto rounded-lg bg-white border-primary border-4 w-[35vw]'>
           <div className='flex'>
-            <label className='pl-4 h-[14vh] pt-4 mx-auto block relative' style={{ cursor: 'pointer' }}  onMouseEnter={toggleShowImgProfile}
-                    onMouseLeave={toggleShowImgProfile}>
-                      {
+            <label
+              className='pl-4 h-[14vh] pt-4 mx-auto block relative' style={{ cursor: 'pointer' }} onMouseEnter={toggleShowImgProfile}
+              onMouseLeave={toggleShowImgProfile}
+            >
+              {
                     showEditImgProfile && (
-                      <i className='absolute text-2xl fa-regular fa-pen-to-square top-12 left-12 z-20'/>
+                      <i className='absolute text-2xl fa-regular fa-pen-to-square top-12 left-12 z-20' />
                     )
                   }
-              
-                      {previewImage ? (
-                        <img
-                          className={imgStyle}
-                          src={userprofile.thumbnail}
-                          alt='user-thumbnail'
-                        />
-                        
-                      ) : (
-                        <img
-                          className={imgStyle}
-                          src={previewImage}
-                          alt='user-thumbnail'
-                        />
-                      )}
-                  
-                  <h1 className='font-bold pt-1'>
-                    Cambiar imagen
-                  </h1>
-                  {
-                    showEditImgProfile && (
-                    <>
-                    <input
-                    className='hidden'
-                    type='file'
-                    
-                    name='image'
-                    onChange={handleImageThumbnail}
-                    accept='image/jpeg,image/png,image/jpg'
 
-                    />
-                    </>
+              {previewImage
+                ? (
+                  <img
+                    className={imgStyle}
+                    src={userprofile.thumbnail}
+                    alt='user-thumbnail'
+                  />
+
+                  )
+                : (
+                  <img
+                    className={imgStyle}
+                    src={previewImage}
+                    alt='user-thumbnail'
+                  />
+                  )}
+
+              <h1 className='font-bold pt-1'>
+                Cambiar imagen
+              </h1>
+              {
+                    showEditImgProfile && (
+                      <>
+                        <input
+                          className='hidden'
+                          type='file'
+                          name='image'
+                          onChange={handleImageThumbnail}
+                          accept='image/jpeg,image/png,image/jpg'
+                        />
+                      </>
                     )
                   }
             </label>
@@ -138,51 +139,54 @@ const ProfileSettings = ({ setUploadImage, profileId, uploadImage, userprofile }
 
               <div className='pr-4'>
                 <h1 className='pt-4 pb-1 font-bold'>Nombre Completo</h1>
-                <input 
-                  placeholder='Cambia tu nombre' 
-                  type='text' 
-                  name='name' 
+                <input
+                  placeholder='Cambia tu nombre'
+                  type='text'
+                  name='name'
                   values={values.name}
                   onChange={handleInputChange}
-                  className='w-[18vw] h-[5vh] rounded-xl border-2 border-[#E0E1DD] text-black resize-none'/>
+                  className='w-[18vw] h-[5vh] rounded-xl border-2 border-[#E0E1DD] text-black resize-none'
+                />
               </div>
 
               <div>
                 <h1 className='pt-4 pb-1 font-bold'>Cambia tu Usuario</h1>
-                <input 
-                  placeholder='Cambia tu nombre' 
-                  type='text' 
-                  name='username' 
+                <input
+                  placeholder='Cambia tu nombre'
+                  type='text'
+                  name='username'
                   values={values.username}
                   onChange={handleInputChange}
-                  className='w-[18vw] h-[5vh] rounded-xl border-2 border-[#E0E1DD] text-black resize-none'/>
+                  className='w-[18vw] h-[5vh] rounded-xl border-2 border-[#E0E1DD] text-black resize-none'
+                />
               </div>
 
               <div>
                 <h1 className='pt-4 pb-1 font-bold'>Cambia tu biografia</h1>
-                <input 
-                  placeholder='Cambia tu biografia' 
-                  type='text' 
-                  name='bio' 
+                <input
+                  placeholder='Cambia tu biografia'
+                  type='text'
+                  name='bio'
                   values={values.bio}
                   onChange={handleInputChange}
-                  className='w-[18vw] h-[10vh] rounded-xl border-2 border-[#E0E1DD] text-black resize-none'/>
+                  className='w-[18vw] h-[10vh] rounded-xl border-2 border-[#E0E1DD] text-black resize-none'
+                />
               </div>
 
             </div>
           </div>
           <div className='flex justify-center pt-8 gap-4'>
-            <button className='bg-red-500 text-white rounded-lg p-2 mx-1'>
+            <button className='bg-neutral hover:bg-secondary text-white rounded-lg p-2 mx-1'>
               Cancelar
             </button>
-            <button className='bg-green-500 text-white rounded-lg p-2 mx-1' type='submit' onClick={handleSubmit}>
+            <button className='bg-neutral hover:bg-secondary text-white rounded-lg p-2 mx-1' type='submit' onClick={handleSubmit}>
               Confirmar
             </button>
           </div>
-        
+
+        </div>
       </div>
-    </div>
-  </form> 
+    </form>
   )
 }
 

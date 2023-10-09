@@ -1,22 +1,20 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from '@tanstack/router'
 import useFindUser from '../../hooks/useFindUser'
 import logo from '../../assets/NewIcons/pawsplorer marron.png'
-import { useEffect, useState } from 'react'
 import UnreadMessageCounter from './utilities/fetchUnreadMessages'
 
 const LeftBar = ({ isProfileView, toggleNewSection, profileUser }) => {
-
   const { user } = useFindUser()
   const [currentUser, setCurrentUser] = useState([])
-  const profileRout = new URL(window.document.location)
-useEffect(() => {
-  if (user) {
-    console.log(user)
-    setCurrentUser(user)
-  }
-}, [user])  const [unreadmsg, setUnreadmsg] = useState([])
+  const [unreadmsg, setUnreadmsg] = useState([])
+  useEffect(() => {
+    if (user) {
+      console.log(user)
+      setCurrentUser(user)
+    }
+  }, [user])
 
   return (
     <div className='flex fixed flex-col left-0 text-neutral h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-10 bg-white ml-10 md:justify-start'>
