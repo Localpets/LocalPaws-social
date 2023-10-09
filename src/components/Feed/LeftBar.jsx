@@ -1,15 +1,22 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react'
 import { Link } from '@tanstack/router'
-import useAuthStore from '../../context/AuthContext'
 import useFindUser from '../../hooks/useFindUser'
 import logo from '../../assets/NewIcons/pawsplorer marron.png'
+import { useEffect, useState } from 'react'
 import UnreadMessageCounter from './utilities/fetchUnreadMessages'
 
-const LeftBar = ({ isProfileView, toggleNewSection }) => {
-  const { loggedUser } = useAuthStore()
-  const { user } = useFindUser(loggedUser)
-  const [unreadmsg, setUnreadmsg] = useState([])
+const LeftBar = ({ isProfileView, toggleNewSection, profileUser }) => {
+
+  const { user } = useFindUser()
+  const [currentUser, setCurrentUser] = useState([])
+  const profileRout = new URL(window.document.location)
+useEffect(() => {
+  if (user) {
+    console.log(user)
+    setCurrentUser(user)
+  }
+}, [user])  const [unreadmsg, setUnreadmsg] = useState([])
 
   return (
     <div className='flex fixed flex-col left-0 text-neutral h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-10 bg-white ml-10 md:justify-start'>
@@ -40,7 +47,7 @@ const LeftBar = ({ isProfileView, toggleNewSection }) => {
         </Link>
 
         {isProfileView && (
-          <div className='profile-section'>
+          <div className={currentUser.user_id == profileUser ? 'profile-section' : 'hidden'}>
             <button onClick={toggleNewSection} className='btn mb-3 btn-ghost flex items-center justify-start '>
               <i className='fa fa-paper-plane' aria-hidden='true' />
               <span className='icon hidden md:flex '>Pawstear</span>
@@ -48,7 +55,7 @@ const LeftBar = ({ isProfileView, toggleNewSection }) => {
           </div>
         )}
 
-        <Link to='/profile/1' className='btn mb-3 btn-ghost flex items-center justify-start'>
+        <Link to={`/profile/${currentUser.user_id}`} className='btn mb-3 btn-ghost flex items-center justify-start'>
           <img
             className='w-10 h-10 rounded-full'
             src={user?.thumbnail || 'https://i.imgur.com/HeIi0wU.png'}

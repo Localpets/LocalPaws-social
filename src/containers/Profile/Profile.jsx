@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { useState, useEffect } from 'react'
 import LeftBar from '../../components/Feed/LeftBar'
 import Header from '../../components/Header/Header'
@@ -6,7 +5,6 @@ import { useQuery } from '@tanstack/react-query'
 import { makeRequest } from '../../library/axios'
 import PostQueryWrapper from '../../components/Post/PostQueryWrapper'
 import PostForm from '../../components/Forms/PostForm'
-import swal from 'sweetalert'
 import ProfileSettings from './ProfileSettings'
 
 const Profile = () => {
@@ -50,7 +48,18 @@ const Profile = () => {
     setShowLoadedImage(true)
   }
 
-  /// OBTENER USUARIO
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      const imageUrl = URL.createObjectURL(file)
+      setUploadedImage(imageUrl)
+      // También puedes enviar la imagen al servidor en este punto si es necesario
+    }
+  }
+
+  ///
+
+  const currentUser = 48
 
   const { error, data } = useQuery({
     queryKey: ['usuarios'],
@@ -95,26 +104,25 @@ const Profile = () => {
     queryKey: ['posts'],
     queryFn: async () => {
       // eslint-disable-next-line camelcase
-      return makeRequest.get(`/post/user/${profileId}`)
-        .then((res) => {
-          // sort posts by id descending
-          const sortedPosts = res.data.posts.sort((a, b) => b.post_id - a.post_id)
-          setUserpost(sortedPosts)
-          setPostLoading(false)
+      return makeRequest.get(`/post/user/${currentUser}`).then((res) => {
+        // sort posts by id descending
+        const sortedPosts = res.data.posts.sort((a, b) => b.post_id - a.post_id)
+        setUserpost(sortedPosts)
+        setPostLoading(false)
 
-          return res.data
-        })
+        return res.data
+      })
     }
   })
 
   return (
     <section className='min-h-screen min-w-screen pb-8'>
       {settings && (
-        <ProfileSettings setUploadedImage={setUploadedImage} />
+        <ProfileSettings />
       )}
       <Header />
       <section className='pl-[25%] pt-16'>
-        <LeftBar isProfileView toggleNewSection={toggleNewSection} profileUser={profileId} />
+        <LeftBar user={userLogged} isProfileView toggleNewSection={toggleNewSection} />
         {loading
           ? (
             <div className='flex justify-center gap-4 pt-8 '>
@@ -137,6 +145,7 @@ const Profile = () => {
                       id='imageUpload'
                       accept='image/*'
                       style={{ display: 'none' }}
+                      onChange={handleImageUpload}
                     />
                   </label>
                   <div className='flex flex-col gap-2 pt-8'>
