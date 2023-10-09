@@ -22,7 +22,7 @@ const usePostContext = (postId) => {
   const [userLike, setUserLike] = useState(null)
   const [liked, setLiked] = useState(false)
   const [likeCreating, setLikeCreating] = useState(false)
-  const [likeStyle, setLikeStyle] = useState('fa-solid fa-heart mr-2 text-lg text-gray-400')
+  const [likeStyle, setLikeStyle] = useState('🖤')
   const [currentReaction, setCurrentReaction] = useState(null)
   const [closeTimeout, setCloseTimeout] = useState(null)
   const [isReactionBarOpen, setIsReactionBarOpen] = useState(false)
@@ -43,6 +43,14 @@ const usePostContext = (postId) => {
     { label: 'Triste', node: <div>😿</div>, key: 'TEARS' },
     { label: 'Enojado', node: <div>😾</div>, key: 'ANGRY' },
     { label: 'Asombrado', node: <div>🙀</div>, key: 'SURPRISED' }]
+
+  const ReactionsIcons = {
+    Like: '💗',
+    Haha: '😹',
+    Triste: '😿',
+    Enojado: '😾',
+    Asombrado: '🙀'
+  }
 
   // Efectos
 
@@ -118,21 +126,22 @@ const usePostContext = (postId) => {
             setUserLike(likeData.find((like) => like.user_id === currentUser.userId))
             switch (likeData.find((like) => like.user_id === currentUser.userId).like_type) {
               case 'Like':
-                setLikeStyle('fa-solid fa-heart mr-2 text-lg text-red-600')
+                setLikeStyle(ReactionsIcons.Like)
                 break
               case 'Haha':
-                setLikeStyle('fa-solid fa-laugh-squint mr-2 text-lg text-yellow-500')
+                setLikeStyle(ReactionsIcons.Haha)
                 break
               case 'Triste':
-                setLikeStyle('fa-solid fa-sad-tear mr-2 text-lg text-blue-500')
+                setLikeStyle(ReactionsIcons.Triste)
                 break
               case 'Enojado':
-                setLikeStyle('fa-solid fa-angry mr-2 text-lg text-red-500')
+                setLikeStyle(ReactionsIcons.Enojado)
                 break
               case 'Asombrado':
-                setLikeStyle('fa-solid fa-surprise mr-2 text-lg text-purple-500')
+                setLikeStyle(ReactionsIcons.Asombrado)
                 break
               default:
+                setLikeStyle(ReactionsIcons.Like)
                 break
             }
             setLiked(true)
@@ -261,22 +270,22 @@ const usePostContext = (postId) => {
   function getLikeStyle (type) {
     switch (type) {
       case 'Like':
-        return 'fa-solid fa-heart mr-2 text-lg text-red-600'
+        return ReactionsIcons.Like
       case 'Haha':
-        return 'fa-solid fa-laugh-squint mr-2 text-lg text-yellow-500'
+        return ReactionsIcons.Haha
       case 'Triste':
-        return 'fa-solid fa-sad-tear mr-2 text-lg text-blue-500'
+        return ReactionsIcons.Triste
       case 'Enojado':
-        return 'fa-solid fa-angry mr-2 text-lg text-red-500'
+        return ReactionsIcons.Enojado
       case 'Asombrado':
-        return 'fa-solid fa-surprise mr-2 text-lg text-purple-500'
+        return ReactionsIcons.Asombrado
       default:
-        return ''
+        return ReactionsIcons.Like
     }
   }
 
   function resetLikeState () {
-    setLikeStyle('fa-solid fa-heart mr-2 text-lg text-gray-400')
+    setLikeStyle('🖤')
     setLikes(likes - 1)
     setLiked(false)
     setCurrentReaction(null)
@@ -286,7 +295,7 @@ const usePostContext = (postId) => {
   const handleDeleteLike = async () => {
     setLikeCreating(true)
     if (currentUser) {
-      setLikeStyle('fa-solid fa-heart mr-2 text-lg text-gray-400')
+      setLikeStyle('🖤')
       setLikes(likes - 1)
       setLiked(false)
       setCurrentReaction(null)
@@ -434,9 +443,27 @@ const usePostContext = (postId) => {
     if (currentUser) {
       try {
         await makeRequest.delete(`/comment/delete/${comment.comment_id}`)
+        // delete each child comment
+        if (comment.children) {
+          comment.children.forEach(async (childComment) => {
+            await makeRequest.delete(`/comment/delete/${childComment.comment_id}`)
+          })
+        }
         console.log('Comment deleted')
         if (!comment.parent_comment_id) {
           const newComments = comments.filter((c) => c.comment_id !== comment.comment_id)
+          setComments(newComments)
+        } else {
+          const newComments = comments.map((c) => {
+            if (c.comment_id === comment.parent_comment_id) {
+              const newChildren = c.children.filter((child) => child.comment_id !== comment.comment_id)
+              return {
+                ...c,
+                children: newChildren
+              }
+            }
+            return c
+          })
           setComments(newComments)
         }
       } catch (error) {

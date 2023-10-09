@@ -141,7 +141,7 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
                       onMouseEnter={handleMouseEnter}
                       onMouseLeave={handleMouseLeave}
                     >
-                      <i className={likeStyle} />
+                      <span className='pr-2'>{likeStyle}</span>
                     </button>
                     <span>{likes}</span>
                   </div>
@@ -183,9 +183,9 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
               <SlaveComment
                 key={slaveComment.comment_id}
                 slaveComment={slaveComment}
-                handleDeleteComment={handleDeleteComment}
-                reactions={reactions}
                 currentUser={currentUser}
+                reactions={reactions}
+                handleDeleteComment={handleDeleteComment}
                 isActive={isActive}
                 setActiveComment={setActiveComment}
                 handleSelectParentComment={handleSelectParentComment}

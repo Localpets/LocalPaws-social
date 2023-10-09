@@ -327,9 +327,9 @@ const PostPage = () => {
                     <span className='loading loading-spinner' />
                     )
                   : (
-                    <div>
+                    <div className='text-lg'>
                       <button onClick={liked ? handleDeleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                        <i className={likeStyle} />
+                        <span className='pr-2'>{likeStyle}</span>
                       </button>
                       <span>{likes}</span>
                     </div>

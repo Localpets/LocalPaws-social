@@ -35,7 +35,7 @@ const RightBar = () => {
       if (localuser) {
         try {
           setLoading(true)
-          if (localuser !== null) {
+          if (typeof localuser.user_id !== 'undefined') {
             const res = await makeRequest.get(`/follow/find/followed/${localuser.user_id}`)
             setUserFollows(res.data.follows)
           }
