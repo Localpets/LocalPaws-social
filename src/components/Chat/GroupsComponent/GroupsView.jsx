@@ -6,6 +6,7 @@ import { fetchAllGroups } from './GroupUtilities/FetchGroups'
 import { handleCreateGroups } from './GroupUtilities/Handlers/handleCreateGroup'
 import useChatStore from '../../../context/ChatStore'
 import swal from 'sweetalert'
+import LoadingGif from '../../LoadingState/LoadingGif'
 
 const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
   const [contacts, setContacts] = useState([])
@@ -104,7 +105,7 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
       {!createGroups
         ? loadingGroups
           ? <div className='flex items-center mt-12 justify-center gap-2'>
-            <BsClock className='animate-spin text-black' /> <h1 className='text-black'>Cargando grupos</h1>
+            <LoadingGif />
             {/* eslint-disable-next-line react/jsx-indent */}
             </div>
 
@@ -122,7 +123,7 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
                           toggleHamburguerStyle()
                         }}
                       >
-                        {group.image === 'lol'
+                        {group.image === ''
                           ? <div className='w-12 h-12 flex justify-center items-center rounded-full bg-slate-200'>
                             <span>{group.name[0]}</span>
                             {/* eslint-disable-next-line react/jsx-indent */}

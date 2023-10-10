@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react'
 import { makeRequest } from '../../library/axios.js'
+import swal from 'sweetalert'
 
 const ProfileSettings = ({ profileId, userprofile }) => {
   const [name, setName] = useState('')

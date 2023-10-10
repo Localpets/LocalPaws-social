@@ -139,7 +139,7 @@ const RightBar = () => {
 
   return (
     <section className='hidden fixed right-0 w-[20%] xl:flex xl:flex-col items-center justify-center gap-5 h-auto text-[#0D1B2AS] text-left mt-10 mr-8'>
-      <div className='bg-white w-full h-auto text-[#0D1B2AS] text-left border-2 rounded-lg border-[#E0E1DD] px-4 py-4'>
+      <div className='bg-white w-full flex flex-col max-h-80 h-80 text-[#0D1B2AS] text-left border-2 rounded-lg border-[#E0E1DD] px-4 py-4'>
         <h3 className='text-[#0D1B2AS] font-bold dark:border-dim-200'>
           Personas populares
         </h3>
@@ -150,7 +150,7 @@ const RightBar = () => {
             </div>
             )
           : (
-            <div className='p-2 dark:border-dim-200 flex flex-col'>
+            <div className='p-2 dark:border-dim-200 pt-4 flex flex-col'>
               {randomUsers && randomUsers.length > 0 && randomUsers.filter(user => user.type === 'USER')
                 .map(user => {
                   const followeduser = userFollows.find(follows => follows.user_id === user.user_id)
@@ -195,21 +195,20 @@ const RightBar = () => {
                 })}
             </div>
             )}
-        <div className='text-blue-400 cursor-pointer p-2'>Ver más</div>
       </div>
 
-      <div className='bg-white w-full  h-auto text-[#0D1B2AS] text-left border-2 rounded-lg border-[#E0E1DD] px-4 py-4'>
+      <div className='bg-white w-full max-h-80 h-80 text-[#0D1B2AS] text-left border-2 rounded-lg border-[#E0E1DD] px-4 py-4'>
         <h3 className='text-[#0D1B2AS] font-bold dark:border-dim-200'>
           Miembros populares
         </h3>
         {loadingVeterinarias
           ? (
-            <div className='flex  items-center justify-center space-x-2 '>
+            <div className='flex pt-12 items-center justify-center space-x-2 '>
               <FaSpinner className='animate-spin text-blue-400 ' />
             </div>
             )
           : (
-            <div className='p-2 dark:border-dim-200 flex flex-col'>
+            <div className='p-2 dark:border-dim-200 pt-4 flex flex-col'>
               {members
                 .filter(user => user.type === 'member')
                 .map(user => {
@@ -255,7 +254,6 @@ const RightBar = () => {
                 })}
             </div>
             )}
-        <div className='text-blue-400 cursor-pointer p-2'>Ver más</div>
       </div>
     </section>
   )

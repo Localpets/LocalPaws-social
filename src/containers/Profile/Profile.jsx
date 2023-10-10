@@ -23,7 +23,6 @@ const Profile = () => {
   const [settings, setSettings] = useState(false)
 
   /// MOSTRAR PAWSTEAR EN VISTA DE PERFIL
-
   const toggleNewSection = () => {
     setShowNewSection(!showNewSection)
   }

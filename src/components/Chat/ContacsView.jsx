@@ -8,7 +8,7 @@ import ContactListItem from './Structures/ContacsSkeleton'
 import { fetchAllChats } from './utilities/FetchChats_Contacs'
 import { getContacts } from './utilities/FetchUsers_Contacs'
 import { handleJoinRoom } from './utilities/Handlers/HandleJoinRoom'
-import { BsClock } from 'react-icons/bs'
+import LoadingGif from '../LoadingState/LoadingGif'
 
 const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts }) => {
   const [contacts, setContacts] = useState([])
@@ -67,7 +67,7 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
         {loadingcontacts
           ? (
             <div className='flex items-center mt-12 justify-center gap-2'>
-              <BsClock className='animate-spin text-black' /> <h1 className='text-black'>Cargando amigos</h1>
+              <LoadingGif />
               {/* eslint-disable-next-line react/jsx-indent */}
             </div>
             )

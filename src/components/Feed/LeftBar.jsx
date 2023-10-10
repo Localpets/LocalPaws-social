@@ -45,7 +45,7 @@ const LeftBar = ({ isProfileView, toggleNewSection, profileUser }) => {
         </Link>
 
         {isProfileView && (
-          <div className={currentUser.user_id == profileUser ? 'profile-section' : 'hidden'}>
+          <div className={profileUser ? 'profile-section' : 'hidden'}>
             <button onClick={toggleNewSection} className='btn mb-3 btn-ghost flex items-center justify-start '>
               <i className='fa fa-paper-plane' aria-hidden='true' />
               <span className='icon hidden md:flex '>Pawstear</span>
