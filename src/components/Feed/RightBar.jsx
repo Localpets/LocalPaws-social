@@ -46,6 +46,7 @@ const RightBar = () => {
         console.error(err);
         setLoadingPersonas(false);
       }
+      console.log(userlist)
     };
     
     getUserlist()
@@ -65,6 +66,7 @@ const RightBar = () => {
         console.error(err);
         setLoadingPersonas(false);
       }
+      console.log("esto es randomuser", randomUsers)
     };
   
     fetchData();
