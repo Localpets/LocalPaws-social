@@ -1,4 +1,4 @@
-import { makeRequest } from '../../../../library/axios'
+import { makeRequest } from '../../../../library/Axios'
 
 export async function handleEditKeyDown (event, messageRoom, messageId, messageImage, userId, receiverId, createdAt, editInputValue, setEditingMessageId, setOpenMenuId, socket) {
   if (event.key === 'Enter') {

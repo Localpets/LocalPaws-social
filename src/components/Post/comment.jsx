@@ -156,11 +156,7 @@ const Comment = ({ comment, handleDeleteComment, reactions, currentUser, isActiv
                     }
                   }}
                   >
-                    {
-                      commentSelectedForReply
-                        ? 'Cancelar'
-                        : 'Responder'
-                    }
+                    <span>Responder</span>
                   </button>
                 </div>
                 )

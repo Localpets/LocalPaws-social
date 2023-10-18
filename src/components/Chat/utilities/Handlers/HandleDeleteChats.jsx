@@ -1,5 +1,5 @@
 import swal from 'sweetalert'
-import { makeRequest } from '../../../../library/axios'
+import { makeRequest } from '../../../../library/Axios'
 
 export async function handleDeleteChat (userId, messageIds, socket, currentchat, setCurrentchat, lastMessage) {
   // Utiliza async/await para esperar la respuesta del usuario

@@ -1,9 +1,10 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/router'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import PropTypes from 'prop-types'
 import useSlaveCommentsContext from '../../hooks/Posts/useSlaveCommentsContext'
 
-const SlaveComment = ({ slaveComment, reactions, currentUser, handleDeleteComment }) => {
+const SlaveComment = ({ slaveComment, reactions, currentUser, handleDeleteComment, handleSelectParentComment }) => {
   const {
     likeStyle,
     likeCreating,
@@ -25,6 +26,7 @@ const SlaveComment = ({ slaveComment, reactions, currentUser, handleDeleteCommen
     isHovering
   } = useSlaveCommentsContext(slaveComment, currentUser, handleDeleteComment)
 
+  const [commentSelectedForReply, setCommentSelectedForReply] = useState(null)
   return (
     <li className='border-l-2 ml-4 pl-4'>
       <div className='flex flex-col w-full justify-center py-2' onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
@@ -116,22 +118,37 @@ const SlaveComment = ({ slaveComment, reactions, currentUser, handleDeleteCommen
         </div>
         {/* Display the number of likes and the like button */}
         <div className='flex gap-2 py-2 items-center ml-12 h-12'>
-          <section>
+          <section className='w-40'>
             {
             likeCreating
               ? (
                 <span className='loading loading-spinner' />
                 )
               : (
-                <div>
-                  <button
-                    onClick={liked ? deleteLike : handleLike}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
+                <div className='flex justify-between'>
+                  <div>
+                    <button
+                      onClick={liked ? deleteLike : handleLike}
+                      onMouseEnter={handleMouseEnter}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <span className='pr-2'>{likeStyle}</span>
+                    </button>
+                    <span>{likes}</span>
+                  </div>
+                  <button onClick={() => {
+                    const isSelectedForReply = !commentSelectedForReply
+                    setCommentSelectedForReply(isSelectedForReply)
+
+                    if (isSelectedForReply) {
+                      handleSelectParentComment(slaveComment)
+                    } else {
+                      handleSelectParentComment(null)
+                    }
+                  }}
                   >
-                    <span className='pr-2'>{likeStyle}</span>
+                    <span>Responder</span>
                   </button>
-                  <span>{likes}</span>
                 </div>
                 )
             }
@@ -155,7 +172,8 @@ SlaveComment.propTypes = {
   slaveComment: PropTypes.object.isRequired,
   reactions: PropTypes.array.isRequired,
   currentUser: PropTypes.object,
-  handleDeleteComment: PropTypes.func.isRequired
+  handleDeleteComment: PropTypes.func.isRequired,
+  handleSelectParentComment: PropTypes.func.isRequired
 }
 
 export default SlaveComment
