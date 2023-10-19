@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 import { useState, useEffect } from 'react'
 import useFindUser from '../useFindUser'
 
@@ -21,6 +21,7 @@ const useFeedPostsContext = (post, postUser, deletePost) => {
   const [currentReaction, setCurrentReaction] = useState(null)
   const [closeTimeout, setCloseTimeout] = useState(null)
   const [likeCreating, setLikeCreating] = useState(false)
+  const [fetchingReaction, setFetchingReaction] = useState(true)
 
   // post props
   const { text, image, category, createdAt, post_id, post_user_id } = post
@@ -33,11 +34,11 @@ const useFeedPostsContext = (post, postUser, deletePost) => {
   const [comments, setComments] = useState(0)
 
   const ReactionsArray =
-  [{ label: 'Like', node: <div>💗</div>, key: 'LIKE' },
-    { label: 'Haha', node: <div>😹</div>, key: 'SMILE' },
-    { label: 'Triste', node: <div>😿</div>, key: 'TEARS' },
-    { label: 'Enojado', node: <div>😾</div>, key: 'ANGRY' },
-    { label: 'Asombrado', node: <div>🙀</div>, key: 'SURPRISED' }]
+  [{ label: 'Like', node: <div>💗</div>, key: 'Like' },
+    { label: 'Haha', node: <div>😹</div>, key: 'Haha' },
+    { label: 'Triste', node: <div>😿</div>, key: 'Triste' },
+    { label: 'Enojado', node: <div>😾</div>, key: 'Enojado' },
+    { label: 'Asombrado', node: <div>🙀</div>, key: 'Asombrado' }]
 
   const ReactionsIcons = {
     Like: '💗',
@@ -52,21 +53,6 @@ const useFeedPostsContext = (post, postUser, deletePost) => {
       setImageLoaded(true)
       setComponentStyle('border p-4 bg-white rounded-lg w-full h-auto')
     }
-
-    const fetchLikes = async () => {
-      const { data } = await makeRequest.get(`/like/post/${post_id}`)
-      setLikes(data.likes.length)
-      const checkIfUserLiked = data.likes.find(like => like.user_id === user?.user_id)
-      if (checkIfUserLiked) {
-        setLiked(true)
-      }
-    }
-
-    if (user?.user_id === post_user_id) {
-      setIsCurrentUserCommentAuthor(true)
-    }
-
-    fetchLikes()
   }, [image, setLiked, post_id, user, setIsCurrentUserCommentAuthor, post_user_id])
 
   useEffect(() => {
@@ -77,6 +63,7 @@ const useFeedPostsContext = (post, postUser, deletePost) => {
 
   useEffect(() => {
     const fetchLikes = async () => {
+      setFetchingReaction(true)
       try {
         const response = await makeRequest.get(`/like/post/${post_id}`)
         const likeData = response.data.likes
@@ -109,9 +96,11 @@ const useFeedPostsContext = (post, postUser, deletePost) => {
             setLiked(true)
             setCurrentReaction(likeData.find((like) => like.user_id === currentUser.user_id).like_type)
           }
+          setFetchingReaction(false)
         }
       } catch (error) {
         console.error(error)
+        setFetchingReaction(false)
       }
     }
 
@@ -277,7 +266,7 @@ const useFeedPostsContext = (post, postUser, deletePost) => {
   }
 
   // Aquí puedes obtener la URL de la página actual, por ejemplo:
-  const pageUrl = window.location.href
+  const postUrl = `/post/${post_id}`
 
   // Función para manejar el clic del botón de compartir
   const handleShareClick = () => {
@@ -285,13 +274,13 @@ const useFeedPostsContext = (post, postUser, deletePost) => {
     if (navigator.share) {
       navigator.share({
         title: `${first_name} en PawsPlorer: ${text}`,
-        url: pageUrl
+        url: postUrl
       })
         .then(() => console.log('Página compartida con éxito'))
         .catch((error) => console.error('Error al compartir:', error))
     } else {
       // Si el navegador no admite la API de compartir, puedes proporcionar un mensaje alternativo o implementar una lógica personalizada.
-      alert(`Comparte esta página: ${pageUrl}`)
+      alert(`Comparte esta página: ${postUrl}`)
     }
   }
 
@@ -319,7 +308,8 @@ const useFeedPostsContext = (post, postUser, deletePost) => {
     thumbnail,
     first_name,
     last_name,
-    dateToLocal
+    dateToLocal,
+    fetchingReaction
   }
 }
 

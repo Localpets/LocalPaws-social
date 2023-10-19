@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { makeRequest } from '../library/axios'
+import { makeRequest } from '../library/Axios'
 import useAuthStore from '../context/AuthContext'
 import jwtDecode from 'jwt-decode'
 
@@ -7,7 +7,6 @@ const secretKey = 'localpaws_api_key'
 
 export default function useFindUser () {
   const { login } = useAuthStore()
-
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

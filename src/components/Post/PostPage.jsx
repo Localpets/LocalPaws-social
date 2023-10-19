@@ -1,9 +1,11 @@
+/* eslint-disable react/jsx-closing-tag-location */
 /* eslint-disable camelcase */
 import { Link } from '@tanstack/router'
 import CommentSkeleton from './CommentSkeleton'
 import Comment from './Comment'
 import Header from '../Header/Header'
 import usePostContext from '../../hooks/Posts/usePostContext'
+import LoadingGif from '../LoadingState/LoadingGif'
 import { ReactionBarSelector } from '@charkour/react-reactions'
 import './Comments.css'
 
@@ -11,7 +13,8 @@ const PostPage = () => {
   const postId = new URL(window.document.location).pathname.split('/').pop()
   const {
     post,
-    postUser,
+    loadingPost,
+    postError,
     comments,
     commentCreating,
     commentsLoading,
@@ -46,6 +49,42 @@ const PostPage = () => {
     isCurrentUserCommentAuthor
   } = usePostContext(postId)
 
+  if (loadingPost) {
+    return (
+      <section>
+        <Header />
+        <div className='flex gap-4 bg-base-100 flex-col justify-center items-center h-screen'>
+          <article className='bg-white gap-8 h-[70%] w-[70%] p-10 rounded-lg flex flex-col items-center justify-center'>
+            <h1 className='text-4xl text-gray-400'>Cargando publicación...</h1>
+            <LoadingGif />
+            <div className='spinner-border mb-2' role='status'>
+              <span className='sr-only'>Cargando publicación...</span>
+            </div>
+          </article>
+        </div>
+      </section>
+    )
+  }
+
+  if (!post || postError) {
+    return (
+      <section>
+        <Header />
+        {/* Make a 404 page */}
+        <div className='flex gap-4 bg-base-100 flex-col justify-center items-center h-screen'>
+          <article className='bg-white gap-8 h-80 p-10 rounded-lg flex flex-col items-center justify-center'>
+            <h1 className='text-4xl text-gray-400'>Error 404 :(</h1>
+            <h2 className='text-2xl'>Parece que esta publicación no existe</h2>
+            <Link to='/home' className='btn btn-primary mt-4 text-white'>Volver al inicio</Link>
+          </article>
+        </div>
+      </section>
+    )
+  }
+
+  const { text, image, post_id } = post
+  const { first_name, last_name, thumbnail, username } = post.postUser
+
   return (
     <div>
       <Header />
@@ -64,96 +103,96 @@ const PostPage = () => {
           <div className='flex items-center'>
             <div className='flex md:items-start md:ml-2 text-sm items-start ml-2 flex-col'>
               <h5 className='text-[#0D1B2A] font-bold mb-1'>
-                {postUser.first_name} {postUser.last_name}
+                {first_name} {last_name}
               </h5>
-              <p className='text-gray-400 '>{postUser.username}</p>
+              <p className='text-gray-400 '>{username}</p>
             </div>
           </div>
           {
-          isCurrentUserCommentAuthor && (
-            <div className='flex justify-end w-[50%] mr-5'>
-              <div className='dropdown pt-0 dropdown-end'>
-                <label tabIndex={0} className='hover:cursor-pointer'>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    className='icon icon-tabler icon-tabler-dots-horizontal'
-                    width='24'
-                    height='24'
-                    viewBox='0 0 24 24'
-                    strokeWidth='1.5'
-                    stroke='#bababa'
-                    fill='none'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                  >
-                    <path stroke='none' d='M0 0h24v24H0z' />
-                    <circle cx='5' cy='12' r='1' />
-                    <circle cx='12' cy='12' r='1' />
-                    <circle cx='19' cy='12' r='1' />
-                  </svg>
-                </label>
-                <ul tabIndex={0} className='dropdown-content z-[1] menu p-2 shadow bg-white rounded-box w-52'>
-                  <li>
-                    <button
-                      onClick={() => handleDeletePost(post.post_id)}
-                      className='text-black hover:text-red-600 dark:hover:text-red-600'
+            isCurrentUserCommentAuthor && (
+              <div className='flex justify-end w-[50%] mr-5'>
+                <div className='dropdown pt-0 dropdown-end'>
+                  <label tabIndex={0} className='hover:cursor-pointer'>
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      className='icon icon-tabler icon-tabler-dots-horizontal'
+                      width='24'
+                      height='24'
+                      viewBox='0 0 24 24'
+                      strokeWidth='1.5'
+                      stroke='#bababa'
+                      fill='none'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
                     >
-                      <p>Eliminar publicación</p>
-                      <i className='fa-solid fa-trash text-md' />
-                    </button>
-                  </li>
-                  <li>
-                    {
-                      isEditingPost
-                        ? (
-                          <button className='text-black hover:text-blue-600 dark:hover:text-yellow-600' onClick={handleCancelEditPost}>
-                            <p>Cancelar edición</p>
-                            <i className='fa-solid fa-x text-md' />
-                          </button>
-                          )
-                        : (
-                          <button className='text-black hover:text-blue-600 dark:hover:text-blue-600' onClick={handleEditPost}>
-                            <p>Editar publicación</p>
-                            <i className='fa-solid fa-edit text-md' />
-                          </button>
-                          )
-                      }
-                  </li>
-                </ul>
+                      <path stroke='none' d='M0 0h24v24H0z' />
+                      <circle cx='5' cy='12' r='1' />
+                      <circle cx='12' cy='12' r='1' />
+                      <circle cx='19' cy='12' r='1' />
+                    </svg>
+                  </label>
+                  <ul tabIndex={0} className='dropdown-content z-[1] menu p-2 shadow bg-white rounded-box w-52'>
+                    <li>
+                      <button
+                        onClick={() => handleDeletePost(post_id)}
+                        className='text-black hover:text-red-600 dark:hover:text-red-600'
+                      >
+                        <p>Eliminar publicación</p>
+                        <i className='fa-solid fa-trash text-md' />
+                      </button>
+                    </li>
+                    <li>
+                      {
+                        isEditingPost
+                          ? (
+                            <button className='text-black hover:text-blue-600 dark:hover:text-yellow-600' onClick={handleCancelEditPost}>
+                              <p>Cancelar edición</p>
+                              <i className='fa-solid fa-x text-md' />
+                            </button>
+                            )
+                          : (
+                            <button className='text-black hover:text-blue-600 dark:hover:text-blue-600' onClick={handleEditPost}>
+                              <p>Editar publicación</p>
+                              <i className='fa-solid fa-edit text-md' />
+                            </button>
+                            )
+                        }
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </div>
-          )
-          }
+            )
+            }
           <Link to='/home' className='flex justify-between items-center'>
             <i className='fa-solid fa-close text-xl text-[#0D1B2A] pr-6' />
           </Link>
         </header>
-        {post.image === 'no image'
+        {image === 'no image'
           ? null
           : (
             <div className='h-[30rem] lg:h-[41.25rem] w-full'>
               <img
                 id='img-post'
                 className='w-full h-full flex bg-white lg:rounded-l-xl'
-                src={post.image || 'https://img.freepik.com/free-photo/abstract-surface-textures-white-concrete-stone-wall_74190-8189.jpg'}
+                src={image || 'https://img.freepik.com/free-photo/abstract-surface-textures-white-concrete-stone-wall_74190-8189.jpg'}
               />
             </div>
             )}
-        <article className={post.image === 'no image' ? 'flex flex-col pb-4 w-full h-full lg:w-[80%] mx-auto bg-white lg:rounded-r-xl lg:rounded-l-xl rounded-b-r-xl' : 'flex flex-col w-full bg-white h-full pb-4 lg:rounded-r-xl rounded-b-xl lg:rounded-b-none'}>
+        <article className={image === 'no image' ? 'flex flex-col pb-4 w-full h-full lg:w-[80%] mx-auto bg-white lg:rounded-r-xl lg:rounded-l-xl rounded-b-r-xl' : 'flex flex-col w-full bg-white h-full pb-4 lg:rounded-r-xl rounded-b-xl lg:rounded-b-none'}>
           <header className='hidden lg:flex items-center justify-between border-b px-4 py-4 h-20'>
             <div className='flex items-center'>
               <div className='flex'>
                 <img
                   className='w-12 h-12 rounded-full '
-                  src={postUser.thumbnail || 'http://localhost:8080/icons/6.png'}
+                  src={thumbnail || 'http://localhost:8080/icons/6.png'}
                   alt='user-thumbnail'
                 />
               </div>
               <div className='flex md:items-start md:ml-2 text-sm items-start ml-2 flex-col'>
                 <h5 className='text-[#0D1B2A] font-bold mb-1'>
-                  {postUser.first_name} {postUser.last_name}
+                  {first_name} {last_name}
                 </h5>
-                <p className='text-gray-400 '>{postUser.username}</p>
+                <p className='text-gray-400 '>{username}</p>
               </div>
             </div>
             {isCurrentUserCommentAuthor && (
@@ -181,7 +220,7 @@ const PostPage = () => {
                   <ul tabIndex={0} className='dropdown-content z-[1] menu p-2 shadow bg-white rounded-box w-52'>
                     <li>
                       <button
-                        onClick={() => handleDeletePost(post.post_id)}
+                        onClick={() => handleDeletePost(post_id)}
                         className='text-black hover:text-red-600 dark:hover:text-red-600'
                       >
                         <p>Eliminar publicación</p>
@@ -190,20 +229,20 @@ const PostPage = () => {
                     </li>
                     <li>
                       {
-                          isEditingPost
-                            ? (
-                              <button className='text-black hover:text-blue-600 dark:hover:text-yellow-600' onClick={handleCancelEditPost}>
-                                <p>Cancelar edición</p>
-                                <i className='fa-solid fa-x text-md' />
-                              </button>
-                              )
-                            : (
-                              <button className='text-black hover:text-blue-600 dark:hover:text-blue-600' onClick={handleEditPost}>
-                                <p>Editar publicación</p>
-                                <i className='fa-solid fa-edit text-md' />
-                              </button>
-                              )
-                          }
+                            isEditingPost
+                              ? (
+                                <button className='text-black hover:text-blue-600 dark:hover:text-yellow-600' onClick={handleCancelEditPost}>
+                                  <p>Cancelar edición</p>
+                                  <i className='fa-solid fa-x text-md' />
+                                </button>
+                                )
+                              : (
+                                <button className='text-black hover:text-blue-600 dark:hover:text-blue-600' onClick={handleEditPost}>
+                                  <p>Editar publicación</p>
+                                  <i className='fa-solid fa-edit text-md' />
+                                </button>
+                                )
+                            }
                     </li>
                   </ul>
                 </div>
@@ -220,47 +259,47 @@ const PostPage = () => {
               <Link to='#'>
                 <img
                   className='h-8 w-8 rounded-full'
-                  src={postUser.thumbnail || 'http://localhost:8080/icons/6.png'}
+                  src={thumbnail || 'http://localhost:8080/icons/6.png'}
                   alt='imagen-perfil-usuario'
                 />
               </Link>
               {
-                    isEditingPost
-                      ? (
-                        <div className='w-full px-4 ml-2 flex gap-4'>
-                          <textarea
-                            className='w-[85%] rounded-lg border border-gray-300 focus:border-secondary focus:ring-0'
-                            defaultValue={post.text || ''}
-                            id='postText'
-                          />
-                          <button
-                            className='btn btn-square bg-white hover:bg-secondary border-white border-none'
-                            onClick={handleEditPost}
-                            disabled={editingLoading}
-                          >
-                            {editingLoading
-                              ? (
-                                <span className='loading loading-sm' /> // Mostrar animación de carga
-                                )
-                              : (
-                                <svg
-                                  xmlns='http://www.w3.org/2000/svg'
-                                  height='1em'
-                                  viewBox='0 0 512 512'
-                                  color='#ffffff'
-                                >
-                                  <path d='M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z' />
-                                </svg> // Mostrar "Comentar" cuando no se está cargando
-                                )}
-                          </button>
-                        </div>
-                        )
-                      : (
-                        <div className='contenido-comentario ml-2 text-left text-md'>
-                          {post.text}
-                        </div>
-                        )
-                  }
+                      isEditingPost
+                        ? (
+                          <div className='w-full px-4 ml-2 flex gap-4'>
+                            <textarea
+                              className='w-[85%] rounded-lg border border-gray-300 focus:border-secondary focus:ring-0'
+                              defaultValue={text || ''}
+                              id='postText'
+                            />
+                            <button
+                              className='btn btn-square bg-white hover:bg-secondary border-white border-none'
+                              onClick={handleEditPost}
+                              disabled={editingLoading}
+                            >
+                              {editingLoading
+                                ? (
+                                  <span className='loading loading-sm' /> // Mostrar animación de carga
+                                  )
+                                : (
+                                  <svg
+                                    xmlns='http://www.w3.org/2000/svg'
+                                    height='1em'
+                                    viewBox='0 0 512 512'
+                                    color='#ffffff'
+                                  >
+                                    <path d='M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z' />
+                                  </svg> // Mostrar "Comentar" cuando no se está cargando
+                                  )}
+                            </button>
+                          </div>
+                          )
+                        : (
+                          <div className='contenido-comentario ml-2 text-left text-md'>
+                            {text}
+                          </div>
+                          )
+                    }
             </div>
           </section>
 
@@ -274,7 +313,7 @@ const PostPage = () => {
               {commentsLoading
                 ? (
                   <div className='mx-auto pt-20 w-full flex justify-center'>
-                    <span className='loading loading-ring loading-lg' />
+                    <LoadingGif />
                   </div>
                   )
                 : (
@@ -314,7 +353,7 @@ const PostPage = () => {
           <footer className='relative'>
             {isReactionBarOpen && (
               <div
-                className={post.image === 'no image' ? 'absolute -top-8 pb-2 ml-4 md:ml-[0.500rem] lg:ml-[4.75rem] w-[14rem] md:w-[16rem]' : 'absolute -top-8 pb-2 w-[14rem] md:w-[16rem]'} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
+                className={image === 'no image' ? 'absolute -top-8 pb-2 ml-4 md:ml-[0.500rem] lg:ml-[4.75rem] w-[14rem] md:w-[16rem]' : 'absolute -top-8 pb-2 w-[14rem] md:w-[16rem]'} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
               >
                 <ReactionBarSelector onSelect={handleSelector} reactions={ReactionsArray} iconSize='28px' />
               </div>
@@ -322,19 +361,19 @@ const PostPage = () => {
             <div className='flex flex-col pt-10'>
               <div className='flex justify-around items-center px-6 py-2 border-t'>
                 {
-                likeCreating
-                  ? (
-                    <span className='loading loading-spinner' />
-                    )
-                  : (
-                    <div className='text-lg'>
-                      <button onClick={liked ? handleDeleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                        <span className='pr-2'>{likeStyle}</span>
-                      </button>
-                      <span>{likes}</span>
-                    </div>
-                    )
-                }
+                  likeCreating
+                    ? (
+                      <span className='loading loading-spinner' />
+                      )
+                    : (
+                      <div className='text-lg'>
+                        <button onClick={liked ? handleDeleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+                          <span className='pr-2'>{likeStyle}</span>
+                        </button>
+                        <span>{likes}</span>
+                      </div>
+                      )
+                  }
                 {/* Make a share button with page link */}
                 <button onClick={handleShareClick}>
                   <i className='fa-regular fa-share-square text-xl text-[#0D1B2A] p-2 cursor-pointer' />
@@ -344,18 +383,8 @@ const PostPage = () => {
               {/* Montar las fotos un poco encima de otras */}
               <div className='flex items-center px-4 pt-2 border-t '>
                 {
-                  likes > 0 && (
-                    friendsLiked > 0
-                      ? (
-                          friendsLiked.map((friend) => (
-                            <div className='avatar' key={friend.user_id}>
-                              <div className='w-6'>
-                                <img src={friend.thumbnail} className='rounded-xl' />
-                              </div>
-                            </div>
-                          ))
-                        )
-                      : userLike && friendsLiked.length > 0
+                    likes > 0 && (
+                      friendsLiked > 0
                         ? (
                             friendsLiked.map((friend) => (
                               <div className='avatar' key={friend.user_id}>
@@ -365,48 +394,60 @@ const PostPage = () => {
                               </div>
                             ))
                           )
-                        : !userLike && friendsLiked.length > 0 && likes > 0
-                            ? (
-                                friendsLiked.map((friend) => (
-                                  <div className='avatar' key={friend.user_id}>
-                                    <div className='w-6'>
-                                      <img src={friend.thumbnail} className='rounded-xl' />
-                                    </div>
-                                  </div>
-                                ))
-                              )
-                            : userLike
-                              ? (
-                                <div className='avatar'>
+                        : userLike && friendsLiked.length > 0
+                          ? (
+                              friendsLiked.map((friend) => (
+                                <div className='avatar' key={friend.user_id}>
                                   <div className='w-6'>
-                                    <img src={currentUser.thumbnail || 'https://cdn-icons-png.flaticon.com/512/2815/2815428.png'} className='rounded-xl' />
+                                    <img src={friend.thumbnail} className='rounded-xl' />
                                   </div>
                                 </div>
+                              ))
+                            )
+                          : !userLike && friendsLiked.length > 0 && likes > 0
+                              ? (
+                                  friendsLiked.map((friend) => (
+                                    <div className='avatar' key={friend.user_id}>
+                                      <div className='w-6'>
+                                        <img src={friend.thumbnail} className='rounded-xl' />
+                                      </div>
+                                    </div>
+                                  ))
                                 )
-                              : null
-                  )
-                }
+                              : userLike
+                                ? (
+                                  <div className='avatar'>
+                                    <div className='w-6'>
+                                      <img src={currentUser.thumbnail || 'https://cdn-icons-png.flaticon.com/512/2815/2815428.png'} className='rounded-xl' />
+                                    </div>
+                                  </div>
+                                  )
+                                : null
+                    )
+                  }
                 <div className='flex ml-2 text-black '>
                   <p className='mb-0 text-sm'>
                     {
-                    likes > 0 && friendsLiked.length > 0 && !userLike
-                      ? (
-                        <span>
-                          Le gusta a <span className='font-bold'>{friendsLiked.length === 3 ? friendsLiked[Math.floor(Math.random(friendsLiked.length))].first_name : null}</span> y <span className='font-bold'>{likes - 1} personas más</span>
-                        </span>
-                        )
-                      : userLike && friendsLiked.length > 0
+                      likes > 0 && friendsLiked.length > 0 && !userLike
                         ? (
-                          <span className='font-bold'>Te gusta a ti y a {likes - 1} personas más</span>
+                            likeCreating
+                              ? <span className='font-bold'>A {likes} personas más les gusta esto</span>
+                              : <span>
+                                Le gusta a {friendsLiked[0].first_name} {friendsLiked[0].last_name} {likes - 1 !== 0 ? `${likes - 1} y apersonas más` : null}
+                              </span>
                           )
-                        : userLike
+                        : userLike && friendsLiked.length > 0
                           ? (
-                            <span className='font-bold'>A ti te gusta esto</span>
+                            <span className='font-bold'>Te gusta a ti y a {likes - 1} personas más</span>
                             )
-                          : (
-                            <span className='font-bold'>Sé el primero en darle like!</span>
-                            )
-              }
+                          : userLike
+                            ? (
+                              <span className='font-bold'>A ti te gusta esto</span>
+                              )
+                            : (
+                              <span className='font-bold'>Sé el primero en darle like!</span>
+                              )
+                }
                   </p>
                 </div>
               </div>
@@ -417,12 +458,31 @@ const PostPage = () => {
                       type='text'
                       id='commentInput'
                       placeholder={
-                        parentCommentForReply
-                          ? `Responder a ${parentCommentForReply.user.username}`
-                          : 'Escribe un comentario...'
+                          parentCommentForReply
+                            ? `Respondiendo a ${parentCommentForReply.user.username}`
+                            : 'Escribe un comentario...'
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleCommentSubmit()
+                        }
+                      }}
                       className='border-secondary bg-white w-full text-black active:border-secondary focus:border-secondary focus:ring-0'
                     />
+                    {
+                      parentCommentForReply && (
+                        <button
+                          className='btn btn-square border-secondary commentInput bg-white hover:bg-secondary'
+                          onClick={() => {
+                            setActiveComment(null)
+                            handleSelectParentComment(null)
+                          }}
+                        >
+                          {/* X svg */}
+                          <svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M6 18L18 6M6 6l12 12' /></svg>
+                        </button>
+                      )
+                    }
                     <button
                       className='btn btn-square border-secondary commentInput bg-white hover:bg-secondary'
                       onClick={handleCommentSubmit}

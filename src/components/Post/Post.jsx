@@ -28,7 +28,8 @@ const Post = ({ post, postUser, deletePost }) => {
     comments,
     thumbnail,
     first_name,
-    last_name
+    last_name,
+    fetchingReaction
   } = useFeedPostsContext(post, postUser, deletePost)
 
   return (
@@ -90,7 +91,7 @@ const Post = ({ post, postUser, deletePost }) => {
         </p>
         {imageLoaded && (
           <img
-            className='rounded-lg border my-3 mr-2 w-full object-cover h-[40rem]'
+            className='rounded-lg border my-3 mr-2 w-full object-cover h-[20rem] lg:h-[40rem] aspect-square'
             src={image}
             alt='post-image'
           />
@@ -111,10 +112,20 @@ const Post = ({ post, postUser, deletePost }) => {
                 )
               : (
                 <div className='text-lg'>
-                  <button onClick={liked ? deleteLike : handleLike} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                    <span className='pr-2'>{likeStyle}</span>
+                  <button
+                    onClick={liked ? deleteLike : handleLike}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    disabled={fetchingReaction}
+                  >
+                    {fetchingReaction
+                      ? <span className='loading loading-dots mr-2' />
+                      : <span className='pr-2'>{likeStyle}</span>}
                   </button>
-                  <span>{likes}</span>
+
+                  {fetchingReaction
+                    ? null
+                    : <span>{likes}</span>}
                 </div>
                 )
             }

@@ -4,7 +4,7 @@ import swal from 'sweetalert'
 import { useQuery } from '@tanstack/react-query'
 import useAuthStore from '../../context/AuthContext'
 import useFindUser from '../../hooks/useFindUser'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 import PropTypes from 'prop-types'
 
 const PostForm = ({ addPost }) => {
@@ -113,7 +113,7 @@ const PostForm = ({ addPost }) => {
           }
 
           if (!values.category) {
-            errors.category = 'Debes seleccionar una categoría'
+            swal('Error', 'Debes seleccionar una categoría', 'error')
           }
 
           return errors
@@ -123,7 +123,7 @@ const PostForm = ({ addPost }) => {
       >
         {({ isSubmitting, setFieldValue, errors, touched, handleBlur, values }) => (
           <section className='flex justify-center items-center'>
-            <img src={user?.thumbnail || 'https://i.imgur.com/HeIi0wU.png'} alt='user-thumbnail' className='w-16 h-14 mt-0 rounded-full self-start' />
+            <img src={user?.thumbnail || 'https://i.imgur.com/HeIi0wU.png'} alt='user-thumbnail' className='lg:block hidden w-16 h-14 mt-0 rounded-full self-start' />
             <Form className='flex flex-col justify-center items-start w-full'>
               <div className='flex items-center justify-center gap-2 px-4 w-full'>
                 <div className='w-full px-2 flex flex-col'>
@@ -166,9 +166,9 @@ const PostForm = ({ addPost }) => {
                 </button>
               </div>
 
-              <div className='flex justify-between items-center w-full px-2 mr-2'>
+              <div className='flex justify-between items-center w-full lg:px-2 lg:mr-2'>
                 <div className='w-24 h-9 '>
-                  <label htmlFor='image' className='badge hover:bg-[#e49db0] rounded-lg cursor-pointer flex gap-2 h-full mx-auto border-secondary bg-secondary text-white ml-2'>
+                  <label htmlFor='image' className='badge hover:bg-[#e49db0] rounded-lg cursor-pointer flex gap-2 h-full mx-auto border-secondary bg-secondary text-white lg:ml-2'>
                     <i className='fa-solid fa-image text-white' />
                     <h3 className='text-white'>Imagen</h3>
                   </label>
@@ -187,10 +187,11 @@ const PostForm = ({ addPost }) => {
                     }}
                   />
                 </div>
-                <div className='flex flex-col w-[50%] h-10 px-2 gap-2'>
+                <div className='flex flex-col w-[70%] lg:w-[50%] h-10 px-2 gap-2'>
                   <Field
                     as='select'
                     name='category'
+                    placeholder='Categoria...'
                     onBlur={handleBlur}
                     value={values.category}
                     className='rounded-lg border-2 border-[#E0E1DD] text-black'

@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react'
-import { makeRequest } from '../../library/axios'
-import {
-  PiUserCirclePlusDuotone,
-  PiUserCircleMinusDuotone,
-  PiUserSwitchDuotone
-} from 'react-icons/pi'
+import { makeRequest } from '../../library/Axios'
+import { PiUserCirclePlusDuotone, PiUserCircleMinusDuotone, PiUserSwitchDuotone } from 'react-icons/pi'
 import useFindUser from '../../hooks/useFindUser'
 import useAuthStore from '../../context/AuthContext'
 import LoadingGif from '../LoadingState/LoadingGif'

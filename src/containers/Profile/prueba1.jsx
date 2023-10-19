@@ -5,7 +5,7 @@ import LeftBar from '../../components/Feed/LeftBar'
 import Posts from '../Profile/ProfilePost.json'
 import Header from '../../components/Header/Header'
 import useAuthStore from '../../context/AuthContext'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 
 const Profile = () => {
   const [userlist, setUserlist] = useState({})
