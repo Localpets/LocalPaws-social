@@ -1,10 +1,10 @@
-import React from 'react'
+import { useEffect } from 'react'
 import { Link } from '@tanstack/router'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
 
 const Logout = () => {
-  React.useEffect(() => {
+  useEffect(() => {
     makeRequest.post('auth/logout')
     localStorage.removeItem('user')
   }, [])

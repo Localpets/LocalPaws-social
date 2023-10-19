@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { makeRequest } from '../../../library/axios'
+import { makeRequest } from '../../../library/Axios'
 import { useSocket } from '../../../socket/socket'
 
 export function FetchChats (localuser, allchats, setUsers, setLoadingchats, setAllchats) {

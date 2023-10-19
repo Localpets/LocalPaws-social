@@ -1,4 +1,4 @@
-import { makeRequest } from '../../../../library/axios'
+import { makeRequest } from '../../../../library/Axios'
 
 export async function handleSubmit (event, setIssending, message, currentchat, localuser, setMessage, socket, selectedImage, previewMsg, setSelectedImage, setPreviewMsg) {
   event.preventDefault()

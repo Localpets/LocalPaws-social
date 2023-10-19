@@ -5,8 +5,7 @@ import { SocketProvider } from './socket/socket'
 import Layout from './containers/Layout'
 import Logout from './components/Misc/Logout'
 import Feed from './containers/Feed/Feed'
-import Register from './containers/Auth/Register.jsx'
-import Login from './containers/Auth/Login.jsx'
+import Auth from './containers/Auth/Auth.jsx'
 import Chat from './containers/Chat/Chat.jsx'
 import Profile from './containers/Profile/Profile.jsx'
 import MapApp from './components/Map/MapApp'
@@ -18,13 +17,6 @@ import './App.css'
 // Create a root route
 const rootRoute = new RootRoute({
   component: App
-})
-
-// Create a register route
-const registerRoute = new Route({
-  getParentRoute: () => rootRoute,
-  path: '/register',
-  component: Register
 })
 
 // Create a noti route
@@ -47,11 +39,11 @@ const openProfile = new Route({
   component: Profile
 })
 
-// Create a login route
+// Create an Auth route
 const loginRoute = new Route({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: Login
+  component: Auth
 })
 
 // Create a feed route
@@ -88,7 +80,7 @@ const searchRoute = new Route({
 
 // Create the route tree using your routes
 // eslint-disable-next-line react-refresh/only-export-components
-export const routeTree = rootRoute.addChildren([registerRoute, loginRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview, logoutView, searchRoute, notiRoute])
+export const routeTree = rootRoute.addChildren([loginRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview, logoutView, searchRoute, notiRoute])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
 const queryClient = new QueryClient()

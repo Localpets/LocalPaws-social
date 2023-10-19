@@ -1,9 +1,7 @@
-import React from 'react'
-
 const PostSkeleton = () => {
   return (
     <div className='border p-4 cursor-pointer  w-full'>
-      <div className='flex  pb-0'>
+      <div className='flex pb-0'>
         <div className='h-9 w-9 rounded-full bg-gray-300 animate-pulse' />
         <div className='ml-2 flex flex-shrink-0 items-center font-medium'>
           <div className='h-4 w-20 bg-gray-300 animate-pulse' />

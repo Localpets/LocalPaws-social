@@ -1,4 +1,4 @@
-import { makeRequest } from '../../../../library/axios'
+import { makeRequest } from '../../../../library/Axios'
 
 export async function handleReactions (event, messageId, userId, reactionType, messageRoom, setOpenReactMenu, socket) {
   event.preventDefault()

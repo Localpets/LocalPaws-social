@@ -3,7 +3,7 @@
 import { BsClock } from 'react-icons/bs'
 import useChatStore from '../../context/ChatStore'
 import { useEffect, useState, useRef } from 'react'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 import { useSocket } from '../../socket/socket'
 import ChatForms from './ChatForms'
 import { Socketsforchatsmodule } from './utilities/SocketsEvents'

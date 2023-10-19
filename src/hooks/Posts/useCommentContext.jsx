@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 import useFindUser from '../useFindUser'
 
 export default function useCommentContext (comment, currentUser, handleDeleteComment, isActive, setActiveComment, handleSelectParentComment, slaveComments) {
   const { user } = useFindUser()
-
   // user variables
   const isCurrentUserCommentAuthor = user !== null && comment.comment_user_id === user.user_id
 

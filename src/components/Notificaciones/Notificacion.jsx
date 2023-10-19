@@ -5,7 +5,7 @@ import likeIcon from '../../assets/Noticon/likeIcon.png'
 import followIcon from '../../assets/Noticon/followIcon.png'
 import mentionIcon from '../../assets/Noticon/mentionIcon.png'
 import { useState } from 'react'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 
 import Header from '../Header/Header'
 import { useQuery } from '@tanstack/react-query'

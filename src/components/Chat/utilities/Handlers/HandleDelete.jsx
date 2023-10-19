@@ -1,4 +1,4 @@
-import { makeRequest } from '../../../../library/axios'
+import { makeRequest } from '../../../../library/Axios'
 
 export async function handleDelete (event, MessageID, MesageRoom, setIsdeleting, socket) {
   event.preventDefault()

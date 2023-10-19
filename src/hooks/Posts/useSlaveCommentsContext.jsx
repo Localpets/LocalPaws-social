@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 
 export default function useSlaveCommentsContext (slaveComment, currentUser, handleDeleteComment) {
   const isCurrentUserCommentAuthor = currentUser && currentUser.userId === slaveComment.comment_user_id

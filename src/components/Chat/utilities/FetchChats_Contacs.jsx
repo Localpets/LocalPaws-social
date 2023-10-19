@@ -1,4 +1,4 @@
-import { makeRequest } from '../../../library/axios'
+import { makeRequest } from '../../../library/Axios'
 
 export async function fetchAllChats (localuser, allchats, setAllchats) {
   try {

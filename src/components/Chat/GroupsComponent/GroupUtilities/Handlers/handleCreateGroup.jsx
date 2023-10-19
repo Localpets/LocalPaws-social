@@ -1,4 +1,4 @@
-import { makeRequest } from '../../../../../library/axios'
+import { makeRequest } from '../../../../../library/Axios'
 
 export async function handleCreateGroups (Groupname, selectedImage, selectedContacts, setSelectedContacts, setSelectedImage, setGroupName, setCreateGroups, localuser, socket) {
   // Crear un objeto FormData para enviar el mensaje y la imagen
