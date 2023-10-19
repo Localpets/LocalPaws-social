@@ -9,7 +9,8 @@ function ContactListItem ({
   onClickHandlerJoin,
   setCurrentchat,
   setShowContacts,
-  limitedUsername
+  limitedUsername,
+  setIsGroup
 }) {
   const handleItemClick = () => {
     toggleSideContactsStyle()
@@ -32,7 +33,10 @@ function ContactListItem ({
     <li key={contact.user_id}>
       <button
         className='btn-ghost p-2 w-full rounded-lg flex justify-left gap-2'
-        onClick={handleItemClick}
+        onClick={() => {
+          handleItemClick()
+          setIsGroup(false)
+        }}
       >
         <div className='text-black flex gap-2 items-center'>
           <img className='w-12 h-12 rounded-full' src={contact.thumbnail} alt='avatar' />

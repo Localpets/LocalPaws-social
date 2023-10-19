@@ -12,7 +12,7 @@ import { handleShowMenu } from './utilities/Handlers/HandleShowChatMenu'
 import { handleDeleteChat } from './utilities/Handlers/HandleDeleteChats'
 import LoadingGif from '../LoadingState/LoadingGif'
 
-const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
+const ConversationButton = ({ localuser, currentchat, setCurrentchat, setIsGroup }) => {
   const {
     toggleSideContactsStyle,
     toggleHamburguerStyle,
@@ -88,7 +88,7 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
   // Efecto para manejar los mensajes en tiempo real
   Socketsforchatsbtn(currentchat, setUpdatedChats)
   return (
-    <ul className='flex flex-col w-full items-center justify-center gap-4'>
+    <ul className='flex flex-col w-full max-h-[40em] overflow-y-auto items-center justify-center gap-4'>
       {/* Búsqueda de conversaciones */}
       <input
         type='text'
@@ -183,6 +183,7 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
                       onClick={() => {
                         toggleSideContactsStyle()
                         toggleHamburguerStyle()
+                        setIsGroup(false)
                         setCurrentchat({
                           conversation,
                           username: limitedUsername,

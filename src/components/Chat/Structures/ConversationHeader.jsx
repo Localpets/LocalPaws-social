@@ -14,7 +14,7 @@ const ConversationHeader = ({ currentchat, toggleSideContactsStyle, toggleHambur
               )
             : (
               <h1 className='text-white text-3xl FontTitle'>
-                Pawsplorer <span className='font-bold text-primary'> Messenger</span>
+                Pawsplorer <span className='font-bold text-white'> Messenger</span>
               </h1>
               )}
 

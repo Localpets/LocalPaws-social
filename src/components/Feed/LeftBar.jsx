@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from '@tanstack/router'
 import useFindUser from '../../hooks/useFindUser'
-import logo from '../../assets/NewIcons/pawsplorer marron.png'
+import logo from '../../assets/NewIcons/Logo pawsplorer LOGO PRINCIPAL-04.png'
 import UnreadMessageCounter from './utilities/fetchUnreadMessages'
 
 const LeftBar = ({ isProfileView, toggleNewSection, profileUser }) => {

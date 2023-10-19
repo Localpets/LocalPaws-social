@@ -10,7 +10,7 @@ import { getContacts } from './utilities/FetchUsers_Contacs'
 import { handleJoinRoom } from './utilities/Handlers/HandleJoinRoom'
 import LoadingGif from '../LoadingState/LoadingGif'
 
-const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts }) => {
+const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts, setIsGroup }) => {
   const [contacts, setContacts] = useState([])
   const [loadingcontacts, setLoadingcontacts] = useState(true)
   const [searchText, setSearchText] = useState('')
@@ -55,7 +55,7 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
   }
 
   return (
-    <section className='w-full md:w-60 lg:w-80 h-full bg-white md:flex flex-col justify-start items-center gap-18 pt-4 md:p-4'>
+    <section className='w-full md:w-60 lg:w-80 max-h-[40em] overflow-y-auto bg-white md:flex flex-col justify-start items-center gap-18 pt-4 md:p-4'>
       <input
         type='text'
         placeholder='Buscar contacto'
@@ -86,7 +86,7 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
                           )
                         })
                         return (
-                          <ContactListItem key={contact.user_id} contact={contact} localuser={localuser} currentchat={currentchat} existingChat={existingChat} toggleSideContactsStyle={toggleSideContactsStyle} toggleHamburguerStyle={toggleHamburguerStyle} onClickHandlerJoin={onClickHandlerJoin} setCurrentchat={setCurrentchat} setShowContacts={setShowContacts} limitedUsername={limitedUsername} />
+                          <ContactListItem key={contact.user_id} contact={contact} localuser={localuser} currentchat={currentchat} existingChat={existingChat} toggleSideContactsStyle={toggleSideContactsStyle} toggleHamburguerStyle={toggleHamburguerStyle} onClickHandlerJoin={onClickHandlerJoin} setCurrentchat={setCurrentchat} setShowContacts={setShowContacts} limitedUsername={limitedUsername} setIsGroup={setIsGroup} />
                         )
                       })
                     )
@@ -111,7 +111,7 @@ const ContactsView = ({ localuser, setCurrentchat, currentchat, setShowContacts 
                           )
                         })
                         return (
-                          <ContactListItem key={contact.user_id} contact={contact} localuser={localuser} currentchat={currentchat} existingChat={existingChat} toggleSideContactsStyle={toggleSideContactsStyle} toggleHamburguerStyle={toggleHamburguerStyle} onClickHandlerJoin={onClickHandlerJoin} setCurrentchat={setCurrentchat} setShowContacts={setShowContacts} limitedUsername={limitedUsername} />
+                          <ContactListItem key={contact.user_id} contact={contact} localuser={localuser} currentchat={currentchat} existingChat={existingChat} toggleSideContactsStyle={toggleSideContactsStyle} toggleHamburguerStyle={toggleHamburguerStyle} onClickHandlerJoin={onClickHandlerJoin} setCurrentchat={setCurrentchat} setShowContacts={setShowContacts} limitedUsername={limitedUsername} setIsGroup={setIsGroup} />
                         )
                       })
                     )

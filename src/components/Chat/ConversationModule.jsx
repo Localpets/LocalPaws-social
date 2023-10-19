@@ -17,8 +17,9 @@ import FormatImage from './Structures/FormatImage'
 import ConversationHeader from './Structures/ConversationHeader'
 import '../../containers/Chat/Chat.css'
 import { FetchReplies } from './utilities/FetchChats_Replys'
+import GroupsModule from './GroupsComponent/GroupsModule'
 
-const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurrentchat }) => {
+const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurrentchat, isGroup, currentGroup }) => {
   const {
     editingMessageId,
     setEditingMessageId,
@@ -185,182 +186,192 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
   Socketsforchatsmodule(currentchat, setCurrentchat, chatContainerRef, setReactions)
 
   return (
-    <section className='flex flex-col justify-start flex-1 h-full w-full'>
+    <section className='w-full'>
+      {!isGroup
+        ? (
+          <section className='flex flex-col justify-start flex-1 h-full w-full'>
+            <ConversationHeader currentchat={currentchat} toggleSideContactsStyle={toggleSideContactsStyle} toggleHamburguerStyle={toggleHamburguerStyle} />
 
-      <ConversationHeader currentchat={currentchat} toggleSideContactsStyle={toggleSideContactsStyle} toggleHamburguerStyle={toggleHamburguerStyle} />
+            {currentchat && currentchat.conversation
+              ? <section className='h-full overflow-auto'>
 
-      {currentchat && currentchat.conversation
-        ? <section className='h-full overflow-auto'>
+                <div className='flex flex-col w-full h-full justify-end bg-[url("https://wallpapercave.com/wp/wp9599638.jpg")] bg-cover rounded-br-lg'>
+                  <section className='p-4 pb-6 overflow-auto' ref={chatContainerRef}>
+                    <div className='flex justify-center text-lg text-neutral'>
+                      <h1 className='w-[30em] text-center bg-[#ffffffa6] rounded-3xl p-2'>Chatea con tus amigos, reacciona a sus mensajes y socializa con toda la comunida de pawsplorer</h1>
+                    </div>
+                    {Array.isArray(currentchat.conversation)
+                      ? (
+                          currentchat.conversation.slice()
+                            .reverse()
+                            .filter((message, index, self) => self.findIndex((m) => m.id === message.id) === index)
+                            .map(message => {
+                              const createdAt = message.createdAt
+                              const date = new Date(createdAt)
+                              const hasReplies = Object.keys(messageReplies).includes(message.id.toString())
+                              // Opciones para el formato de fecha y hora
+                              const options = {
+                                hour: 'numeric',
+                                minute: 'numeric',
+                                hour12: true // Formato de 12 horas
+                              }
+                              const formattedTime = date.toLocaleString('en-US', options)
+                              const deletingState = (
+                                <div className='flex gap-2 items-center justify-center'>
+                                  <BsClock className='animate-spin' />
+                                  <h1>Eliminando</h1>
+                                </div>
+                              )
 
-          <div className='flex flex-col w-full h-full justify-end bg-[url("https://wallpapercave.com/wp/wp9599638.jpg")] bg-cover rounded-br-lg'>
-            <section className='p-4 pb-6 overflow-auto' ref={chatContainerRef}>
-              <div className='flex justify-center text-lg text-neutral'>
-                <h1 className='w-[30em] text-center bg-[#ffffffa6] rounded-3xl p-2'>Chatea con tus amigos, reacciona a sus mensajes y socializa con toda la comunida de pawsplorer</h1>
-              </div>
-              {Array.isArray(currentchat.conversation)
-                ? (
-                    currentchat.conversation.slice()
-                      .reverse()
-                      .filter((message, index, self) => self.findIndex((m) => m.id === message.id) === index)
-                      .map(message => {
-                        const createdAt = message.createdAt
-                        const date = new Date(createdAt)
-                        const hasReplies = Object.keys(messageReplies).includes(message.id.toString())
-                        // Opciones para el formato de fecha y hora
-                        const options = {
-                          hour: 'numeric',
-                          minute: 'numeric',
-                          hour12: true // Formato de 12 horas
-                        }
-                        const formattedTime = date.toLocaleString('en-US', options)
-                        const deletingState = (
-                          <div className='flex gap-2 items-center justify-center'>
-                            <BsClock className='animate-spin' />
-                            <h1>Eliminando</h1>
-                          </div>
-                        )
-
-                        return (
-                          <div
-                            className={`flex flex-col chat ${message.sender_id === localuser.user_id ? 'chat-end' : 'chat-start'}`}
-                            key={message.id}
-                          >
-                            <div className='chat-bubble bg-neutral text-white flex items-start text-left gap-4'>
-                              <div className={`message-content pt-1 ${message.image_url !== '' ? ' ' : ''}`}>
-                                {editingMessageId === message.id
-                                  ? <div className='flex gap-2'>
-                                    <input
-                                      type='text'
-                                      value={editInputValue}
-                                      onChange={e => setEditInputValue(event.target.value)}
-                                      onKeyDown={e => handleEditKeyDownMsg(event, message.room, message.id, message.image_url, message.sender_id, message.receiver_id, message.createdAt)}
-                                      placeholder={message.text}
-                                      className='bg-white border-secondary rounded-xl text-neutral focus:border-secondary focus:outline-secondary'
-                                    />
-                                    <button className={`hover:font-bold ${localuser.user_id === message.sender_id ? '' : 'Hidden-btn'}`} onClick={() => setEditingMessageId(null)}>✖</button>
-                                    {/* eslint-disable-next-line react/jsx-indent */}
-                                    </div>
-                                  : (
-                                    <section>
-                                      {hasReplies && messageReplies[message.id].length > 0
-                                        ? <div className='bg-[#8f6e4c88] rounded-xl pr-20 pb-2 text-left text-[#ffffff7a]'>
-                                          {/* Renderiza el texto de la respuesta aquí */}
-                                          {messageReplies[message.id].map(reply => {
-                                            const ReplyUsername = users.find(user => user.user_id === reply.senderId)
-                                            console.log(reply)
-                                            return (
-                                              <div key={reply.id} className='gap-2'>
-                                                <div className={`absolute h-14 w-2 rounded-s-xl ${reply.senderId === localuser.user_id ? 'bg-orange-800' : 'bg-yellow-500'}`} />
-                                                <p className='pl-4 text-white'>{ReplyUsername.username}</p>
-                                                <p className='ml-8'>{reply.text}</p>
-                                              </div>
-                                            )
-                                          })}
+                              return (
+                                <div
+                                  className={`flex flex-col chat ${message.sender_id === localuser.user_id ? 'chat-end' : 'chat-start'}`}
+                                  key={message.id}
+                                >
+                                  <div className='chat-bubble bg-neutral text-white flex items-start text-left gap-4'>
+                                    <div className={`message-content pt-1 ${message.image_url !== '' ? ' ' : ''}`}>
+                                      {editingMessageId === message.id
+                                        ? <div className='flex gap-2'>
+                                          <input
+                                            type='text'
+                                            value={editInputValue}
+                                            onChange={e => setEditInputValue(event.target.value)}
+                                            onKeyDown={e => handleEditKeyDownMsg(event, message.room, message.id, message.image_url, message.sender_id, message.receiver_id, message.createdAt)}
+                                            placeholder={message.text}
+                                            className='bg-white border-secondary rounded-xl text-neutral focus:border-secondary focus:outline-secondary'
+                                          />
+                                          <button className={`hover:font-bold ${localuser.user_id === message.sender_id ? '' : 'Hidden-btn'}`} onClick={() => setEditingMessageId(null)}>✖</button>
                                           {/* eslint-disable-next-line react/jsx-indent */}
                                           </div>
-                                        : null}
+                                        : (
+                                          <section>
+                                            {hasReplies && messageReplies[message.id].length > 0
+                                              ? <div className='bg-[#8f6e4c88] rounded-xl mb-2 text-left text-[#ffffff7a]'>
+                                                {/* Renderiza el texto de la respuesta aquí */}
+                                                {messageReplies[message.id].map(reply => {
+                                                  const ReplyUsername = users.find(user => user.user_id === reply.senderId)
+                                                  console.log(reply)
+                                                  return (
+                                                    <div key={reply.id} className='gap-2'>
+                                                      <div className={`absolute h-12 w-2 rounded-s-xl ${reply.senderId === localuser.user_id ? 'bg-orange-800' : 'bg-yellow-500'}`} />
+                                                      <div className={reply.image_url ? 'flex gap-12 justify-between' : ''}>
+                                                        <p className='pl-4 text-white'>{ReplyUsername.username}</p>
+                                                        {reply.image_url
+                                                          ? <img className='w-12 h-12 opacity-75' src={reply.image_url} />
+                                                          : <p className='ml-8'>{reply.text.length > 10 ? `${reply.text.slice(0, 20)}...` : reply.text}</p>}
+                                                      </div>
 
-                                      <div className={`message-text ${expandedMessageId === message.id ? 'expanded' : ''}`}>
-                                        <div className='flex items-center gap-2'>
-                                          {message.image_url !== ''
-                                            ? (
-                                              <FormatImage imageurl={message.image_url} text={message.text} messageId={message.id} expandedMessages={expandedMessages} setExpandedMessages={setExpandedMessages} />
-                                              )
-                                            : (
-                                              <FormatText text={message.text} messageId={message.id} expandedMessages={expandedMessages} setExpandedMessages={setExpandedMessages} />
-                                              )}
-                                          <button
-                                            ref={buttonRef}
-                                            className={` hidden-button bg-[#ddb89288] text-sm text-neutral rounded-full p-1 ${message.sender_id === localuser.user_id ? '' : 'hidden'}`}
-                                            onClick={() => toggleMenu(message.id)}
-                                          > ⊚
-                                          </button>
-                                          <button
-                                            className={` hidden-button absolute bg-[#ddb89288] text-sm text-neutral rounded-xl w-6 h-6 ${message.sender_id === localuser.user_id ? 'left-[-2em] top-2' : 'right-[-2em] top-2'}`}
-                                            onClick={() => HandleReplyMsg(message.id, message.text, message.sender_id, message.image_url)}
-                                          > ⤺
-                                          </button>
-                                          <button
-                                            className={` hidden-button absolute bg-[#ddb89288] text-neutral rounded-xl w-6 h-6 p-1 ${message.sender_id === localuser.user_id ? 'left-[-4em] top-2' : 'right-[-4em] top-2'}`}
-                                            onClick={() => toggleReactMenu(message.id)}
-                                          >
-                                            <svg viewBox='0 0 15 15' width='15' preserveAspectRatio='xMidYMid meet' className='' fill='none'>
-                                              <path
-                                                fillRule='evenodd'
-                                                clipRule='evenodd' d='M0 7.5C0 11.6305 3.36946 15 7.5 15C11.6527 15 15 11.6305 15 7.5C15 3.36946 11.6305 0 7.5 0C3.36946 0 0 3.36946 0 7.5ZM10.995 8.69333C11.1128 8.67863 11.2219 8.66503 11.3211 8.65309C11.61 8.63028 11.8076 8.91918 11.6784 9.13965C10.8573 10.6374 9.29116 11.793 7.50455 11.793C5.71794 11.793 4.15181 10.6602 3.33072 9.16246C3.18628 8.91918 3.37634 8.63028 3.66524 8.65309C3.79123 8.66749 3.93521 8.68511 4.09426 8.70457C4.94292 8.80842 6.22074 8.96479 7.48174 8.96479C8.81855 8.96479 10.1378 8.80025 10.995 8.69333ZM5.41405 7.37207C6.05761 7.37207 6.60923 6.72851 6.60923 6.02978C6.60923 5.30348 6.05761 4.6875 5.41405 4.6875C4.77048 4.6875 4.21886 5.33106 4.21886 6.02978C4.20967 6.75609 4.77048 7.37207 5.41405 7.37207ZM10.7807 6.05619C10.7807 6.74114 10.24 7.37201 9.60912 7.37201C8.97825 7.37201 8.4375 6.76818 8.4375 6.05619C8.4375 5.37124 8.97825 4.74037 9.60912 4.74037C10.24 4.74037 10.7807 5.34421 10.7807 6.05619Z'
-                                                fill='currentColor'
-                                              />
-                                            </svg>
-                                          </button>
-                                          {openReactMenu === message.id && (
-                                            <div className={`flex items-center w-[12em] justify-center h-4 rounded-2xl menu-options absolute ${message.sender_id === localuser.user_id ? 'left-[-12em] top-8' : 'right-[-12em] top-8'}`}>
-                                              <div>
-                                                <button className='pr-2' onClick={() => handleReactionsMsg(event, message.id, localuser.user_id, 'Like', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/source/facebook/355/thumbs-up_1f44d.png' /></button>
-                                                <button className='pr-2' onClick={() => handleReactionsMsg(event, message.id, localuser.user_id, 'Heart', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/thumbs/60/facebook/355/smiling-cat-with-heart-eyes_1f63b.webp' /></button>
-                                                <button className='pr-2' onClick={() => handleReactionsMsg(event, message.id, localuser.user_id, 'Laugh', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/source/facebook/355/grinning-cat_1f63a.png' /></button>
-                                                <button className='pr-2' onClick={() => handleReactionsMsg(event, message.id, localuser.user_id, 'Cry', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/thumbs/60/facebook/355/crying-cat_1f63f.webp' /></button>
+                                                    </div>
+                                                  )
+                                                })}
+                                                {/* eslint-disable-next-line react/jsx-indent */}
+                                                </div>
+                                              : null}
+
+                                            <div className={`message-text ${expandedMessageId === message.id ? 'expanded' : ''}`}>
+                                              <div className='flex items-center gap-2'>
+                                                {message.image_url !== ''
+                                                  ? (
+                                                    <FormatImage imageurl={message.image_url} text={message.text} messageId={message.id} expandedMessages={expandedMessages} setExpandedMessages={setExpandedMessages} />
+                                                    )
+                                                  : (
+                                                    <FormatText text={message.text} messageId={message.id} expandedMessages={expandedMessages} setExpandedMessages={setExpandedMessages} />
+                                                    )}
+                                                <button
+                                                  ref={buttonRef}
+                                                  className={` hidden-button bg-[#ddb89288] text-sm text-neutral rounded-full p-1 ${message.sender_id === localuser.user_id ? '' : 'hidden'}`}
+                                                  onClick={() => toggleMenu(message.id)}
+                                                > ⊚
+                                                </button>
+                                                <button
+                                                  className={` hidden-button absolute bg-[#ddb89288] text-sm text-neutral rounded-xl w-6 h-6 ${message.sender_id === localuser.user_id ? 'left-[-2em] top-2' : 'right-[-2em] top-2'}`}
+                                                  onClick={() => HandleReplyMsg(message.id, message.text, message.sender_id, message.image_url)}
+                                                > ⤺
+                                                </button>
+                                                <button
+                                                  className={` hidden-button absolute bg-[#ddb89288] text-neutral rounded-xl w-6 h-6 p-1 ${message.sender_id === localuser.user_id ? 'left-[-4em] top-2' : 'right-[-4em] top-2'}`}
+                                                  onClick={() => toggleReactMenu(message.id)}
+                                                >
+                                                  <svg viewBox='0 0 15 15' width='15' preserveAspectRatio='xMidYMid meet' className='' fill='none'>
+                                                    <path
+                                                      fillRule='evenodd'
+                                                      clipRule='evenodd' d='M0 7.5C0 11.6305 3.36946 15 7.5 15C11.6527 15 15 11.6305 15 7.5C15 3.36946 11.6305 0 7.5 0C3.36946 0 0 3.36946 0 7.5ZM10.995 8.69333C11.1128 8.67863 11.2219 8.66503 11.3211 8.65309C11.61 8.63028 11.8076 8.91918 11.6784 9.13965C10.8573 10.6374 9.29116 11.793 7.50455 11.793C5.71794 11.793 4.15181 10.6602 3.33072 9.16246C3.18628 8.91918 3.37634 8.63028 3.66524 8.65309C3.79123 8.66749 3.93521 8.68511 4.09426 8.70457C4.94292 8.80842 6.22074 8.96479 7.48174 8.96479C8.81855 8.96479 10.1378 8.80025 10.995 8.69333ZM5.41405 7.37207C6.05761 7.37207 6.60923 6.72851 6.60923 6.02978C6.60923 5.30348 6.05761 4.6875 5.41405 4.6875C4.77048 4.6875 4.21886 5.33106 4.21886 6.02978C4.20967 6.75609 4.77048 7.37207 5.41405 7.37207ZM10.7807 6.05619C10.7807 6.74114 10.24 7.37201 9.60912 7.37201C8.97825 7.37201 8.4375 6.76818 8.4375 6.05619C8.4375 5.37124 8.97825 4.74037 9.60912 4.74037C10.24 4.74037 10.7807 5.34421 10.7807 6.05619Z'
+                                                      fill='currentColor'
+                                                    />
+                                                  </svg>
+                                                </button>
+                                                {openReactMenu === message.id && (
+                                                  <div className={`flex items-center w-[12em] justify-center h-4 rounded-2xl menu-options absolute ${message.sender_id === localuser.user_id ? 'left-[-12em] top-8' : 'right-[-12em] top-8'}`}>
+                                                    <div>
+                                                      <button className='pr-2' onClick={() => handleReactionsMsg(event, message.id, localuser.user_id, 'Like', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/source/facebook/355/thumbs-up_1f44d.png' /></button>
+                                                      <button className='pr-2' onClick={() => handleReactionsMsg(event, message.id, localuser.user_id, 'Heart', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/thumbs/60/facebook/355/smiling-cat-with-heart-eyes_1f63b.webp' /></button>
+                                                      <button className='pr-2' onClick={() => handleReactionsMsg(event, message.id, localuser.user_id, 'Laugh', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/source/facebook/355/grinning-cat_1f63a.png' /></button>
+                                                      <button className='pr-2' onClick={() => handleReactionsMsg(event, message.id, localuser.user_id, 'Cry', message.room)}><img className='w-6 hover:w-8' src='https://em-content.zobj.net/thumbs/60/facebook/355/crying-cat_1f63f.webp' /></button>
+                                                    </div>
+                                                  </div>
+                                                )}
                                               </div>
+                                              {openMenuId === message.id && (
+                                                <div ref={buttonRef} className={` menu-options ${message.sender_id === localuser.user_id ? 'right-[100%] bottom-[10%]' : 'hidden'}`}>
+                                                  {/* Opciones del menú */}
+                                                  <button
+                                                    className={`hover:font-bold ${localuser.user_id === message.sender_id ? '' : 'Hidden-btn'}`}
+                                                    onClick={() => handleDeleteMsg(event, message.id, message.room)}
+                                                    disabled={isdeleting}
+                                                  >{isdeleting ? deletingState : 'Eliminar'}
+                                                  </button>
+                                                  <button
+                                                    className={`hover:font-bold ${localuser.user_id === message.sender_id ? '' : 'Hidden-btn'}`}
+                                                    onClick={() => handleUpdate(message.id)}
+                                                  >
+                                                    Editar
+                                                  </button>
+                                                </div>
+                                              )}
+
                                             </div>
+                                          </section>
                                           )}
-                                        </div>
-                                        {openMenuId === message.id && (
-                                          <div ref={buttonRef} className={` menu-options ${message.sender_id === localuser.user_id ? 'right-[100%] bottom-[10%]' : 'hidden'}`}>
-                                            {/* Opciones del menú */}
-                                            <button
-                                              className={`hover:font-bold ${localuser.user_id === message.sender_id ? '' : 'Hidden-btn'}`}
-                                              onClick={() => handleDeleteMsg(event, message.id, message.room)}
-                                              disabled={isdeleting}
-                                            >{isdeleting ? deletingState : 'Eliminar'}
-                                            </button>
-                                            <button
-                                              className={`hover:font-bold ${localuser.user_id === message.sender_id ? '' : 'Hidden-btn'}`}
-                                              onClick={() => handleUpdate(message.id)}
-                                            >
-                                              Editar
-                                            </button>
-                                          </div>
-                                        )}
-
+                                      <div className='text-[0.65em] items-end justify-end flex gap-2'>
+                                        <p>{formattedTime}</p>
+                                        <p>✓✓</p>
+                                        <p className={`edited-indicator ${message.edited === 1 ? '' : 'hidden'}`}>editado</p>
                                       </div>
-                                    </section>
-                                    )}
-                                <div className='text-[0.65em] items-end justify-end flex gap-2'>
-                                  <p>{formattedTime}</p>
-                                  <p>✓✓</p>
-                                  <p className={`edited-indicator ${message.edited === 1 ? '' : 'hidden'}`}>editado</p>
-                                </div>
-                              </div>
+                                    </div>
 
-                            </div>
-                            <div className='flex'>
-                              {renderReactions(message.id)}
-                            </div>
-                          </div>
+                                  </div>
+                                  <div className='flex'>
+                                    {renderReactions(message.id)}
+                                  </div>
+                                </div>
+                              )
+                            })
                         )
-                      })
-                  )
-                : (
-                  <p className='text-black font-bold flex justify-center  bg-[#ffffffa6] rounded-3xl p-2 mt-2'>Inicia una conversación</p>
-                  )}
-            </section>
-            <ChatForms event={event} issending={issending} message={message} handleSubmit={handleFormSubmit} setMessage={setMessage} selectedImage={selectedImage} setSelectedImage={setSelectedImage} setPreviewMsg={setPreviewMsg} previewMsg={previewMsg} localuser={localuser} currentchat={currentchat} />
-          </div>
-          {/* eslint-disable-next-line react/jsx-closing-tag-location */}
-        </section>
-        : (
-          <section className='bg-neutral h-full flex justify-center'>
-            <div className='flex items-center p-6 text-xl'>
-              <p className='text-white'>Clickea en una
-                <span className='font-bold text-primary'> conversacion </span>
-                o
-                <span className='font-bold text-primary'> contacto </span>
-                para empezar a
-                <span className='font-bold text-primary'> Paws</span>
-                chatear
-              </p>
-            </div>
+                      : (
+                        <p className='text-black font-bold flex justify-center  bg-[#ffffffa6] rounded-3xl p-2 mt-2'>Inicia una conversación</p>
+                        )}
+                  </section>
+                  <ChatForms event={event} issending={issending} message={message} handleSubmit={handleFormSubmit} setMessage={setMessage} selectedImage={selectedImage} setSelectedImage={setSelectedImage} setPreviewMsg={setPreviewMsg} previewMsg={previewMsg} localuser={localuser} currentchat={currentchat} />
+                </div>
+                {/* eslint-disable-next-line react/jsx-closing-tag-location */}
+              </section>
+              : (
+                <section className='bg-neutral h-full flex justify-center'>
+                  <div className='flex items-center  p-6 text-xl'>
+                    <p className='text-white'>Clickea en una
+                      <span className='font-bold text-white'> conversacion </span>
+                      o
+                      <span className='font-bold text-white'> contacto </span>
+                      para empezar a
+                      <span className='font-bold text-white'> Paws</span>
+                      chatear
+                    </p>
+                  </div>
+                </section>
+                )}
           </section>
-          )}
+          )
+        : <GroupsModule currentGroup={currentGroup} localuser={localuser} />}
     </section>
   )
 }

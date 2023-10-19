@@ -26,7 +26,7 @@ const FormatText = ({ text, messageId, expandedMessages, setExpandedMessages }) 
     const formattedLines = []
     let currentLine = ''
 
-    words.forEach((word, index) => {
+    words.forEach((word) => {
       if (currentLine === '') {
         currentLine = word
       } else if (currentLine.split(' ').length < maxWordsPerLine) {

@@ -22,6 +22,8 @@ import GroupsView from '../../components/Chat/GroupsComponent/GroupsView'
 // Componente principal Chat
 const Chat = () => {
   const [currentchat, setCurrentchat] = useState([])
+  const [currentGroup, setCurrentgroup] = useState([])
+  const [isGroup, setIsGroup] = useState(false)
   const chatContainerRef = useRef(null)
   const [showContacts, setShowContacts] = useState(false)
   const [showGroups, setShowGroups] = useState(false)
@@ -112,10 +114,14 @@ const Chat = () => {
         </ul>
 
         {/* Botón con imagen de perfil */}
-        <Link to='/profile'>
+        <Link
+          to={`/profile/${localuser.user_id}`} className='btn mb-3 btn-ghost flex items-center justify-start'
+          onClick={handleleaveRooms}
+        >
           <img
             className='w-10 h-10 rounded-full'
-            src={localuser.thumbnail}
+            src={user?.thumbnail || 'https://i.imgur.com/HeIi0wU.png'}
+            alt='user-thumbnail'
           />
         </Link>
       </section>
@@ -138,6 +144,7 @@ const Chat = () => {
               setCurrentchat={setCurrentchat}
               showContacts={showContacts}
               setShowContacts={handleShowContactsClick}
+              setIsGroup={setIsGroup}
             />
             {/* eslint-disable-next-line react/jsx-indent */}
           </section>
@@ -158,6 +165,9 @@ const Chat = () => {
             localuser={localuser}
             createGroups={createGroups}
             setCreateGroups={setCreateGroups}
+            setCurrentchat={setCurrentchat}
+            setIsGroup={setIsGroup}
+            setCurrentgroup={setCurrentgroup}
           />
           {/* eslint-disable-next-line react/jsx-indent */}
           </section>
@@ -165,7 +175,7 @@ const Chat = () => {
         : null}
 
       {!showContacts && !showGroups
-        ? <section className='hidden md:w-60 lg:w-80 h-full bg-white md:flex flex-col justify-start items-center gap-18 p-4 py-8 pt-6'>
+        ? <section className='hidden md:w-60 lg:w-[29em] h-full bg-white md:flex flex-col justify-start items-center gap-18 p-4 py-8 pt-6'>
           {/* Título y botones */}
           <ul className='w-full flex flex-wrap items-center justify-around pb-2 pt-2'>
             <li>
@@ -175,7 +185,7 @@ const Chat = () => {
               <BsChatFill className='text-neutral text-2xl' />
             </li>
           </ul>
-          <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} />
+          <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} setIsGroup={setIsGroup} />
           {/* eslint-disable-next-line react/jsx-indent */}
           </section>
         : null}
@@ -209,6 +219,7 @@ const Chat = () => {
                   setCurrentchat={setCurrentchat}
                   showContacts={showContacts}
                   setShowContacts={handleShowContactsClick}
+                  setIsGroup={setIsGroup}
                 />
               </section>
               {/* eslint-disable-next-line react/jsx-indent */}
@@ -237,6 +248,9 @@ const Chat = () => {
                 localuser={localuser}
                 createGroups={createGroups}
                 setCreateGroups={setCreateGroups}
+                setCurrentchat={setCurrentchat}
+                setIsGroup={setIsGroup}
+                setCurrentgroup={setCurrentgroup}
               />
             </section>
             {/* eslint-disable-next-line react/jsx-indent */}
@@ -260,7 +274,7 @@ const Chat = () => {
             {/* Búsqueda de conversaciones en menú móvil */}
             <section className='w-full h-[80%]'>
               {/* Lista de conversaciones en menú móvil */}
-              <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} />
+              <ConversationButton localuser={localuser} currentchat={currentchat} setCurrentchat={setCurrentchat} setIsGroup={setIsGroup} />
             </section>
             {/* eslint-disable-next-line react/jsx-indent */}
             </>
@@ -316,10 +330,14 @@ const Chat = () => {
               </Link>
             </li>
             <li>
-              <Link to='/profile' className='btn btn-ghost'>
+              <Link
+                to={`/profile/${localuser.user_id}`} className='btn mb-3 btn-ghost flex items-center justify-start'
+                onClick={handleleaveRooms}
+              >
                 <img
                   className='w-10 h-10 rounded-full'
-                  src={localuser.thumbnail}
+                  src={user?.thumbnail || 'https://i.imgur.com/HeIi0wU.png'}
+                  alt='user-thumbnail'
                 />
               </Link>
             </li>
@@ -332,6 +350,8 @@ const Chat = () => {
           currentchat={currentchat}
           chatContainerRef={chatContainerRef}
           setCurrentchat={setCurrentchat}
+          isGroup={isGroup}
+          currentGroup={currentGroup}
         />
 
       )}

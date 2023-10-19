@@ -1,28 +1,36 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react'
-import { BsClock } from 'react-icons/bs'
 import { getContacts } from '../utilities/FetchUsers_Contacs'
 import { fetchAllGroups } from './GroupUtilities/FetchGroups'
 import { handleCreateGroups } from './GroupUtilities/Handlers/handleCreateGroup'
 import useChatStore from '../../../context/ChatStore'
 import swal from 'sweetalert'
 import LoadingGif from '../../LoadingState/LoadingGif'
+import { resizeImage } from './GroupUtilities/PhotoDimensioner'
+import { useSocket } from '../../../socket/socket'
+import { fetchAllGroupsMessages } from './GroupUtilities/FetchGroupsMessages'
 
-const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
+const GroupsView = ({ localuser, createGroups, setCreateGroups, setIsGroup, setCurrentgroup }) => {
   const [contacts, setContacts] = useState([])
   const [loadingcontacts, setLoadingcontacts] = useState(true)
   const [loadingGroups, setLoadingGroups] = useState(true)
   const [allgroups, setAllgroups] = useState([])
   const [GroupName, setGroupName] = useState('')
-  const [previewImage, setPreviewImage] = useState([])
+  const [previewImage, setPreviewImage] = useState('')
   const [selectedImage, setSelectedImage] = useState([])
   const [imageError, setImageError] = useState(false)
+  const [searchText, setSearchText] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [groupsMessages, setGroupMessages] = useState([])
   const [selectedContacts, setSelectedContacts] = useState(new Set())
 
   const {
     toggleSideContactsStyle,
     toggleHamburguerStyle
   } = useChatStore()
+
+  const socket = useSocket()
+  console.log(socket)
 
   const handleGroupcreate = () => {
     setCreateGroups(!createGroups)
@@ -35,7 +43,7 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
     }
   }, [imageError])
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0]
 
     if (file) {
@@ -44,12 +52,25 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
         return
       }
 
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreviewImage(reader.result)
+      try {
+        // Redimensionar la imagen
+        const resizedImageBlob = await resizeImage(file)
+
+        if (resizedImageBlob) {
+          // Crear una URL para la imagen redimensionada
+          const resizedImageURL = URL.createObjectURL(resizedImageBlob)
+
+          // Establecer la URL de la imagen redimensionada como vista previa
+          setPreviewImage(resizedImageURL)
+
+          // Guardar la imagen redimensionada
+          setSelectedImage(resizedImageBlob)
+        } else {
+          console.error('Error al redimensionar la imagen.')
+        }
+      } catch (error) {
+        console.error('Error al redimensionar la imagen:', error)
       }
-      reader.readAsDataURL(file)
-      setSelectedImage(file)
     }
   }
 
@@ -73,7 +94,13 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
       getContacts(setContacts, setLoadingcontacts, localuser)
       fetchAllGroups(localuser, setLoadingGroups, setAllgroups)
     }
-  }, [localuser])
+
+    if (socket) {
+      socket.on('updateGroups', () => {
+        fetchAllGroups(localuser, setLoadingGroups, setAllgroups)
+      })
+    }
+  }, [localuser, socket])
 
   // Función para manejar el cambio en el campo de entrada de nombre del grupo
   const handleGroupNameChange = (e) => {
@@ -83,8 +110,25 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    handleCreateGroups(GroupName, selectedImage, Array.from(selectedContacts), setSelectedContacts, setSelectedImage, setGroupName, setCreateGroups, localuser)
+    handleCreateGroups(GroupName, selectedImage, Array.from(selectedContacts), setSelectedContacts, setSelectedImage, setGroupName, setCreateGroups, localuser, socket)
   }
+
+  const handleFetchsMessages = (GroupID) => {
+    fetchAllGroupsMessages(GroupID, setGroupMessages)
+  }
+
+  const handleSearch = (event) => {
+    const searchText = event.target.value
+    setSearchText(searchText)
+
+    const filteredGroups = allgroups.filter((groups) =>
+      groups.name.toLowerCase().includes(searchText.toLowerCase())
+    )
+
+    setSearchResults(filteredGroups)
+  }
+
+  console.log(previewImage)
   return (
     <section className={`w-full md:w-60 lg:w-80 h-full max-h-full overflow-y-auto md:pl-4 md:pr-4 bg-white md:flex flex-col justify-start items-center gap-18 ${createGroups ? 'lg:w-[30em]' : 'lg:w-80'}`}>
 
@@ -93,6 +137,8 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
           type='text'
           placeholder='Buscar grupo'
           className='input bg-slate-100 text-black rounded-md mt-4 w-full max-w-2xl placeholder:font-semibold'
+          value={searchText}
+          onChange={handleSearch}
         />
         <button
           className='btn btn-ghost mt-4'
@@ -104,56 +150,94 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
       </div>
       {!createGroups
         ? loadingGroups
-          ? <div className='flex items-center mt-12 justify-center gap-2'>
-            <LoadingGif />
-            {/* eslint-disable-next-line react/jsx-indent */}
+          ? (
+            <div className='flex items-center mt-12 justify-center gap-2'>
+              <LoadingGif />
             </div>
-
+            )
           : allgroups.length === 0
             ? <h1>No tienes grupos que mostrar</h1>
             : (
               <ul className='bg-white flex w-full flex-col gap-4 pt-6'>
-                {allgroups.map(group => {
-                  return (
+                {searchResults.length > 0
+                  ? searchResults.map(group => (
                     <li key={group.id}>
                       <button
                         className='btn-ghost p-2 rounded-lg w-full flex justify-left gap-2'
                         onClick={() => {
                           toggleSideContactsStyle()
                           toggleHamburguerStyle()
+                          setCurrentgroup({
+                            conversation: groupsMessages,
+                            name: group.name,
+                            image: group.image,
+                            id: group.id
+                          })
+                          handleFetchsMessages(group.id)
+                          setIsGroup(true)
                         }}
                       >
                         {group.image === ''
-                          ? <div className='w-12 h-12 flex justify-center items-center rounded-full bg-slate-200'>
-                            <span>{group.name[0]}</span>
-                            {/* eslint-disable-next-line react/jsx-indent */}
+                          ? (
+                            <div className='w-12 h-12 flex justify-center items-center rounded-full bg-slate-200'>
+                              <span>{group.name[0]}</span>
                             </div>
+                            )
                           : <img className='w-12 h-12 rounded-full' src={group.image} />}
-
                         <div className='flex flex-col items-start justify-center'>
                           <div className='text-black font-bold text-md'>{group.name}</div>
                           <div>Hola</div>
                         </div>
                       </button>
                     </li>
-                  )
-                })}
+                  ))
+                  : allgroups.map(group => (
+                    <li key={group.id}>
+                      <button
+                        className='btn-ghost p-2 rounded-lg w-full flex justify-left gap-2'
+                        onClick={() => {
+                          toggleSideContactsStyle()
+                          toggleHamburguerStyle()
+                          setCurrentgroup({
+                            conversation: groupsMessages,
+                            name: group.name,
+                            image: group.image,
+                            id: group.id
+                          })
+                          handleFetchsMessages(group.id)
+                          setIsGroup(true)
+                        }}
+                      >
+                        {group.image === ''
+                          ? (
+                            <div className='w-12 h-12 flex justify-center items-center rounded-full bg-slate-200'>
+                              <span>{group.name[0]}</span>
+                            </div>
+                            )
+                          : <img className='w-12 h-12 rounded-full' src={group.image} />}
+                        <div className='flex flex-col items-start justify-center'>
+                          <div className='text-black font-bold text-md'>{group.name}</div>
+                          <div>Hola</div>
+                        </div>
+                      </button>
+                    </li>
+                  ))}
               </ul>
               )
         : null}
 
       {createGroups
         ? (
-          <form className=' w-full p-4 h-[85%] md:h-full bg-slate-50 rounded-xl' onSubmit={handleSubmit} encType='multipart/form-data'>
-            <div className='flex p-2 items-center bg-secondary justify-center border-2 mb-2 rounded-xl border-neutral'>
+          <form className='w-full p-4 h-full bg-slate-50 rounded-xl' onSubmit={handleSubmit} encType='multipart/form-data'>
+            <div className='flex p-2 items-center bg-base-200 justify-center border-2 mb-2 rounded-xl border-neutral'>
               <div className='relative inline-block'>
                 <div className='flex justify-center items-center w-24 h-24 rounded-full bg-white cursor-pointer group'>
-                  {previewImage.length !== 0
-                    ? <div>
+                  {previewImage
+                    ? <div className='h-full w-full rounded-full'>
                       <img
-                        src={previewImage}
+                        src={previewImage || 'http://localhost:5173/9bd0604e-ce5a-4810-984f-91f99cafe8a1'}
                         alt='Preview'
-                        className='rounded-full text-gray-500 text-3xl'
+                        className='h-full w-full rounded-full '
                       />
                       <button
                         className='absolute top-0 right-0 z-20 bg-red-500 text-white rounded-full px-2 py-1 cursor-pointer'
@@ -167,6 +251,7 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
                     : (
                       <i className='fa fa-users rounded-full text-gray-500 text-3xl' />
                       )}
+
                   <div
                     className='absolute inset-0 flex items-center justify-center rounded-full bg-white bg-opacity-50 opacity-0 transition-opacity group-hover:opacity-100'
                     onClick={() => document.getElementById('image-upload').click()}
@@ -184,7 +269,7 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
                 />
               </div>
               <div className='flex flex-col justify-center w-auto m-2'>
-                <h1 className='flex bg-secondary text-neutral border-neutral border-2 rounded-xl p-2 justify-center mb-2'>Nombre del grupo</h1>
+                <h1 className='flex bg-base-200 text-neutral border-neutral border-2 rounded-xl p-2 justify-center mb-2'>Nombre del grupo</h1>
 
                 <input
                   className='mb-2 rounded-xl w-full text-center borderprimary focus-visible:border-primary focus-visible:ring-primary border-primary'
@@ -197,10 +282,10 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
             </div>
 
             <div>
-              <h1 className='flex border-neutral border-2 bg-secondary text-neutral rounded-xl p-2 justify-center mb-2'>Selecciona contactos para el grupo</h1>
+              <h1 className='flex border-neutral border-2 bg-base-200 text-neutral rounded-xl p-2 justify-center mb-2'>Selecciona contactos para el grupo</h1>
             </div>
             <ul>
-              <li className='flex flex-col border-neutral border-2 gap-1 justify-start bg-secondary rounded-xl overflow-y-auto p-2 h-60 max-h-60'>
+              <li className='flex flex-col border-neutral border-2 gap-1 justify-start bg-base-200 rounded-xl overflow-y-auto p-2 h-60 max-h-60'>
                 {!loadingcontacts
                   ? (
                       contacts.map((contact) => {
@@ -226,14 +311,14 @@ const GroupsView = ({ localuser, createGroups, setCreateGroups }) => {
                     )
                   : (
                     <div className='flex items-center justify-center gap-2'>
-                      <BsClock className='animate-spin text-neutral' /> <h1 className='text-neutral'>Cargando Amigos</h1>
+                      <LoadingGif />
                     </div>
                     )}
               </li>
             </ul>
             <div className='flex flex-col pt-2 gap-2'>
-              <div className='bg-secondary rounded-xl p-2 h-52 md:h-72 border-neutral border-2'>
-                <p className='bg-white rounded-xl flex justify-center mb-2'> Usuarios seleccionados</p>
+              <div className='bg-base-200 rounded-xl p-2 h-52 md:h-72 border-neutral border-2'>
+                <p className=' rounded-xl flex justify-center mb-2'> Usuarios seleccionados</p>
                 <div className='flex flex-col gap-2 p-4 overflow-y-auto max-h-40 md:max-h-60'>
                   {Array.from(selectedContacts).map((contactId) => {
                   // Render the selected contact's photo and name here
