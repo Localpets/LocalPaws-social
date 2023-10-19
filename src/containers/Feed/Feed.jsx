@@ -7,7 +7,7 @@ const Feed = () => {
   return (
     <div className='text-black w-full min-h-screen'>
       <Header />
-      <section className='flex py-16 w-full'>
+      <section className='flex pt-16 pb-10 w-full'>
         <div className='hidden lg:flex'>
           <LeftBar />
         </div>

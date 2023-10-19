@@ -5,7 +5,7 @@ import likeIcon from '../../assets/Noticon/likeIcon.png'
 import followIcon from '../../assets/Noticon/followIcon.png'
 import mentionIcon from '../../assets/Noticon/mentionIcon.png'
 import { useState } from 'react'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 
 import Header from '../Header/Header'
 import { useQuery } from '@tanstack/react-query'
@@ -18,7 +18,6 @@ const Notificaciones = () => {
   const { loggedUser } = useAuthStore()
 
   const { user } = useFindUser(loggedUser)
-  console.log(user)
 
   const Types = {
     Like: likeIcon,
@@ -38,8 +37,7 @@ const Notificaciones = () => {
   const { isLoading, error, data } = useQuery({
     queryKey: ['notification'],
     queryFn: async () => {
-      const id = user.user_id
-      return await makeRequest.get(`/notification/find/id/receiver/${id}`).then((res) => {
+      return await makeRequest.get(`/notification/find/id/receiver/${user.user_id}`).then((res) => {
         setNotification(res.data.notifications)
         console.log(res.data.notifications)
 

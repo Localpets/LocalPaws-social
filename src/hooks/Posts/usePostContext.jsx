@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 import useFindUser from '../useFindUser'
 import swal from 'sweetalert'
 
@@ -7,11 +7,12 @@ const usePostContext = (postId) => {
   const { user } = useFindUser()
   // Estados del Usuario
   const [currentUser, setCurrentUser] = useState(null)
+  const [loadingPost, setLoadingPost] = useState(true) // Nuevo estado de carga
+  const [postError, setPostError] = useState(false) // Nuevo estado de carga
   const [isCurrentUserCommentAuthor, setIsCurrentUserCommentAuthor] = useState(false)
 
   // Estados del post y sus props
   const [post, setPost] = useState({})
-  const [postUser, setPostUser] = useState({})
   const [editingLoading, setEditingLoading] = useState(false) // Nuevo estado de carga
   const [isEditingPost, setIsEditingPost] = useState(false)
   const [isDeletingPost, setIsDeletingPost] = useState(false) // Nuevo estado de carga
@@ -22,7 +23,7 @@ const usePostContext = (postId) => {
   const [userLike, setUserLike] = useState(null)
   const [liked, setLiked] = useState(false)
   const [likeCreating, setLikeCreating] = useState(false)
-  const [likeStyle, setLikeStyle] = useState('fa-solid fa-heart mr-2 text-lg text-gray-400')
+  const [likeStyle, setLikeStyle] = useState('🖤')
   const [currentReaction, setCurrentReaction] = useState(null)
   const [closeTimeout, setCloseTimeout] = useState(null)
   const [isReactionBarOpen, setIsReactionBarOpen] = useState(false)
@@ -38,11 +39,19 @@ const usePostContext = (postId) => {
   // Constantes
 
   const ReactionsArray =
-  [{ label: 'Like', node: <div>💗</div>, key: 'LIKE' },
-    { label: 'Haha', node: <div>😹</div>, key: 'SMILE' },
-    { label: 'Triste', node: <div>😿</div>, key: 'TEARS' },
-    { label: 'Enojado', node: <div>😾</div>, key: 'ANGRY' },
-    { label: 'Asombrado', node: <div>🙀</div>, key: 'SURPRISED' }]
+  [{ label: 'Like', node: <div>💗</div>, key: 'Like' },
+    { label: 'Haha', node: <div>😹</div>, key: 'Haha' },
+    { label: 'Triste', node: <div>😿</div>, key: 'Triste' },
+    { label: 'Enojado', node: <div>😾</div>, key: 'Enojado' },
+    { label: 'Asombrado', node: <div>🙀</div>, key: 'Asombrado' }]
+
+  const ReactionsIcons = {
+    Like: '💗',
+    Haha: '😹',
+    Triste: '😿',
+    Enojado: '😾',
+    Asombrado: '🙀'
+  }
 
   // Efectos
 
@@ -54,8 +63,10 @@ const usePostContext = (postId) => {
         thumbnail: user.thumbnail
       })
       // console.log(currentUser, 'currentUser') // Agrega esta línea
-      if (currentUser && currentUser.userId === post.post_user_id) {
-        setIsCurrentUserCommentAuthor(true)
+      if (post) {
+        if (currentUser && currentUser.userId === post.post_user_id) {
+          setIsCurrentUserCommentAuthor(true)
+        }
       }
     }
   }, [setCurrentUser, user, post])
@@ -65,7 +76,11 @@ const usePostContext = (postId) => {
       try {
         const response = await makeRequest.get(`/post/find/id/${postId}`)
         setPost(response.data.post)
+        console.log(response)
+        setLoadingPost(false)
       } catch (error) {
+        setPostError(true)
+        setLoadingPost(false)
         console.error(error)
       }
     }
@@ -74,6 +89,7 @@ const usePostContext = (postId) => {
       try {
         const response = await makeRequest.get(`/comment/find/post/${postId}`)
         const commentsData = response.data.comments
+        console.log(commentsData)
 
         // Cuando no hay comentarios, establecer comments en un array vacío
         setComments(commentsData)
@@ -90,21 +106,6 @@ const usePostContext = (postId) => {
   }, [postId])
 
   useEffect(() => {
-    const fetchPostUser = async () => {
-      if (post.post_user_id) {
-        try {
-          const response = await makeRequest.get(`/user/find/id/${post.post_user_id}`)
-          setPostUser(response.data.user)
-        } catch (error) {
-          console.error(error)
-        }
-      }
-    }
-
-    fetchPostUser()
-  }, [post])
-
-  useEffect(() => {
     const fetchLikes = async () => {
       try {
         const response = await makeRequest.get(`/like/post/${postId}`)
@@ -118,21 +119,22 @@ const usePostContext = (postId) => {
             setUserLike(likeData.find((like) => like.user_id === currentUser.userId))
             switch (likeData.find((like) => like.user_id === currentUser.userId).like_type) {
               case 'Like':
-                setLikeStyle('fa-solid fa-heart mr-2 text-lg text-red-600')
+                setLikeStyle(ReactionsIcons.Like)
                 break
               case 'Haha':
-                setLikeStyle('fa-solid fa-laugh-squint mr-2 text-lg text-yellow-500')
+                setLikeStyle(ReactionsIcons.Haha)
                 break
               case 'Triste':
-                setLikeStyle('fa-solid fa-sad-tear mr-2 text-lg text-blue-500')
+                setLikeStyle(ReactionsIcons.Triste)
                 break
               case 'Enojado':
-                setLikeStyle('fa-solid fa-angry mr-2 text-lg text-red-500')
+                setLikeStyle(ReactionsIcons.Enojado)
                 break
               case 'Asombrado':
-                setLikeStyle('fa-solid fa-surprise mr-2 text-lg text-purple-500')
+                setLikeStyle(ReactionsIcons.Asombrado)
                 break
               default:
+                setLikeStyle(ReactionsIcons.Like)
                 break
             }
             setLiked(true)
@@ -261,22 +263,22 @@ const usePostContext = (postId) => {
   function getLikeStyle (type) {
     switch (type) {
       case 'Like':
-        return 'fa-solid fa-heart mr-2 text-lg text-red-600'
+        return ReactionsIcons.Like
       case 'Haha':
-        return 'fa-solid fa-laugh-squint mr-2 text-lg text-yellow-500'
+        return ReactionsIcons.Haha
       case 'Triste':
-        return 'fa-solid fa-sad-tear mr-2 text-lg text-blue-500'
+        return ReactionsIcons.Triste
       case 'Enojado':
-        return 'fa-solid fa-angry mr-2 text-lg text-red-500'
+        return ReactionsIcons.Enojado
       case 'Asombrado':
-        return 'fa-solid fa-surprise mr-2 text-lg text-purple-500'
+        return ReactionsIcons.Asombrado
       default:
-        return ''
+        return ReactionsIcons.Like
     }
   }
 
   function resetLikeState () {
-    setLikeStyle('fa-solid fa-heart mr-2 text-lg text-gray-400')
+    setLikeStyle('🖤')
     setLikes(likes - 1)
     setLiked(false)
     setCurrentReaction(null)
@@ -286,7 +288,7 @@ const usePostContext = (postId) => {
   const handleDeleteLike = async () => {
     setLikeCreating(true)
     if (currentUser) {
-      setLikeStyle('fa-solid fa-heart mr-2 text-lg text-gray-400')
+      setLikeStyle('🖤')
       setLikes(likes - 1)
       setLiked(false)
       setCurrentReaction(null)
@@ -332,7 +334,6 @@ const usePostContext = (postId) => {
       const body = {
         text
       }
-      console.log('Data being sent:', body, post.post_id, currentUser.userId)
       await makeRequest.put(`/post/update/${post.post_id}/${currentUser.userId}`, body)
         .then((res) => {
           console.log(res)
@@ -360,19 +361,33 @@ const usePostContext = (postId) => {
 
   const handleCommentSubmit = async () => {
     console.log('handleCommentSubmit')
-    // If i press enter, submit the comment
+
     const text = document.getElementById('commentInput').value
+
+    let body
+
     if (currentUser) {
       console.log(text)
       if (!text) {
         swal('Error', 'No puedes enviar un comentario vacío', 'error')
         return
       }
-      const body = {
-        comment_post_id: postId,
-        comment_user_id: currentUser.userId,
-        parent_comment_id: parentCommentForReply ? parentCommentForReply.comment_id : null,
-        text
+
+      if (parentCommentForReply !== null || parentCommentForReply !== undefined) {
+        console.log('Replying to a child comment')
+        body = {
+          comment_post_id: postId,
+          comment_user_id: currentUser.userId,
+          parent_comment_id: parentCommentForReply ? parentCommentForReply.comment_id : null,
+          text: parentCommentForReply ? `${parentCommentForReply.user.username} ${text}` : text
+        }
+      } else {
+        body = {
+          comment_post_id: postId,
+          comment_user_id: currentUser.userId,
+          parent_comment_id: parentCommentForReply ? parentCommentForReply.comment_id : null,
+          text: parentCommentForReply ? `${parentCommentForReply.user.username} ${text}` : text
+        }
       }
 
       try {
@@ -384,29 +399,54 @@ const usePostContext = (postId) => {
               setCommentCreating(false)
               document.getElementById('commentInput').value = ''
               console.log(res)
+              const newComment = {
+                ...res.data.comment,
+                children: []
+              }
               setComments([
                 ...comments,
-                res.data.comment
+                newComment
               ])
             } else if (parentCommentForReply) {
-              setCommentCreating(false)
-              document.getElementById('commentInput').value = ''
-              console.log(res)
-              // Change children prop in that comment parent
-              const newComments = comments.map((comment) => {
-                if (comment.comment_id === parentCommentForReply.comment_id) {
-                  return {
-                    ...comment,
-                    children: [
+              if (parentCommentForReply.parent_comment_id) {
+                setCommentCreating(false)
+                document.getElementById('commentInput').value = ''
+                console.log(res)
+                const newComments = comments.map((comment) => {
+                  if (comment.comment_id === parentCommentForReply.parent_comment_id) {
+                    const newChildren = [
                       ...comment.children,
                       res.data.comment
                     ]
+                    return {
+                      ...comment,
+                      children: newChildren
+                    }
                   }
-                }
-                return comment
-              })
-              setComments(newComments)
-              setParentCommentForReply(null)
+                  return comment
+                })
+                setComments(newComments)
+                setParentCommentForReply(null)
+              } else {
+                setCommentCreating(false)
+                document.getElementById('commentInput').value = ''
+                console.log(res)
+                // Change children prop in that comment parent
+                const newComments = comments.map((comment) => {
+                  if (comment.comment_id === parentCommentForReply.comment_id) {
+                    return {
+                      ...comment,
+                      children: [
+                        ...comment.children,
+                        res.data.comment
+                      ]
+                    }
+                  }
+                  return comment
+                })
+                setComments(newComments)
+                setParentCommentForReply(null)
+              }
             } else {
               setCommentCreating(false)
               setParentCommentForReply(null)
@@ -434,9 +474,27 @@ const usePostContext = (postId) => {
     if (currentUser) {
       try {
         await makeRequest.delete(`/comment/delete/${comment.comment_id}`)
+        // delete each child comment
+        if (comment.children) {
+          comment.children.forEach(async (childComment) => {
+            await makeRequest.delete(`/comment/delete/${childComment.comment_id}`)
+          })
+        }
         console.log('Comment deleted')
         if (!comment.parent_comment_id) {
           const newComments = comments.filter((c) => c.comment_id !== comment.comment_id)
+          setComments(newComments)
+        } else {
+          const newComments = comments.map((c) => {
+            if (c.comment_id === comment.parent_comment_id) {
+              const newChildren = c.children.filter((child) => child.comment_id !== comment.comment_id)
+              return {
+                ...c,
+                children: newChildren
+              }
+            }
+            return c
+          })
           setComments(newComments)
         }
       } catch (error) {
@@ -474,7 +532,7 @@ const usePostContext = (postId) => {
     // Puedes usar la función `navigator.share` para abrir un cuadro de diálogo de compartir si está disponible en el navegador.
     if (navigator.share) {
       navigator.share({
-        title: `${postUser.first_name} en PawsPlorer: ${post.text}`,
+        title: `${post.postUser.first_name} en PawsPlorer: ${post.text}`,
         url: pageUrl
       })
         .then(() => console.log('Página compartida con éxito'))
@@ -487,7 +545,6 @@ const usePostContext = (postId) => {
 
   return {
     post,
-    postUser,
     editingLoading,
     isEditingPost,
     isDeletingPost,
@@ -525,7 +582,9 @@ const usePostContext = (postId) => {
     setActiveComment,
     isCurrentUserCommentAuthor,
     currentUser,
-    setParentCommentForReply
+    setParentCommentForReply,
+    loadingPost,
+    postError
   }
 }
 

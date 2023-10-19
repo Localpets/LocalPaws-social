@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { BsClock, BsThreeDotsVertical } from 'react-icons/bs'
+import { BsThreeDotsVertical } from 'react-icons/bs'
 import useChatStore from '../../context/ChatStore'
 import { useEffect, useCallback, useState } from 'react'
 import { useSocket } from '../../socket/socket'
@@ -7,9 +7,10 @@ import { Socketsforchatsbtn } from './utilities/SocketsEvents'
 import { handleJoinRoom } from './utilities/Handlers/HandleJoinRoom'
 import { handleReadMessages } from './utilities/Handlers/HandleReadMessages'
 import { FetchChats } from './utilities/FetchChats_Users.jsx'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 import { handleShowMenu } from './utilities/Handlers/HandleShowChatMenu'
 import { handleDeleteChat } from './utilities/Handlers/HandleDeleteChats'
+import LoadingGif from '../LoadingState/LoadingGif'
 
 const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
   const {
@@ -237,7 +238,7 @@ const ConversationButton = ({ localuser, currentchat, setCurrentchat }) => {
           )
         : (
           <div className='flex gap-2 items-center'>
-            <BsClock className='animate-spin' /> <h1>Cargando chats</h1>
+            <LoadingGif />
           </div>
           )}
     </ul>

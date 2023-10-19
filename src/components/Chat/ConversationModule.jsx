@@ -3,7 +3,7 @@
 import { BsClock } from 'react-icons/bs'
 import useChatStore from '../../context/ChatStore'
 import { useEffect, useState, useRef } from 'react'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 import { useSocket } from '../../socket/socket'
 import ChatForms from './ChatForms'
 import { Socketsforchatsmodule } from './utilities/SocketsEvents'
@@ -85,8 +85,8 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
   }
 
   // Manejador de envio de mensaje editado
-  const handleEditKeyDownMsg = (event, messageRoom, messageId, userId, receiverId, createdAt) => {
-    handleEditKeyDown(event, messageRoom, messageId, userId, receiverId, createdAt, editInputValue, setEditingMessageId, setOpenMenuId, socket)
+  const handleEditKeyDownMsg = (event, messageRoom, messageId, messageImage, userId, receiverId, createdAt) => {
+    handleEditKeyDown(event, messageRoom, messageId, messageImage, userId, receiverId, createdAt, editInputValue, setEditingMessageId, setOpenMenuId, socket)
   }
 
   // Manejador de envio de datos al estado para mandarlos por medio de handleEditKeyDown a la api
@@ -131,9 +131,6 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
     // Llama a la función para obtener las respuestas
     getRepliesForMessages()
   }, [currentchat.conversation])
-
-  console.log(messageReplies)
-
   // Función para renderizar las reacciones en un mensaje
   const renderReactions = (messageId) => {
     // Filtra las reacciones que corresponden al mensaje con el ID dado
@@ -156,7 +153,7 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
       const count = reactionCounts[reactionType]
       const emoji = reactionEmojis[reactionType]
       return (
-        <div key={reactionType} className={`bg-[#2a3d60cd] rounded-3xl p-[0.3em] flex gap-1 relative top-[-0.5em] ${message === localuser.user_id ? 'left-[-0.2em]' : 'right-[-0.2em]'}`}>
+        <div key={reactionType} className={`bg-[#8f6e4c88] rounded-3xl p-[0.3em] flex gap-1 relative top-[-0.5em] ${message === localuser.user_id ? 'left-[-0.2em]' : 'right-[-0.2em]'}`}>
           <span className='flex'>
             {emoji} {count > 1 ? `x${count}` : ''}
           </span>
@@ -197,7 +194,7 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
 
           <div className='flex flex-col w-full h-full justify-end bg-[url("https://wallpapercave.com/wp/wp9599638.jpg")] bg-cover rounded-br-lg'>
             <section className='p-4 pb-6 overflow-auto' ref={chatContainerRef}>
-              <div className='flex justify-center text-lg text-[#1B263B]'>
+              <div className='flex justify-center text-lg text-neutral'>
                 <h1 className='w-[30em] text-center bg-[#ffffffa6] rounded-3xl p-2'>Chatea con tus amigos, reacciona a sus mensajes y socializa con toda la comunida de pawsplorer</h1>
               </div>
               {Array.isArray(currentchat.conversation)
@@ -231,18 +228,18 @@ const ConversationModule = ({ localuser, currentchat, chatContainerRef, setCurre
                             <div className='chat-bubble bg-neutral text-white flex items-start text-left gap-4'>
                               <div className={`message-content pt-1 ${message.image_url !== '' ? ' ' : ''}`}>
                                 {editingMessageId === message.id
-                                  ? <>
+                                  ? <div className='flex gap-2'>
                                     <input
                                       type='text'
                                       value={editInputValue}
                                       onChange={e => setEditInputValue(event.target.value)}
-                                      onKeyDown={e => handleEditKeyDownMsg(event, message.room, message.id, message.sender_id, message.receiver_id, message.createdAt)}
+                                      onKeyDown={e => handleEditKeyDownMsg(event, message.room, message.id, message.image_url, message.sender_id, message.receiver_id, message.createdAt)}
                                       placeholder={message.text}
-                                      className='bg-[#1B263B] border-[#1B263B] text-white focus:border-[#1B263B] focus:outline-[#1B263B]'
+                                      className='bg-white border-secondary rounded-xl text-neutral focus:border-secondary focus:outline-secondary'
                                     />
                                     <button className={`hover:font-bold ${localuser.user_id === message.sender_id ? '' : 'Hidden-btn'}`} onClick={() => setEditingMessageId(null)}>✖</button>
                                     {/* eslint-disable-next-line react/jsx-indent */}
-                                    </>
+                                    </div>
                                   : (
                                     <section>
                                       {hasReplies && messageReplies[message.id].length > 0

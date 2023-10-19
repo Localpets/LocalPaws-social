@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react'
 import { makeRequest } from '../../library/Axios'
-import useFindUser from '../useFindUser'
 
-export default function useCommentContext (comment, currentUser, handleDeleteComment, isActive, setActiveComment, handleSelectParentComment, slaveComments) {
-  const { user } = useFindUser()
-  // user variables
-  const isCurrentUserCommentAuthor = user !== null && comment.comment_user_id === user.user_id
+export default function useSlaveCommentsContext (slaveComment, currentUser, handleDeleteComment) {
+  const isCurrentUserCommentAuthor = currentUser && currentUser.userId === slaveComment.comment_user_id
 
   // Like variables
   const [likeCreating, setLikeCreating] = useState(false)
@@ -17,7 +14,6 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
   // Comment variables
   const [commentLoading, setCommentLoading] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   // Input variables
   const [isEditing, setIsEditing] = useState(false)
@@ -28,6 +24,16 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
   const [closeTimeout, setCloseTimeout] = useState(null)
   const [currentReaction, setCurrentReaction] = useState(null)
 
+  useEffect(() => {
+    // Fetch likes for the comment when the component mounts
+    fetchLikesForComment()
+    // Set the initial state of the reaction bar
+    if (currentUser) {
+      setLoadingUser(false)
+    }
+  }, [])
+
+  // reactions icons
   // Constantes
   const ReactionsIcons = {
     Like: '💗',
@@ -37,21 +43,11 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
     Asombrado: '🙀'
   }
 
-  useEffect(() => {
-  // Fetch likes for the comment when the component mounts
-    fetchLikesForComment()
-    // Set the initial state of the reaction bar
-    setIsReactionBarOpen(isActive)
-    if (currentUser) {
-      setLoadingUser(false)
-    }
-  }, [isActive])
-
   // Fetch likes for the comment
   const fetchLikesForComment = async () => {
     try {
-    // Replace 'comment_id' with the actual key to access the comment's ID in your 'comment' object
-      const response = await makeRequest.get(`/comment/likes/${comment.comment_id}`)
+      // Replace 'comment_id' with the actual key to access the comment's ID in your 'comment' object
+      const response = await makeRequest.get(`/comment/likes/${slaveComment.comment_id}`)
         .catch((error) => {
           console.error('Error fetching likes for comment:', error)
         })
@@ -64,19 +60,19 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
         if (userLiked) {
           setUserLike(likeData.find((like) => like.user_id === currentUser.userId))
           switch (likeData.find((like) => like.user_id === currentUser.userId).like_type) {
-            case 'Like' || 'like':
+            case 'Like':
               setLikeStyle(ReactionsIcons.Like)
               break
-            case 'Haha' || 'haha':
+            case 'Haha':
               setLikeStyle(ReactionsIcons.Haha)
               break
-            case 'Triste' || 'triste':
+            case 'Triste':
               setLikeStyle(ReactionsIcons.Triste)
               break
-            case 'Enojado' || 'enojado':
+            case 'Enojado':
               setLikeStyle(ReactionsIcons.Enojado)
               break
-            case 'Asombrado' || 'asombrado':
+            case 'Asombrado':
               setLikeStyle(ReactionsIcons.Asombrado)
               break
             default:
@@ -120,7 +116,7 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
       setCurrentReaction(null)
       setUserLike(null)
       await makeRequest
-        .delete(`/comment/like/delete/${comment.comment_id}/${currentUser.userId}`)
+        .delete(`/comment/like/delete/${slaveComment.comment_id}/${currentUser.userId}`)
         .then((res) => {
           setLikeCreating(false)
           console.log(res)
@@ -145,12 +141,10 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
     setLikeCreating(true)
     if (!liked && !loadingUser) {
       setLikes(likes + 1)
-      // if type !== string then type = 'Like'
+      setLiked(true)
       if (typeof type !== 'string') {
         type = 'Like'
       }
-
-      setLiked(true)
       setCurrentReaction(type)
 
       const likeForDto = type
@@ -159,12 +153,12 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
       // Debug logging
       console.log('Data being sent:', {
         like_type: likeForDto,
-        comment_id: comment.comment_id,
+        comment_id: slaveComment.comment_id,
         user_id: currentUser.userId
       })
 
       await makeRequest
-        .post(`/comment/like/create/${comment.comment_id}`, {
+        .post(`/comment/like/create/${slaveComment.comment_id}`, {
           like_type: likeForDto,
           user_id: currentUser.userId
         }, {
@@ -179,7 +173,7 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
           setUserLike({
             like_type: type,
             like_id: res.data.like.like_id,
-            comment_id: comment.comment_id,
+            comment_id: slaveComment.comment_id,
             user_id: currentUser.userId
           })
         })
@@ -191,7 +185,7 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
     if (liked && type === currentReaction && !loadingUser) {
       resetLikeState()
       makeRequest
-        .delete(`/comment/like/delete/${comment.comment_id}/${currentUser.userId}`)
+        .delete(`/comment/like/delete/${slaveComment.comment_id}/${currentUser.userId}`)
         .then((res) => {
           setLikeCreating(false)
           console.log(res)
@@ -205,13 +199,13 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
       setCurrentReaction(type)
       console.log('Data being sent:', {
         like_type: type,
-        comment_id: comment.comment_id,
+        comment_id: slaveComment.comment_id,
         like_id: userLike.like_id,
         user_id: currentUser.userId
       })
 
       makeRequest
-        .put(`/comment/like/update/${comment.comment_id}`, {
+        .put(`/comment/like/update/${slaveComment.comment_id}`, {
           like_id: userLike.like_id,
           user_id: currentUser.userId,
           like_type: type
@@ -228,16 +222,16 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
   }
   // Handle delete comment
   const handleDeleteClick = () => {
-  // Lógica para eliminar el comentario, pasa el comentario como argumento
+    // Lógica para eliminar el comentario, pasa el comentario como argumento
     if (isCurrentUserCommentAuthor && !loadingUser) {
-      setIsDeleting(true)
-      handleDeleteComment(comment)
+      handleDeleteComment(slaveComment)
     }
   }
   // Handle reaction selector
   const handleSelector = (type) => {
     console.log(type)
     handleMouseLeave()
+    setIsReactionBarOpen(false)
     handleLike(type)
   }
   // Handle edit comment
@@ -250,17 +244,17 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
     const previousSibling = e.target.previousSibling
     if (previousSibling && previousSibling.value !== undefined) {
       const updatedCommentText = previousSibling.value
-      if (updatedCommentText === comment.text || updatedCommentText === null) {
+      if (updatedCommentText === slaveComment.text || updatedCommentText === null) {
         setIsEditing(false)
         setCommentLoading(false)
         return
       }
       try {
-        await makeRequest.put(`/comment/update/${comment.comment_id}`, {
+        await makeRequest.put(`/comment/update/${slaveComment.comment_id}`, {
           text: updatedCommentText
         }).then((res) => {
           console.log(res)
-          comment.text = updatedCommentText
+          slaveComment.text = updatedCommentText
         })
         setIsEditing(false)
       } catch (error) {
@@ -269,7 +263,7 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
         setCommentLoading(false)
       }
     } else {
-    // Manejar el caso en el que previousSibling sea null o value sea undefined.
+      // Manejar el caso en el que previousSibling sea null o value sea undefined.
       setIsEditing(false)
       setCommentLoading(false)
     }
@@ -279,15 +273,13 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
   const handleMouseEnter = () => {
     clearTimeout(closeTimeout) // Cancelar cualquier temporizador de cierre pendiente
     setIsReactionBarOpen(true)
-    setActiveComment(comment.comment_id)
   }
 
   // Handle mouse leave event on the ReactionBar or the button
   const handleMouseLeave = () => {
-  // Establecer un temporizador para cerrar la barra después de 500ms (ajusta el valor según desees)
+    // Establecer un temporizador para cerrar la barra después de 500ms (ajusta el valor según desees)
     const timeoutId = setTimeout(() => {
       setIsReactionBarOpen(false)
-      setActiveComment(null)
     }, 700)
     setCloseTimeout(timeoutId)
   }
@@ -318,9 +310,6 @@ export default function useCommentContext (comment, currentUser, handleDeleteCom
     resetLikeState,
     fetchLikesForComment,
     getLikeStyle,
-    deleteLike,
-    slaveComments,
-    handleSelectParentComment,
-    isDeleting
+    deleteLike
   }
 }

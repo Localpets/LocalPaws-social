@@ -1,7 +1,7 @@
 // import React from 'react'
 import PropTypes from 'prop-types'
 import { useQuery } from '@tanstack/react-query'
-import { makeRequest } from '../../library/axios'
+import { makeRequest } from '../../library/Axios'
 import Post from './Post.jsx'
 import PostSkeleton from './PostSkeleton.jsx'
 
