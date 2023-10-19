@@ -9,7 +9,7 @@ const LeftBar = ({ isProfileView, toggleNewSection }) => {
   const { user } = useFindUser(loggedUser)
 
   return (
-    <div className='flex fixed flex-col left-0 text-neutral h-auto rounded-lg border-2 border-[#E0E1DD] items-center w-[20%] mt-10 bg-white ml-10 md:justify-start'>
+    <div className='hidden right-0 w-[20%] xl:flex fixed flex-col left-0 text-neutral h-auto rounded-lg border-2 border-[#E0E1DD] items-center  mt-10 bg-white ml-10 md:justify-start'>
       <Link to='/home' className='link-active my-2 w-28 h-20 mx-auto'>
         <img src={logo} alt='Logo PawsPlorer' className='w-24 h-20 max-w-none mx-auto' />
       </Link>
