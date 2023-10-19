@@ -190,12 +190,12 @@ const Search = () => {
   
 
   return (
-    <div className='text-black w-full mx-auto fixed '>
+    <div className='text-black w-full mx-auto '>
       <Header />
-      <section className='flex pt-16'>
-        <div className='w-full pl-[25%] pr-[25%] min-h-screen flex flex-col rounded-lg justify-start gap-4 items-center px-10'>
+      <section className=' pt-16 flex flex-col md:flex-row'>
+        <div className='w-full md:w-2/3 lg:w-2/3 xl:w-1/2 mx-auto min-h-screen flex flex-col rounded-lg justify-start gap-4 items-center px-4 md:px-10'>
           <LeftBar className='' />
-          <div className='w-full max-w max-h-[70%] p-[2em] flex flex-col px-8 border-[#E0E1DD] bg-white rounded-lg mt-8 justify-start items-left pt-[2em] '>
+          <div className="w-full p-4 md:max-h-[60%] lg:max-h-[66%] flex flex-col border-[#E0E1DD] bg-white rounded-lg mt-8 justify-start items-left md:ml-8 md:mr-8 lg:ml-0 lg:mr-0">
             <div className='w-full pl-3 pb-4'>
               <h1 className='flex font-bold text-3xl text-left'>Búsqueda</h1>
               <div className='form-control'>
@@ -226,27 +226,27 @@ const Search = () => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-around items-center  border-b border-gray-200 py-4">
+            <div className="flex justify-around items-center border-b border-gray-200 py-4">
             <button
-              className={`btn btn-3 btn-3d ${searchType === 'users' ? 'bg-primary' : 'bg-blue'}`}
+              className={`btn btn-3 btn-3d w-100 ${searchType === 'users' ? 'bg-primary text-white' : 'bg-blue text-black'}`}
               onClick={() => handleSearchTypeChange('users')}
             >
               <i className="fa-solid fa-users"></i>
-              Usuarios
+              <span className="hidden lg:inline">Usuarios</span>
             </button>
 
             <button
-              className={`btn btn-3 btn-3d ${searchType === 'posts' ? 'bg-primary' : 'bg-blue'}`}
+              className={`btn btn-3 btn-3d w-100 ${searchType === 'posts' ? 'bg-primary text-white' : 'bg-blue text-black'}`}
               onClick={() => handleSearchTypeChange('posts')}
             >
               <i className="fa-solid fa-align-left"></i>
-              Publicaciones
+              <span className="hidden lg:inline">Publicaciones</span>
             </button>
 
-              <button class='btn btn-3 btn-3d '>
-               <i class="fa-solid fa-star"></i>
-                Destacados
-              </button>
+            <button className='btn btn-3 btn-3d w-100 text-black'>
+              <i className="fa-solid fa-star"></i>
+              <span className="hidden lg:inline">Destacados</span>
+            </button>
             </div>
             <div className='max-h-screen overflow-auto'>
               {searchText && (
@@ -256,6 +256,7 @@ const Search = () => {
                     const followeduser = followedUsersMap[result.user_id];
                     return (
                       <div key={result.user_id || result.post_id} className='flex p-2 border-b cursor-pointer hover:bg-slate-100'>
+                        <Link to={`/profile/${user.user_id}`}>
                         <div className='p-2'>
                           {result.user_thumbnail && (
                             <img
@@ -265,6 +266,7 @@ const Search = () => {
                             />
                           )}
                         </div>
+                        </Link>
                         <Link to={`/post/${result.post_id}`}>
                           <div className='p-2'>
                             <h2 className='text-lg font-semibold'>{result.username}</h2>
