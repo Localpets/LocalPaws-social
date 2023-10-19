@@ -334,7 +334,6 @@ const usePostContext = (postId) => {
       const body = {
         text
       }
-      console.log('Data being sent:', body, post.post_id, currentUser.userId)
       await makeRequest.put(`/post/update/${post.post_id}/${currentUser.userId}`, body)
         .then((res) => {
           console.log(res)
@@ -374,13 +373,13 @@ const usePostContext = (postId) => {
         return
       }
 
-      if (parentCommentForReply.parent_comment_id) {
+      if (parentCommentForReply !== null || parentCommentForReply !== undefined) {
         console.log('Replying to a child comment')
         body = {
           comment_post_id: postId,
           comment_user_id: currentUser.userId,
-          parent_comment_id: parentCommentForReply.parent_comment_id,
-          text: `${parentCommentForReply.user.username} ${text}`
+          parent_comment_id: parentCommentForReply ? parentCommentForReply.comment_id : null,
+          text: parentCommentForReply ? `${parentCommentForReply.user.username} ${text}` : text
         }
       } else {
         body = {
