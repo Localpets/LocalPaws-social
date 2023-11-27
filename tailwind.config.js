@@ -13,17 +13,15 @@ export default {
       {
         mytheme: {
 
-          primary: '#15007a',
+          primary: '#121d32',
 
-          secondary: '#bec6ff',
+          secondary: '#304562',
 
-          accent: '#dbe0ff',
+          accent: '#F0FDFF',
 
-          neutral: '#15007a',
+          neutral: '#121d32',
 
-          'base-100': '#dbe0ff',
-
-          'base-200': '#97a0ff'
+          'base-100': '#F0FDFF'
         }
       }
     ]
