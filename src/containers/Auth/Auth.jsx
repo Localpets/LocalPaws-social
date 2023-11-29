@@ -220,12 +220,12 @@ const Auth = () => {
       </Formik>
 
       <aside
-        className={!coverPosition ? 'z-10 hidden lg:block absolute w-[50%] h-1 lg:h-screen translate-x-0 transition duration-500 ease-in-out transform' : 'z-10 hidden lg:block absolute w-[45%] h-1 lg:h-screen translate-x-[122%] transition duration-500 ease-in-out transform'}
+        className={!coverPosition ? 'z-0 hidden lg:flex absolute w-[50%] h-1 lg:h-screen translate-x-0 transition duration-500 ease-in-out transform' : 'z-0 hidden lg:flex absolute w-[45%] h-1 lg:h-screen translate-x-[122%] transition duration-500 ease-in-out transform'}
       >
         <img
           alt='cover'
           src={coverPosition ? cover : coverRegister}
-          className='absolute h-screen w-full object-cover brightness-75'
+          className='z-0 h-screen w-full object-cover brightness-75'
         />
       </aside>
       <Toaster />

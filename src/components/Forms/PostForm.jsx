@@ -1,4 +1,4 @@
-import React from 'react'
+import { useEffect, useState } from 'react'
 import { Formik, Form, Field } from 'formik'
 import swal from 'sweetalert'
 import { useQuery } from '@tanstack/react-query'
@@ -7,21 +7,32 @@ import useFindUser from '../../hooks/useFindUser'
 import { makeRequest } from '../../library/Axios'
 import PropTypes from 'prop-types'
 
-const PostForm = ({ addPost }) => {
+const PostForm = ({ addPost, setPosts, posts }) => {
   const { loggedUser } = useAuthStore()
   const { user } = useFindUser(loggedUser)
 
-  const [imageError, setImageError] = React.useState(false)
-  const [isTyping, setIsTyping] = React.useState(false)
-  const [previewImage, setPreviewImage] = React.useState('')
-  const [categories, setCategories] = React.useState([])
+  const [imageError, setImageError] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  const [previewImage, setPreviewImage] = useState('')
+  const [categories, setCategories] = useState([])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (imageError) {
       swal('Error', 'La imagen no puede pesar más de 5MB y los formatos permitidos son .jpg, .jpeg, .png', 'error')
       setImageError(false)
     }
-  }, [imageError])
+
+    // if the file is not an image, reset the value and show an error
+    if (previewImage) {
+      const file = previewImage
+      // Example of file string data:text/plain;base64,ODBZUnhhNHVwQUJkSnVIbmtjeXpIdw...
+      const fileType = file.substring(5, file.indexOf(';'))
+      if (fileType !== 'image/jpeg' && fileType !== 'image/png' && fileType !== 'image/jpg') {
+        swal('Error', 'La imagen no puede pesar más de 5MB y los formatos permitidos son .jpg, .jpeg, .png', 'error')
+        setPreviewImage('')
+      }
+    }
+  }, [imageError, previewImage])
 
   const handleUserTyping = (e) => {
     if (e.target.value.length > 50) {
@@ -61,21 +72,31 @@ const PostForm = ({ addPost }) => {
     const formData = new FormData()
     formData.append('text', values.text)
     formData.append('category', values.category)
+    if (values.category === '') return
     formData.append('image', values.image)
     formData.append('post_user_id', user.user_id)
 
     try {
-      console.log('formData:', formData)
-      const response = await makeRequest.post('post/create', formData)
-      setInitialPostValues(values)
-      addPost(response.data.post)
-    } catch (error) {
-      if (error.response.status === 400) {
-        setImageError(true)
+      if (posts && setPosts) {
+        const response = await makeRequest.post('post/create', formData)
+        const newPost = {
+          ...response.data.post,
+          likes: 0,
+          comments: 0
+        }
+        setInitialPostValues(values)
+        setPosts([newPost, ...posts])
+      } else {
+        const response = await makeRequest.post('post/create', formData)
+        setInitialPostValues(values)
+        addPost(response.data.post)
       }
+    } catch (error) {
+      setImageError(true)
+      console.log(error)
+    } finally {
+      setSubmitting(false)
     }
-
-    setSubmitting(false)
   }
 
   const { isLoading, error } = useQuery({
@@ -99,7 +120,7 @@ const PostForm = ({ addPost }) => {
   if (error) return 'An error has occurred: ' + error.message
 
   return (
-    <div className='w-full p-10 bg-white m-2 rounded-lg border-2 border-[#E0E1DD]'>
+    <div className='w-full py-8 px-2 lg:p-10 bg-white m-2 rounded-lg border-2 border-[#E0E1DD]'>
       <Formik
         initialValues={initialValues}
         validate={values => {
@@ -113,7 +134,7 @@ const PostForm = ({ addPost }) => {
           }
 
           if (!values.category) {
-            swal('Error', 'Debes seleccionar una categoría', 'error')
+            errors.category = 'Debes seleccionar una categoría'
           }
 
           return errors
@@ -140,14 +161,14 @@ const PostForm = ({ addPost }) => {
                       handleUserTyping(e)
                       setFieldValue('text', e.target.value)
                     }}
-                    className='rounded-xl border-2 border-[#E0E1DD] text-black resize-none'
+                    className='rounded-xl border-2 border-[#E0E1DD] text-black resize-none h-20 md:h-auto'
                   />
                   <h2 className='text-red-500 text-sm font-semibold'>{errors.text && touched.text && errors.text}</h2>
                 </div>
                 <button
                   type='submit'
                   disabled={isSubmitting}
-                  className='btn btn-secondary h-8 max-w-xs self-start'
+                  className='btn btn-secondary h-8 max-w-xs self-start hover:opacity-75'
                 >
                   <i className='fa-solid fa-paper-plane text-white' />
                 </button>
@@ -166,9 +187,9 @@ const PostForm = ({ addPost }) => {
                 </button>
               </div>
 
-              <div className='flex justify-between items-center w-full lg:px-2 lg:mr-2'>
-                <div className='w-24 h-9 '>
-                  <label htmlFor='image' className='badge hover:bg-[#e49db0] rounded-lg cursor-pointer flex gap-2 h-full mx-auto border-secondary bg-secondary text-white lg:ml-2'>
+              <div className='flex justify-between items-center w-full px-4 lg:px-2 lg:mr-2'>
+                <div className='w-24 h-9'>
+                  <label htmlFor='image' className='badge hover:opacity-75 rounded-lg cursor-pointer flex gap-2 h-full mx-auto border-secondary bg-secondary text-white lg:ml-2'>
                     <i className='fa-solid fa-image text-white' />
                     <h3 className='text-white'>Imagen</h3>
                   </label>
@@ -187,7 +208,7 @@ const PostForm = ({ addPost }) => {
                     }}
                   />
                 </div>
-                <div className='flex flex-col w-[70%] lg:w-[50%] h-10 px-2 gap-2'>
+                <div className='flex flex-col w-[70%] lg:w-[50%] min-h-10 max-h-20 px-2 gap-2'>
                   <Field
                     as='select'
                     name='category'
@@ -216,7 +237,9 @@ const PostForm = ({ addPost }) => {
 }
 
 PostForm.propTypes = {
-  addPost: PropTypes.func.isRequired
+  addPost: PropTypes.func,
+  setPosts: PropTypes.func,
+  posts: PropTypes.array
 }
 
 export default PostForm

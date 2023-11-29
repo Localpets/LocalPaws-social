@@ -33,13 +33,7 @@ const Middle = () => {
     // Retrieve last scroll if exists
     const lastScroll = window.localStorage.getItem('scroll')
 
-    if (lastScroll) {
-      window.setTimeout(() => {
-        window.scrollTo(0, parseInt(lastScroll, 10))
-        console.log('scrolling... to: ', lastScroll)
-        window.localStorage.removeItem('scroll')
-      }, 5000)
-    }
+    console.log('lastScroll', lastScroll)
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -75,7 +69,6 @@ const Middle = () => {
       }
 
       if (!hasMoreParam) {
-        console.log('No hay más publicaciones')
         return { posts: [], hasMore: false }
       }
 
@@ -112,7 +105,7 @@ const Middle = () => {
 
   if (isLoading) {
     return (
-      <div className='mx-auto w-full lg:pl-[23%] lg:pr-[22.7%] min-h-screen flex flex-col justify-start gap-4 items-center mt-8 px-10'>
+      <div className='w-full lg:pl-[30%] xl:pl-[23%] xl:pr-[22.5%] min-h-screen flex flex-col justify-start gap-4 items-center mt-8 px-2 lg:px-10'>
         <PostForm addPost={addPost} />
         <LoadingGif />
       </div>
@@ -124,7 +117,7 @@ const Middle = () => {
   }
 
   return (
-    <div className='w-full lg:pl-[23%] lg:pr-[22.7%] min-h-screen flex flex-col justify-start gap-4 items-center mt-8 px-10'>
+    <div className='w-full lg:pl-[30%] xl:pl-[23%] xl:pr-[22.5%] min-h-screen flex flex-col justify-start gap-4 items-center mt-8 px-2 lg:px-10'>
       <PostForm addPost={addPost} />
 
       <div className='flex flex-col items-center w-full gap-4 min-h-screen'>

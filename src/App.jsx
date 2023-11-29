@@ -13,6 +13,7 @@ import Search from './components/Search/search'
 import Notificaciones from './components/Notificaciones/Notificacion'
 import PostPage from './components/Post/PostPage'
 import './App.css'
+import Dashboard from './containers/Member/Dashboard.jsx'
 
 // Create a root route
 const rootRoute = new RootRoute({
@@ -78,9 +79,16 @@ const searchRoute = new Route({
   component: Search
 })
 
+// Dashboard route
+const dashboardRoute = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/dashboard',
+  component: Dashboard
+})
+
 // Create the route tree using your routes
 // eslint-disable-next-line react-refresh/only-export-components
-export const routeTree = rootRoute.addChildren([loginRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview, logoutView, searchRoute, notiRoute])
+export const routeTree = rootRoute.addChildren([loginRoute, openProfile, feedRoute, chatRoute, mapRoute, postReview, logoutView, searchRoute, notiRoute, dashboardRoute])
 
 // Crear un cliente de consultas para el proveedor de consultas (fetching)
 const queryClient = new QueryClient()

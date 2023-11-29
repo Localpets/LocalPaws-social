@@ -129,7 +129,7 @@ const Post = ({ post, postUser, deletePost }) => {
                 </div>
                 )
             }
-            <Link to={`/post/${post_id}`} className='flex items-center  text-xs text-gray-400 hover:text-blue-400 dark:hover:text-blue-400'>
+            <Link to={`/post/${post_id}`} className='flex items-center  text-xs text-gray-400 hover:text-primary'>
               <i className='fa-solid fa-comment mr-2 text-lg' />
               {comments}
             </Link>

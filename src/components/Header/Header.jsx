@@ -27,7 +27,7 @@ const Header = () => {
         <Link to={`/profile/${currentUser.user_id}`} className='flex items-center'>
           <img src={currentUser.thumbnail} alt='user-thumbnail' className='w-10 h-10 rounded-full' />
         </Link>
-        <div className='md:hidden flex items-center'>
+        <div className='lg:hidden flex items-center'>
           {/* On mobile show menu button */}
           <button
             className='btn btn-secondary h-6 max-w-xs'
