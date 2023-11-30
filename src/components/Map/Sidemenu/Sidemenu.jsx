@@ -1,6 +1,6 @@
 /* eslint-disable multiline-ternary */
 /* eslint-disable react/jsx-props-no-multi-spaces */
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   BsTelephoneFill,
   BsFillClockFill,
@@ -8,6 +8,8 @@ import {
   BsFillCaretRightFill,
   BsFillCaretLeftFill
 } from 'react-icons/bs'
+
+import { Rating } from '@mui/material'
 
 import { useStore } from '../context/store'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -17,6 +19,9 @@ import 'swiper/css/pagination'
 import 'swiper/css/navigation'
 import './styles.css'
 import '../Pawsmap/Pawsmap.css'
+import { makeRequest } from '../../../library/Axios'
+import useFindUser from '../../../hooks/useFindUser'
+import useAuthStore from '../../../context/AuthContext'
 
 const Sidemenu = () => {
   // Usar el contexto para obtener valores y funciones
@@ -28,17 +33,101 @@ const Sidemenu = () => {
     setIsLoading
   } = useStore()
 
+  const [localuser, setLocaluser] = useState([])
+  const [score, setScore] = useState([])
+  const [value, setValue] = useState(0)
+  const [hasReview, setHasReview] = useState([])
+
+  const { loggedUser } = useAuthStore()
+  const { user } = useFindUser(loggedUser)
+
+  useEffect(() => {
+    if (user) {
+      setLocaluser(user)
+    }
+  }, [user])
+
   // Controlar la carga del contenido cuando hay datos de marcador seleccionados
   useEffect(() => {
     if (selectedMarkerData) {
       setIsLoading(true)
+      fetchReview(selectedMarkerData.id)
       const loadingTimer = setTimeout(() => {
         setIsLoading(false)
       }, 1000)
+
       return () => clearTimeout(loadingTimer)
     }
   }, [selectedMarkerData, setIsLoading])
 
+  const fetchReview = async (id) => {
+    try {
+      const response = await makeRequest.get(`location/review/find/${id}`)
+
+      let userScore = 0
+
+      response.data.reviews.forEach((review) => {
+        if (review.review_user_id === localuser.user_id) {
+          console.log('found', review.review_user_id, localuser.user_id)
+          userScore = review.score
+          setHasReview([true, review.review_id])
+          console.log(review)
+        }
+      })
+
+      setValue(userScore)
+
+      if (response.data.reviews.length === 0) {
+        console.log('No hay reviews disponibles.')
+        setScore(0)
+        setHasReview([false, 0])
+        return
+      }
+
+      const promedio =
+        response.data.reviews.reduce((suma, review) => suma + review.score, 0) /
+        response.data.reviews.length
+
+      setScore(Math.round((promedio + Number.EPSILON) * 100) / 100)
+    } catch (error) {
+      console.error('Error al obtener las reviews:', error)
+    }
+  }
+
+  const updateScore = async (id, score) => {
+    try {
+      const response = await makeRequest.put(`location/review/update/${id}`, {
+        score
+      })
+      console.log(response)
+    } catch (error) {
+      console.error('Error al actualizar la review:', error)
+    }
+  }
+
+  const createReview = async (locationId, userId, score) => {
+    try {
+      const response = await makeRequest.post('location/review/create', {
+        userId,
+        score,
+        locationId
+      })
+      console.log(response)
+    } catch (error) {
+      console.error('Error al crear la review:', error)
+    }
+  }
+
+  const handleSeleccion = (e) => {
+    const valorSeleccionado = e.target.value
+    if (hasReview[0] === true) {
+      updateScore(hasReview[1], valorSeleccionado)
+    } else {
+      createReview(selectedMarkerData.id, localuser.user_id, valorSeleccionado)
+      console.log(selectedMarkerData.id)
+    }
+    setValue(valorSeleccionado)
+  }
   return (
     <>
 
@@ -81,11 +170,7 @@ const Sidemenu = () => {
 
                         {/* Mostrar estrellas de calificación */}
                         <div className='rating rating-sm'>
-                          <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
-                          <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
-                          <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
-                          <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
-                          <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
+                          <input type='radio' name='rating-1' className='mask mask-star-2 bg-orange-400' />
                         </div>
                       </div>
 
@@ -122,28 +207,34 @@ const Sidemenu = () => {
                         {/* Número de teléfono */}
                         <div className='flex items-center gap-2 justify-start w-full'>
                           <BsTelephoneFill />
-                          <h2>320 3705387</h2>
+                          <h2>{selectedMarkerData.phone}</h2>
                         </div>
 
                         {/* Horario de apertura */}
                         <div className='flex items-center gap-2 justify-start w-full'>
                           <BsFillClockFill />
-                          <h2>5:00–10:00 16:00–21:00</h2>
+                          <h2>{selectedMarkerData.schedule}</h2>
                         </div>
 
                         {/* Horario de apertura */}
                         <div className='hidden md:flex items-center gap-2 justify-start w-full'>
                           <BsFillBuildingFill />
-                          <h3>{selectedMarkerData.type}</h3>
+                          <h3>{selectedMarkerData.type} -</h3>
 
                           {/* Mostrar estrellas de calificación */}
-                          <div className='rating rating-sm'>
-                            <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
-                            <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
-                            <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
-                            <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
-                            <input type='radio' name='rating-6' className='mask mask-star-2 bg-orange-400' />
-                          </div>
+                          {score}
+                          <i type='radio' name='rating-1' className='mask mask-star-2 bg-orange-400' />
+
+                        </div>
+                        <div className='max-w-md mx-auto mt-4'>
+                          <p className='text-lg mb-2'>Envía tu review</p>
+                          <Rating
+                            name='half-rating'
+                            defaultValue={0}
+                            precision={0.5}
+                            value={parseFloat(value)}
+                            onChange={handleSeleccion}
+                          />
                         </div>
 
                         {/* Mostrar estrellas de calificación */}
