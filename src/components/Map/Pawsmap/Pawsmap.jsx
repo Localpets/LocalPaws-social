@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api'
 import { useStore } from '../context/store'
 import CustomMarker from '../Markers/CustomMarker'
 import { AppleMapStyle } from '../../../assets/MapsSyles/AppleMapStyle'
 import MarkerIcon from '../../../assets/Icons/marcador.png'
-import { makeRequest } from '../../../library/Axios'
 import './Pawsmap.css'
 
 const Pawsmap = () => {
@@ -25,18 +24,15 @@ const Pawsmap = () => {
     setShowMarkers,
     setClickedLocation,
     infoWindowVisible,
-    setInfoWindowVisible
+    setInfoWindowVisible,
+    locations,
+    locationsPhotos,
+    fetchLocationsData
   } = useStore()
 
-  const [places, setPlaces] = useState([])
-
   useEffect(() => {
-    async function fetchLocations () {
-      const response = await makeRequest.get('location/find/all/')
-      setPlaces(response.data.locations)
-    }
-    fetchLocations()
-  })
+    fetchLocationsData()
+  }, [fetchLocationsData])
 
   // Mostrar marcadores después de un retardo
   useEffect(() => {
@@ -48,17 +44,17 @@ const Pawsmap = () => {
   }, [setShowMarkers])
 
   // Mostrar marcadores después de un retardo
-  const lugares = places.map((lugar) => {
+  const lugares = locations.map((lugar) => {
+    const photosForLocation = locationsPhotos.filter((photo) => photo && photo.location_id === lugar.location_id)
     return {
       id: lugar.location_id,
       name: lugar.name,
       address: lugar.address,
       type: lugar.type,
-      phone: lugar.phone_number,
+      phone_number: lugar.phone_number,
       schedule: lugar.schedule,
-      img: {
-        url: 'lugar.Img'
-      },
+      owner: lugar.user_created_id,
+      img: photosForLocation,
       coordinates: {
         lat: Number(lugar.lat),
         lng: Number(lugar.lng)
