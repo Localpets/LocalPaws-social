@@ -1,9 +1,8 @@
 .mapita {
   font-family: cambria;
   position: absolute;
-  top: 10vh;
   left: 0;
-  height: 90%;
+  height: 100%;
   width: 100%;
   z-index: 1;
   overflow: hidden;

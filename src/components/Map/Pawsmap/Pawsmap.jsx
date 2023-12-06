@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api'
 import { useStore } from '../context/store'
 import CustomMarker from '../Markers/CustomMarker'
-import Places from '../db/places.json'
 import { AppleMapStyle } from '../../../assets/MapsSyles/AppleMapStyle'
 import MarkerIcon from '../../../assets/Icons/marcador.png'
 import './Pawsmap.css'
@@ -25,8 +24,15 @@ const Pawsmap = () => {
     setShowMarkers,
     setClickedLocation,
     infoWindowVisible,
-    setInfoWindowVisible
+    setInfoWindowVisible,
+    locations,
+    locationsPhotos,
+    fetchLocationsData
   } = useStore()
+
+  useEffect(() => {
+    fetchLocationsData()
+  }, [fetchLocationsData])
 
   // Mostrar marcadores después de un retardo
   useEffect(() => {
@@ -38,15 +44,17 @@ const Pawsmap = () => {
   }, [setShowMarkers])
 
   // Mostrar marcadores después de un retardo
-  const lugares = Places.Lugares.map((lugar) => {
+  const lugares = locations.map((lugar) => {
+    const photosForLocation = locationsPhotos.filter((photo) => photo && photo.location_id === lugar.location_id)
     return {
-      id: lugar.Id,
-      name: lugar.Name,
-      address: lugar.Address,
+      id: lugar.location_id,
+      name: lugar.name,
+      address: lugar.address,
       type: lugar.type,
-      img: {
-        url: lugar.Img
-      },
+      phone_number: lugar.phone_number,
+      schedule: lugar.schedule,
+      owner: lugar.user_created_id,
+      img: photosForLocation,
       coordinates: {
         lat: Number(lugar.lat),
         lng: Number(lugar.lng)

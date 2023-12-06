@@ -55,6 +55,14 @@ img.rounded-box.ImgFrame.rounded-lg{
   background: rgba(221, 221, 221, 0.527);
   transition: all 500ms ease;
   transform: translateX(-100%);
+  -webkit-transform: translateX(-100%);
+  -moz-transform: translateX(-100%);
+  -ms-transform: translateX(-100%);
+  -o-transform: translateX(-100%);
+  -webkit-transition: all 500ms ease;
+  -moz-transition: all 500ms ease;
+  -ms-transition: all 500ms ease;
+  -o-transition: all 500ms ease;
 }
 
 #SiderbarBTN:checked ~ .container-menu .cont-menu{
@@ -75,14 +83,17 @@ img.rounded-box.ImgFrame.rounded-lg{
   .cont-menu{
     width: 100vw;
     position: fixed;
-    top: 60vh;
-    height: 40vh;
+    top: 58vh;
+    height: 42vh;
     padding-bottom: 1.25rem;
     background: white;
-    overflow: auto;
     transition: all 600ms ease;
     transform: translateY(100%);
-  }
+    -webkit-transition: all 600ms ease;
+    -moz-transition: all 600ms ease;
+    -ms-transition: all 600ms ease;
+    -o-transition: all 600ms ease;
+}
 
   .container-menu{
     opacity: 1;

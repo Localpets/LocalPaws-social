@@ -12,7 +12,13 @@ const CustomMarker = ({ lugar }) => (
       <header className='marker__header'>
 
         {/* Imagen del establecimiento */}
-        <img src={lugar.img.url} alt='Imagen del establecimiento' />
+        {lugar.img.length !== 0
+          ? (
+            <img src={lugar.img[0].photo_url} alt='Imagen del establecimiento' />
+            )
+          : (
+            <img src='https://quedex.com/gallery/EXHAUST/not_assigned.jpg' alt='Imagen del establecimiento' />
+            )}
 
         {/* Nombre del establecimiento */}
         <h2>{lugar.name}</h2>

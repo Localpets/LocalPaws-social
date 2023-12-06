@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import veterinariaIcon from '../../../assets/Icons/veterinaria.png'
 import petshopIcon from '../../../assets/Icons/petshop.png'
 import refugioIcon from '../../../assets/Icons/refugio.png'
+import { makeRequest } from '../../../library/Axios'
 
 export const useStore = create((set) => ({
   // Identificador del marcador seleccionado
@@ -43,6 +44,40 @@ export const useStore = create((set) => ({
 
   // Estado para controlar la visibilidad del boton pawsplorer en moviles
   showPawsPlorer: true,
+
+  // Propiedades para ubicaciones y fotos
+  locations: [],
+  locationsPhotos: [],
+
+  // Función para obtener ubicaciones y fotos
+  fetchLocationsData: async () => {
+    try {
+      const locationsResponse = await makeRequest.get('location/find/all/')
+      set({ locations: locationsResponse.data.locations })
+
+      const photoPromises = locationsResponse.data.locations.map((location) => {
+        return useStore.getState().fetchLocationsPhoto(location.location_id)
+      })
+
+      const photos = await Promise.all(photoPromises)
+      const flattenedPhotos = photos.flat()
+
+      set({ locationsPhotos: flattenedPhotos })
+    } catch (error) {
+      console.error('Error al obtener datos', error)
+    }
+  },
+
+  // Función para obtener fotos de una ubicación específica
+  fetchLocationsPhoto: async (id) => {
+    try {
+      const response = await makeRequest.get(`location/photo/find/${id}`)
+      return response.data.locationPhotos
+    } catch (error) {
+      console.error('Error al obtener fotos de ubicaciones', error)
+      return []
+    }
+  },
 
   // Función para establecer el estado de carga
   setIsLoading: (isLoading) => set({ isLoading }),
