@@ -146,7 +146,7 @@ const LikesTable = () => {
                                 : cell.column.columnDef.accessorKey === 'user.user_id'
                                   ? (
                                     <div className='flex items-center gap-2'>
-                                      <Link to={`/perfil/${cell.getValue()}`} className='btn btn-primary btn-sm'>Ver perfil</Link>
+                                      <Link to={`/profile/${cell.getValue()}`} className='btn btn-primary btn-sm'>Ver perfil</Link>
                                     </div>
                                     )
                                   : cell.column.columnDef.accessorKey === 'like_type'
