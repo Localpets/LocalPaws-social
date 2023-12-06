@@ -42,30 +42,7 @@ const LeftBar = ({ isProfileView, toggleNewSection, profileUser }) => {
           <i className='fa-solid fa-route text-xl' />
           <span className='icon flex'>Mapa</span>
         </Link>
-        <nav className='mt-2 flex flex-col'>
-          <Link to='/home' className='btn mb-3 btn-ghost flex items-center justify-start'>
-            <i className='fa-solid fa-house text-xl' />
-            <span className='icon'>Inicio</span>
-          </Link>
-          <Link to='/notificaciones' className='btn mb-3 btn-ghost flex items-center justify-start'>
-            <i className='fa-solid fa-bell text-xl' />
-            <span className='icon'>Notificaciones</span>
-          </Link>
-          <Link to='/chat' className='btn mb-3 btn-ghost flex items-center justify-start'>
-            <i className='fa-solid fa-envelope text-xl' />
-            <UnreadMessageCounter setUnreadmsg={setUnreadmsg} unreadmsg={unreadmsg} user={user} />
-            <span className='icon'>Mensajes</span>
-          </Link>
-          <Link to='/search' className='btn mb-3 btn-ghost flex items-center justify-start'>
-            <i className='fa-solid fa-search text-xl' />
-            <span className='icon'>Buscar</span>
-          </Link>
-          <Link to='/map' className='btn mb-3 btn-ghost flex items-center justify-start '>
-            <i className='fa-solid fa-route text-xl' />
-            <span className='icon hidden md:flex '>Mapa</span>
-          </Link>
-        </nav>
-
+  
         {isProfileView && (
           <div className={profileUser ? 'profile-section' : 'hidden'}>
             <button onClick={toggleNewSection} className='btn mb-3 btn-ghost flex items-center justify-start '>
