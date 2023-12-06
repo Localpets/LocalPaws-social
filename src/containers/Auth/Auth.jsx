@@ -9,6 +9,11 @@ import cover from './assets/pexels-sam-lion-6001183.jpg'
 import coverRegister from './assets/pexels-mikky-k-11043684.jpg'
 import useFindUser from '../../hooks/useFindUser'
 import MapComponent from './MapComponent'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Pagination, Navigation } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/pagination'
+import 'swiper/css/navigation'
 
 const Auth = () => {
   const [error, setError] = useState(false)
@@ -17,7 +22,17 @@ const Auth = () => {
   const [coverPosition, setCoverPosition] = useState(false)
   const [isBussines, setIsBussines] = useState(false)
   const [bussinesCoords, setBussinesCoords] = useState('N/A')
+  const [uploadimages, setUploadimages] = useState([])
   const [userType, setUserType] = useState('USER')
+  const [schedule, setSchedule] = useState({
+    Lunes: '',
+    Martes: '',
+    Miércoles: '',
+    Jueves: '',
+    Viernes: '',
+    Sábado: '',
+    Domingo: ''
+  })
 
   const { user } = useFindUser()
   const { login } = useAuthStore()
@@ -80,6 +95,37 @@ const Auth = () => {
       setUserType(newUserType)
       setBussinesCoords('N/A')
     }
+  }
+
+  const handleScheduleChange = (day, value) => {
+    setSchedule((prevSchedule) => ({
+      ...prevSchedule,
+      [day]: value
+    }))
+  }
+
+  const SwiperImg = () => {
+    return (
+      <Swiper
+        pagination={{
+          type: 'navigation'
+        }}
+        navigation
+        modules={[Pagination, Navigation]}
+        className='mySwiper w-[20em]'
+      >
+        <SwiperSlide className='flex justify-center'>
+          <img src='https://i.pinimg.com/564x/8e/0a/ac/8e0aacf063723b97874a3e11dce48e0f.jpg' className='rounded-box ImgFrame rounded-lg' alt='No se asignó una imagen' />
+        </SwiperSlide>
+        <SwiperSlide className='flex justify-center'>
+          <img src='https://i.pinimg.com/564x/8e/0a/ac/8e0aacf063723b97874a3e11dce48e0f.jpg' className='rounded-box ImgFrame rounded-lg' alt='No se asignó una imagen' />
+        </SwiperSlide>
+        <SwiperSlide className='flex justify-center'>
+          <img src='https://i.pinimg.com/564x/8e/0a/ac/8e0aacf063723b97874a3e11dce48e0f.jpg' className='rounded-box ImgFrame rounded-lg' alt='No se asignó una imagen' />
+        </SwiperSlide>
+
+      </Swiper>
+    )
   }
 
   return (
@@ -241,7 +287,12 @@ const Auth = () => {
           type: userType,
           marketing_accept: false,
           username: '',
-          location: bussinesCoords
+          location: bussinesCoords,
+          localName: '',
+          localAddress: '',
+          localType: 'null',
+          localPhone: '',
+          localSchedule: ''
         }}
         validate={values => {
           // Validations
@@ -301,22 +352,36 @@ const Auth = () => {
         }}
         onSubmit={async (values, { setSubmitting }) => {
           try {
-            const data = {
-              phone_number: values.phone_number,
-              first_name: values.first_name,
-              last_name: values.last_name,
-              email: values.email,
-              password: values.password,
-              gender: values.gender,
-              type: userType,
-              marketing_accept: values.marketing_accept,
-              username: values.username,
-              location: bussinesCoords
+            console.log(schedule)
+            const schedulecombined = Object.keys(schedule).map((day) => `${
+              day[0]
+            } : ${schedule[day]}`).join(' / ')
+
+            console.log(schedulecombined)
+            const formData = new FormData()
+
+            formData.append('phone_number', values.phone_number)
+            formData.append('first_name', values.first_name)
+            formData.append('last_name', values.last_name)
+            formData.append('email', values.email)
+            formData.append('password', values.password)
+            formData.append('gender', values.gender)
+            formData.append('type', userType)
+            formData.append('marketing_accept', values.marketing_accept)
+            formData.append('username', values.username)
+            formData.append('location', bussinesCoords)
+
+            if (isBussines) {
+              formData.append('localName', values.localName)
+              formData.append('localAddress', values.localAddress)
+              formData.append('localType', values.localType)
+              formData.append('localPhone', values.localPhone)
+              formData.append('localSchedule', schedulecombined)
             }
 
-            console.log('Data being sent: ', data)
+            console.log('Data being sent: ', formData)
 
-            const res = await makeRequest.post('/auth/register', data)
+            const res = await makeRequest.post('/auth/register', formData)
 
             if (res.status === 201) {
               setSuccess(true)
@@ -342,7 +407,7 @@ const Auth = () => {
           handleSubmit,
           isSubmitting
         }) => (
-          <div className={!coverPosition ? 'hidden' : 'z-0 py-10 mx-auto justify-center lg:items-start items-center flex flex-col w-full -translate-y-0 transition duration-500 ease-in-out transform'}>
+          <div className={!coverPosition ? 'hidden' : 'z-0 py-10 mx-auto lg:items-start items-center flex flex-col w-full -translate-y-0 transition duration-500 ease-in-out transform overflow-y-auto'}>
             <main
               className='z-0 flex items-center justify-center px-8 pb-2 w-full lg:w-[50%] xl:w-[60%]'
             >
@@ -517,6 +582,138 @@ const Auth = () => {
                       )
                     }
                   </div>
+                  {
+                    isBussines && (
+                      <>
+                        <h1
+                          className='mt-4 text-center lg:mt-0 text-2xl font-bold text-gray-900 sm:text-2xl md:text-4xl'
+                        >
+                          Datos del establecimiento 🏥
+                        </h1>
+                        <div className='flex flex-col lg:flex-row gap-8 w-full'>
+                          <div className='w-full lg:w-[40%]'>
+                            <label
+                              htmlFor='localName'
+                              className='block text-sm font-medium text-gray-700'
+                            >
+                              Nombre del establecimiento
+                            </label>
+                            <input
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              value={values.localName}
+                              type='text'
+                              id='localName'
+                              name='localName'
+                              className='mt-1 focus:ring-blue-600 focus:border-blue-600 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md'
+                            />
+                            <h2 className='text-red-500 text-xs'>{errors.localName && touched.localName && errors.localName}</h2>
+                          </div>
+                          <div className='w-full lg:w-[40%]'>
+                            <label
+                              htmlFor='localAddress'
+                              className='block text-sm font-medium text-gray-700'
+                            >
+                              Direccion
+                            </label>
+                            <input
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              value={values.localAddress}
+                              type='text'
+                              id='localAddress'
+                              name='localAddress'
+                              className='mt-1 focus:ring-blue-600 focus:border-blue-600 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md'
+                            />
+                            <h2 className='text-red-500 text-xs'>{errors.localAddress && touched.localAddress && errors.localAddress}</h2>
+                          </div>
+                        </div>
+                        <div className='w-full flex flex-col sm:flex-row flex-wrap items-center gap-4'>
+                          <div>
+                            <label
+                              htmlFor='localType'
+                              className='block text-sm font-medium text-gray-700'
+                            >
+                              Tipo de establecimiento
+                            </label>
+                            <select
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              value={values.localType}
+                              id='localType'
+                              name='localType'
+                              className='mt-1 focus:ring-blue-600 focus:border-blue-600 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md'
+                            >
+                              <option value='null' disabled>
+                                Selecciona una opción
+                              </option>
+                              <option value='Veterinaria'>
+                                Veterinaria
+                              </option>
+                              <option value='Petshop'>
+                                Petshop
+                              </option>
+                              <option value='AnimalShelter'>
+                                AnimalShelter
+                              </option>
+                              <option value='localOtro'>
+                                Otro
+                              </option>
+                            </select>
+                            <h2 className='text-red-500 text-xs'>{errors.localType && touched.localType && errors.localType}</h2>
+                          </div>
+                          <div className='w-1/2'>
+                            <label
+                              htmlFor='localPhone'
+                              className='block text-sm font-medium text-gray-700'
+                            >
+                              Teléfono del establecimiento
+                            </label>
+                            <input
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              value={values.localPhone}
+                              type='text'
+                              id='localPhone'
+                              name='localPhone'
+                              className='mt-1 focus:ring-blue-600 focus:border-blue-600 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md'
+                            />
+                            <h2 className='text-red-500 text-xs'>{errors.localPhone && touched.localPhone && errors.localPhone}</h2>
+                          </div>
+                        </div>
+                        <div>
+                          <label
+                            htmlFor='localSchedule'
+                            className='block text-md font-bold text-gray-700 pb-4'
+                          >
+                            Horario del establecimiento
+                          </label>
+                          <div>
+                            {Object.keys(schedule).map((day) => (
+                              <div key={day} className='mb-4'>
+                                <label htmlFor={day} className='text-gray-700 pr-4'>
+                                  {day}
+                                </label>
+                                <input
+                                  type='text'
+                                  id={day}
+                                  placeholder='Ejemplo: 09:00am - 11:00am / 1:00pm - 6:00pm'
+                                  value={schedule[day]}
+                                  pattern='^([0-1]?[0-9]|2[0-3]):[0-5][0-9](am|pm) - ([0-1]?[0-9]|2[0-3]):[0-5][0-9](am|pm)$'
+                                  onChange={(e) => handleScheduleChange(day, e.target.value)}
+                                  className='shadow-sm rounded-md p-2 border border-gray-300 focus:border-blue-500 w-full'
+                                />
+                              </div>
+                            ))}
+                          </div>
+
+                        </div>
+                        <SwiperImg />
+
+                      </>
+
+                    )
+                  }
 
                   <div className='justify-center lg:justify-start w-full'>
                     <label htmlFor='MarketingAccept' className='flex gap-4'>
