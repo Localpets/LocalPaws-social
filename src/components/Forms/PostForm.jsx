@@ -1,20 +1,44 @@
 import { useEffect, useState } from 'react'
 import { Formik, Form, Field } from 'formik'
-import swal from 'sweetalert'
+import { makeRequest } from '../../library/Axios'
 import { useQuery } from '@tanstack/react-query'
+import AdoptionForm from './AdoptionForm'
+import swal from 'sweetalert'
 import useAuthStore from '../../context/AuthContext'
 import useFindUser from '../../hooks/useFindUser'
-import { makeRequest } from '../../library/Axios'
 import PropTypes from 'prop-types'
 
 const PostForm = ({ addPost, setPosts, posts }) => {
   const { loggedUser } = useAuthStore()
   const { user } = useFindUser(loggedUser)
 
+  const [locationCoords, setLocationCoords] = useState(null)
+  const [schedule, setSchedule] = useState({
+    Lunes: '',
+    Martes: '',
+    Miércoles: '',
+    Jueves: '',
+    Viernes: '',
+    Sábado: '',
+    Domingo: ''
+  })
+  const [formDataToSent, setFormDataToSent] = useState({
+    name: '',
+    lat: locationCoords ? locationCoords.split(',')[0] : '48.8566',
+    lng: locationCoords ? locationCoords.split(',')[1] : '2.3522',
+    address: '',
+    type: 'Adoption',
+    user_created_id: 0, // Coloca el ID del usuario correctamente
+    location_photos: ['', '', ''],
+    phone_number: '',
+    schedule: ''
+  })
   const [imageError, setImageError] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [previewImage, setPreviewImage] = useState('')
+  const [imageIfAdoption, setImageIfAdoption] = useState('')
   const [categories, setCategories] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState('')
 
   useEffect(() => {
     if (imageError) {
@@ -68,7 +92,78 @@ const PostForm = ({ addPost, setPosts, posts }) => {
     image: null
   }
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, { setSubmitting }, formDataIfAdoption = formDataToSent, locationIfAdoption = locationCoords, scheduleIfAdoption = schedule) => {
+    if (selectedCategory === 'Adopciones') {
+      console.log('location', locationIfAdoption)
+
+      const combinedSchedule = Object.keys(scheduleIfAdoption)
+        .map((day) => `${
+          // JUST THE LETTER OF THE DAY
+          day[0]
+        }: ${scheduleIfAdoption[day]}`)
+        .join(' / ')
+
+      // Aquí puedes enviar combinedSchedule al backend o realizar otras acciones.
+      console.log(combinedSchedule)
+
+      if (!locationIfAdoption) {
+        swal('Error', 'Debes seleccionar una ubicación', 'error')
+        return
+      }
+      // const formDataToSentToServ = {
+      //   ...formDataIfAdoption,
+      //   schedule: combinedSchedule,
+      //   lat: locationIfAdoption.split(',')[0],
+      //   lng: locationIfAdoption.split(',')[1],
+      //   user_created_id: user.user_id
+      // }
+
+      const formDataToSentToServ = new FormData()
+
+      formDataToSentToServ.append('name', formDataIfAdoption.name)
+      formDataToSentToServ.append('lat', locationIfAdoption.split(',')[0])
+      formDataToSentToServ.append('lng', locationIfAdoption.split(',')[1])
+      formDataToSentToServ.append('address', formDataIfAdoption.address)
+      formDataToSentToServ.append('type', formDataIfAdoption.type)
+      formDataToSentToServ.append('user_created_id', user.user_id)
+      formDataIfAdoption.location_photos.map((photo, i) => formDataToSentToServ.append('image', photo, i))
+      formDataToSentToServ.append('phone_number', formDataIfAdoption.phone_number)
+      formDataToSentToServ.append('schedule', combinedSchedule)
+
+      try {
+        const res = await makeRequest.post('location/create', formDataToSentToServ)
+        console.log(res)
+
+        const formDataToPost = new FormData()
+        formDataToPost.append('text', values.text)
+        formDataToPost.append('category', values.category)
+        formDataToPost.append('image', imageIfAdoption)
+        formDataToPost.append('post_user_id', user.user_id)
+
+        if (posts && setPosts) {
+          const response = await makeRequest.post('post/create', formDataToPost)
+          const newPost = {
+            ...response.data.post,
+            likes: 0,
+            comments: 0
+          }
+          setInitialPostValues(values)
+          setPosts([newPost, ...posts])
+        } else {
+          const response = await makeRequest.post('post/create', formDataToPost)
+          setInitialPostValues(values)
+          addPost(response.data.post)
+        }
+
+        return
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setSubmitting(false)
+        setSelectedCategory('')
+      }
+    }
+
     const formData = new FormData()
     formData.append('text', values.text)
     formData.append('category', values.category)
@@ -96,6 +191,7 @@ const PostForm = ({ addPost, setPosts, posts }) => {
       console.log(error)
     } finally {
       setSubmitting(false)
+      setSelectedCategory('')
     }
   }
 
@@ -116,6 +212,8 @@ const PostForm = ({ addPost, setPosts, posts }) => {
       </div>
     )
   }
+
+  if (!user) return null
 
   if (error) return 'An error has occurred: ' + error.message
 
@@ -168,7 +266,11 @@ const PostForm = ({ addPost, setPosts, posts }) => {
                 <button
                   type='submit'
                   disabled={isSubmitting}
-                  className='btn btn-secondary h-8 max-w-xs self-start hover:opacity-75'
+                  className={
+                    selectedCategory === 'Adopciones'
+                      ? 'hidden'
+                      : 'btn btn-secondary h-8 max-w-xs self-start hover:opacity-75'
+                  }
                 >
                   <i className='fa-solid fa-paper-plane text-white' />
                 </button>
@@ -189,7 +291,13 @@ const PostForm = ({ addPost, setPosts, posts }) => {
 
               <div className='flex justify-between items-center w-full px-4 lg:px-2 lg:mr-2'>
                 <div className='w-24 h-9'>
-                  <label htmlFor='image' className='badge hover:opacity-75 rounded-lg cursor-pointer flex gap-2 h-full mx-auto border-secondary bg-secondary text-white lg:ml-2'>
+                  <label
+                    htmlFor='image' className={
+                    selectedCategory === 'Adopciones'
+                      ? 'hidden'
+                      : 'badge hover:opacity-75 rounded-lg cursor-pointer flex gap-2 h-full mx-auto border-secondary bg-secondary text-white lg:ml-2'
+                  }
+                  >
                     <i className='fa-solid fa-image text-white' />
                     <h3 className='text-white'>Imagen</h3>
                   </label>
@@ -216,6 +324,11 @@ const PostForm = ({ addPost, setPosts, posts }) => {
                     onBlur={handleBlur}
                     value={values.category}
                     className='rounded-lg border-2 border-[#E0E1DD] text-black'
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value)
+                      setFieldValue('category', e.target.value)
+                      console.log('selected category', e.target.value)
+                    }}
                   >
                     {
                       categories
@@ -228,6 +341,12 @@ const PostForm = ({ addPost, setPosts, posts }) => {
                   <h2 className='text-red-500 text-sm font-semibold'>{errors.category && touched.category && errors.category}</h2>
                 </div>
               </div>
+
+              {
+                selectedCategory === 'Adopciones'
+                  ? <AdoptionForm setPreviewImage={setPreviewImage} formData={formDataToSent} setFormData={setFormDataToSent} setLocationCoords={setLocationCoords} schedule={schedule} setSchedule={setSchedule} imageIfAdoption={imageIfAdoption} setImageIfAdoption={setImageIfAdoption} />
+                  : null
+              }
             </Form>
           </section>
         )}
