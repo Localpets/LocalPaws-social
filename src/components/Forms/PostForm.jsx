@@ -106,6 +106,7 @@ const PostForm = ({ addPost, setPosts, posts }) => {
           photo,
           i
         })
+        if (photo === '') return console.log('empty image')
         return formDataToSentToServ.append('image', photo, i)
       })
       formDataToSentToServ.append('phone_number', formDataIfAdoption.phone_number)
