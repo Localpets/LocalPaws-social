@@ -40,6 +40,7 @@ export function MapComponent ({ setBussinesCoords }) {
                   () => {
                     toast.success('Ubicación guardada')
                     handleShowMap()
+                    console.log()
                   }
                 }
                 >

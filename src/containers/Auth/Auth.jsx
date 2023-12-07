@@ -374,7 +374,6 @@ const Auth = () => {
 
             // Validate userType and location
             if (bussinesCoords === 'N/A') {
-              console.log(bussinesCoords)
               setLocationError('Debe definir una ubicacion')
             } else {
               setLocationError('')
@@ -405,7 +404,6 @@ const Auth = () => {
             // uploadImages
             if (uploadimages.length === 3) {
               const hasNull = uploadimages.some((file) => file === null)
-              console.log(hasNull)
               if (hasNull) {
                 setUploadImagesError('Debe subir minimo 3 imagenes')
               } else {
@@ -427,8 +425,13 @@ const Auth = () => {
           return errors
         }}
         onSubmit={async (values, { setSubmitting }) => {
-          console.log('Before submitting form...')
-          console.log('Before submitting form...', 'isBussines:', isBussines)
+          if (isBussines && bussinesCoords === 'N/A') {
+            setLocationError('Debe definir una ubicacion')
+            setSubmitting(false)
+            return
+          } else {
+            setLocationError('')
+          }
           try {
             const formData = new FormData()
             const jsonString = JSON.stringify(schedule)
@@ -452,8 +455,6 @@ const Auth = () => {
 
               uploadimages.map((photo) => formData.append('image', photo))
             }
-            console.log('attemps', values)
-            console.log('Data being sent: ', formData)
 
             const res = await makeRequest.post('/auth/register', formData)
 
