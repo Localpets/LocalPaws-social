@@ -12,16 +12,8 @@ const PostForm = ({ addPost, setPosts, posts }) => {
   const { loggedUser } = useAuthStore()
   const { user } = useFindUser(loggedUser)
 
+  const [loadingIfSendingAdoptionForm, setLoadingIfSendingAdoptionForm] = useState(false)
   const [locationCoords, setLocationCoords] = useState(null)
-  const [schedule, setSchedule] = useState({
-    Lunes: '',
-    Martes: '',
-    Miércoles: '',
-    Jueves: '',
-    Viernes: '',
-    Sábado: '',
-    Domingo: ''
-  })
   const [formDataToSent, setFormDataToSent] = useState({
     name: '',
     lat: locationCoords ? locationCoords.split(',')[0] : '48.8566',
@@ -29,9 +21,9 @@ const PostForm = ({ addPost, setPosts, posts }) => {
     address: '',
     type: 'Adoption',
     user_created_id: 0, // Coloca el ID del usuario correctamente
-    location_photos: ['', '', ''],
+    location_photos: ['', '', '', '', ''],
     phone_number: '',
-    schedule: ''
+    schedule: 'Disponible'
   })
   const [imageError, setImageError] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
@@ -92,31 +84,14 @@ const PostForm = ({ addPost, setPosts, posts }) => {
     image: null
   }
 
-  const handleSubmit = async (values, { setSubmitting }, formDataIfAdoption = formDataToSent, locationIfAdoption = locationCoords, scheduleIfAdoption = schedule) => {
+  const handleSubmit = async (values, { setSubmitting }, formDataIfAdoption = formDataToSent, locationIfAdoption = locationCoords) => {
     if (selectedCategory === 'Adopciones') {
       console.log('location', locationIfAdoption)
-
-      const combinedSchedule = Object.keys(scheduleIfAdoption)
-        .map((day) => `${
-          // JUST THE LETTER OF THE DAY
-          day[0]
-        }: ${scheduleIfAdoption[day]}`)
-        .join(' / ')
-
-      // Aquí puedes enviar combinedSchedule al backend o realizar otras acciones.
-      console.log(combinedSchedule)
 
       if (!locationIfAdoption) {
         swal('Error', 'Debes seleccionar una ubicación', 'error')
         return
       }
-      // const formDataToSentToServ = {
-      //   ...formDataIfAdoption,
-      //   schedule: combinedSchedule,
-      //   lat: locationIfAdoption.split(',')[0],
-      //   lng: locationIfAdoption.split(',')[1],
-      //   user_created_id: user.user_id
-      // }
 
       const formDataToSentToServ = new FormData()
 
@@ -126,9 +101,15 @@ const PostForm = ({ addPost, setPosts, posts }) => {
       formDataToSentToServ.append('address', formDataIfAdoption.address)
       formDataToSentToServ.append('type', formDataIfAdoption.type)
       formDataToSentToServ.append('user_created_id', user.user_id)
-      formDataIfAdoption.location_photos.map((photo, i) => formDataToSentToServ.append('image', photo, i))
+      formDataIfAdoption.location_photos.map((photo, i) => {
+        console.log('image received:', {
+          photo,
+          i
+        })
+        return formDataToSentToServ.append('image', photo, i)
+      })
       formDataToSentToServ.append('phone_number', formDataIfAdoption.phone_number)
-      formDataToSentToServ.append('schedule', combinedSchedule)
+      formDataToSentToServ.append('schedule', formDataIfAdoption.schedule)
 
       try {
         const res = await makeRequest.post('location/create', formDataToSentToServ)
@@ -161,6 +142,7 @@ const PostForm = ({ addPost, setPosts, posts }) => {
       } finally {
         setSubmitting(false)
         setSelectedCategory('')
+        setLoadingIfSendingAdoptionForm(false)
       }
     }
 
@@ -344,7 +326,7 @@ const PostForm = ({ addPost, setPosts, posts }) => {
 
               {
                 selectedCategory === 'Adopciones'
-                  ? <AdoptionForm setPreviewImage={setPreviewImage} formData={formDataToSent} setFormData={setFormDataToSent} setLocationCoords={setLocationCoords} schedule={schedule} setSchedule={setSchedule} imageIfAdoption={imageIfAdoption} setImageIfAdoption={setImageIfAdoption} />
+                  ? <AdoptionForm setPreviewImage={setPreviewImage} formData={formDataToSent} setFormData={setFormDataToSent} setLocationCoords={setLocationCoords} imageIfAdoption={imageIfAdoption} setImageIfAdoption={setImageIfAdoption} loadingIfSendingADoptionForm={loadingIfSendingAdoptionForm} setLoadingIfSendingADoptionForm={setLoadingIfSendingAdoptionForm} />
                   : null
               }
             </Form>

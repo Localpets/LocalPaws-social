@@ -19,7 +19,7 @@ export function MapComponent ({ setLocationCoords }) {
 
   return (
     <section>
-      <div className='pt-4 gap-2 flex flex-col lg:flex-row items-center'>
+      <div className='pt-1 gap-2 flex flex-col lg:flex-row items-center'>
         <button type='button' name='showMap' id='showMap' onClick={handleShowMap} className='pl-2 btn btn-ghost'>
           <label htmlFor='showMap' className='cursor-pointer'>Localización de tu mascota</label>
           <i className='fa-solid fa-map' />
