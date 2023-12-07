@@ -9,11 +9,7 @@ import cover from './assets/pexels-sam-lion-6001183.jpg'
 import coverRegister from './assets/pexels-mikky-k-11043684.jpg'
 import useFindUser from '../../hooks/useFindUser'
 import MapComponent from './MapComponent'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Pagination, Navigation } from 'swiper/modules'
-import 'swiper/css'
-import 'swiper/css/pagination'
-import 'swiper/css/navigation'
+import SwiperImg from './SwiperImg'
 
 const Auth = () => {
   const [error, setError] = useState(false)
@@ -23,15 +19,44 @@ const Auth = () => {
   const [isBussines, setIsBussines] = useState(false)
   const [bussinesCoords, setBussinesCoords] = useState('N/A')
   const [uploadimages, setUploadimages] = useState([])
+  const [uploadimagesPreview, setUploadimagesPreview] = useState([])
   const [userType, setUserType] = useState('USER')
+  const [locationError, setLocationError] = useState('')
+  const [scheduleError, setScheduleError] = useState('')
+  const [uploadImagesError, setUploadImagesError] = useState('')
   const [schedule, setSchedule] = useState({
-    Lunes: '',
-    Martes: '',
-    Miércoles: '',
-    Jueves: '',
-    Viernes: '',
-    Sábado: '',
-    Domingo: ''
+    workdays: {
+      morning: '',
+      afternoon: ''
+    },
+    holidays: {
+      morning: '',
+      afternoon: ''
+    },
+    weekend: {
+      morning: '',
+      afternoon: ''
+    }
+  })
+  const workdays = ['Lunes a Viernes']
+  const holidays = ['Festivos']
+  const weekend = ['Sábado y Domingo']
+
+  const timeOptions = [
+    '06:00am - 08:00am',
+    '08:00am - 10:00am',
+    '10:00am - 12:00pm',
+    '12:00pm - 02:00pm',
+    '02:00pm - 04:00pm',
+    '04:00pm - 06:00pm',
+    '06:00pm - 08:00pm',
+    '08:00pm - 10:00pm'
+  ]
+
+  const [categoryLabels] = useState({
+    workdays: ['Horario mañana', 'Horario tarde'],
+    holidays: ['Horario mañana', 'Horario tarde'],
+    weekend: ['Horario mañana', 'Horario tarde']
   })
 
   const { user } = useFindUser()
@@ -68,9 +93,6 @@ const Auth = () => {
         toast.success('Iniciando sesión...')
       }
     }
-
-    console.log('UserType cambiado a: ', userType)
-    console.log('BussinesCoords cambiado a: ', bussinesCoords)
   }, [error, success, coverPosition, userType, bussinesCoords])
 
   useEffect(() => {
@@ -86,7 +108,6 @@ const Auth = () => {
 
   const handleBussinesCheck = (e) => {
     setIsBussines(e.target.checked)
-
     if (e.target.checked) {
       const newUserType = 'MEMBER'
       setUserType(newUserType)
@@ -97,35 +118,25 @@ const Auth = () => {
     }
   }
 
-  const handleScheduleChange = (day, value) => {
+  const handleScheduleChange = (category, period, value) => {
     setSchedule((prevSchedule) => ({
       ...prevSchedule,
-      [day]: value
+      [category]: {
+        ...prevSchedule[category],
+        [period]: value
+      }
     }))
   }
 
-  const SwiperImg = () => {
-    return (
-      <Swiper
-        pagination={{
-          type: 'navigation'
-        }}
-        navigation
-        modules={[Pagination, Navigation]}
-        className='mySwiper w-[20em]'
-      >
-        <SwiperSlide className='flex justify-center'>
-          <img src='https://i.pinimg.com/564x/8e/0a/ac/8e0aacf063723b97874a3e11dce48e0f.jpg' className='rounded-box ImgFrame rounded-lg' alt='No se asignó una imagen' />
-        </SwiperSlide>
-        <SwiperSlide className='flex justify-center'>
-          <img src='https://i.pinimg.com/564x/8e/0a/ac/8e0aacf063723b97874a3e11dce48e0f.jpg' className='rounded-box ImgFrame rounded-lg' alt='No se asignó una imagen' />
-        </SwiperSlide>
-        <SwiperSlide className='flex justify-center'>
-          <img src='https://i.pinimg.com/564x/8e/0a/ac/8e0aacf063723b97874a3e11dce48e0f.jpg' className='rounded-box ImgFrame rounded-lg' alt='No se asignó una imagen' />
-        </SwiperSlide>
+  const generateTimeOptions = (morning) => {
+    const startIndex = morning ? 0 : 3
+    const endIndex = morning ? 3 : timeOptions.length
 
-      </Swiper>
-    )
+    return timeOptions.slice(startIndex, endIndex).map((timeOption) => (
+      <option key={timeOption} value={timeOption}>
+        {timeOption}
+      </option>
+    ))
   }
 
   return (
@@ -291,8 +302,7 @@ const Auth = () => {
           localName: '',
           localAddress: '',
           localType: 'null',
-          localPhone: '',
-          localSchedule: ''
+          localPhone: ''
         }}
         validate={values => {
           // Validations
@@ -348,18 +358,80 @@ const Auth = () => {
             errors.gender = 'Debes seleccionar una opción'
           }
 
+          if (userType === 'MEMBER') {
+            // schedule
+            const isScheduleComplete = (
+              schedule.workdays.morning && schedule.workdays.afternoon &&
+              schedule.holidays.morning && schedule.holidays.afternoon &&
+              schedule.weekend.morning && schedule.weekend.afternoon
+            )
+
+            if (!isScheduleComplete) {
+              setScheduleError('Complete los datos del horario')
+            } else {
+              setScheduleError('')
+            }
+
+            // Validate userType and location
+            if (bussinesCoords === 'N/A') {
+              console.log(bussinesCoords)
+              setLocationError('Debe definir una ubicacion')
+            } else {
+              setLocationError('')
+            }
+
+            // localName
+            if (!values.localName) {
+              errors.localName = 'Esto es un campo requerido'
+            }
+
+            // localAddress
+            if (!values.localAddress) {
+              errors.localAddress = 'Esto es un campo requerido'
+            }
+
+            // localType
+            if (values.localType === 'null' || values.localType === '' || values.localType === false) {
+              errors.localType = 'Debes seleccionar una opción'
+            }
+
+            // localPhone
+            if (!values.localPhone) {
+              errors.localPhone = 'Esto es un campo requerido'
+            } else if (!/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/i.test(values.localPhone)) {
+              errors.localPhone = 'El número de teléfono debe tener 10 dígitos y/o ser un número válido.'
+            }
+
+            // uploadImages
+            if (uploadimages.length === 3) {
+              const hasNull = uploadimages.some((file) => file === null)
+              console.log(hasNull)
+              if (hasNull) {
+                setUploadImagesError('Debe subir minimo 3 imagenes')
+              } else {
+                setUploadImagesError('')
+              }
+            } else if (uploadimages.length > 3) {
+              const hasNull = uploadimages.some((file) => file === null)
+
+              if (hasNull) {
+                setUploadImagesError('Debe enviar las fotos en los espacios extra agregados')
+              } else {
+                setUploadImagesError('')
+              }
+            } else {
+              setUploadImagesError('Debes de subir como mínimo 3 fotos')
+            }
+          }
+
           return errors
         }}
         onSubmit={async (values, { setSubmitting }) => {
+          console.log('Before submitting form...')
+          console.log('Before submitting form...', 'isBussines:', isBussines)
           try {
-            console.log(schedule)
-            const schedulecombined = Object.keys(schedule).map((day) => `${
-              day[0]
-            } : ${schedule[day]}`).join(' / ')
-
-            console.log(schedulecombined)
             const formData = new FormData()
-
+            const jsonString = JSON.stringify(schedule)
             formData.append('phone_number', values.phone_number)
             formData.append('first_name', values.first_name)
             formData.append('last_name', values.last_name)
@@ -376,9 +448,11 @@ const Auth = () => {
               formData.append('localAddress', values.localAddress)
               formData.append('localType', values.localType)
               formData.append('localPhone', values.localPhone)
-              formData.append('localSchedule', schedulecombined)
-            }
+              formData.append('localSchedule', jsonString)
 
+              uploadimages.map((photo) => formData.append('image', photo))
+            }
+            console.log('attemps', values)
             console.log('Data being sent: ', formData)
 
             const res = await makeRequest.post('/auth/register', formData)
@@ -390,6 +464,7 @@ const Auth = () => {
               }, 2000)
             }
           } catch (err) {
+            console.error('Error during form submission:', err)
             setError(err)
           }
 
@@ -581,6 +656,7 @@ const Auth = () => {
                         <MapComponent setBussinesCoords={setBussinesCoords} />
                       )
                     }
+                    <h2 className='text-red-500 text-xs'>{locationError}</h2>
                   </div>
                   {
                     isBussines && (
@@ -682,34 +758,85 @@ const Auth = () => {
                           </div>
                         </div>
                         <div>
-                          <label
-                            htmlFor='localSchedule'
-                            className='block text-md font-bold text-gray-700 pb-4'
-                          >
+                          <label htmlFor='localSchedule' className='block text-md font-bold text-gray-700 pb-4'>
                             Horario del establecimiento
                           </label>
-                          <div>
-                            {Object.keys(schedule).map((day) => (
-                              <div key={day} className='mb-4'>
-                                <label htmlFor={day} className='text-gray-700 pr-4'>
-                                  {day}
-                                </label>
-                                <input
-                                  type='text'
-                                  id={day}
-                                  placeholder='Ejemplo: 09:00am - 11:00am / 1:00pm - 6:00pm'
-                                  value={schedule[day]}
-                                  pattern='^([0-1]?[0-9]|2[0-3]):[0-5][0-9](am|pm) - ([0-1]?[0-9]|2[0-3]):[0-5][0-9](am|pm)$'
-                                  onChange={(e) => handleScheduleChange(day, e.target.value)}
-                                  className='shadow-sm rounded-md p-2 border border-gray-300 focus:border-blue-500 w-full'
-                                />
+                          <h2 className='text-red-500 text-xs'>{scheduleError}</h2>
+                          {workdays.map((category, index) => (
+                            <div key={category} className='mb-4'>
+                              <label className='text-gray-700 pr-4'>
+                                {category}
+                              </label>
+                              <div className='flex space-x-2'>
+                                {['morning', 'afternoon'].map((period, periodIndex) => (
+                                  <select
+                                    key={`${category}-${period}`}
+                                    value={schedule.workdays[period] || ''}
+                                    onChange={(e) => handleScheduleChange('workdays', period, e.target.value)}
+                                    className='shadow-sm rounded-md p-2 border border-gray-300 focus:border-blue-500'
+                                  >
+                                    <option value='' disabled>
+                                      {categoryLabels.workdays[periodIndex]}
+                                    </option>
+                                    {generateTimeOptions(period === 'morning')}
+                                  </select>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                          ))}
+                          {holidays.map((category, index) => (
+                            <div key={category} className='mb-4'>
+                              <label className='text-gray-700 pr-4'>
+                                {category}
+                              </label>
+                              <div className='flex space-x-2'>
+                                {['morning', 'afternoon'].map((period, periodIndex) => (
+                                  <select
+                                    key={`${category}-${period}`}
+                                    value={schedule.holidays[period] || ''}
+                                    onChange={(e) => handleScheduleChange('holidays', period, e.target.value)}
+                                    className='shadow-sm rounded-md p-2 border border-gray-300 focus:border-blue-500'
+                                  >
+                                    <option value='' disabled>
+                                      {categoryLabels.holidays[periodIndex]}
+                                    </option>
+                                    {generateTimeOptions(period === 'morning')}
+                                  </select>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
 
+                          {weekend.map((category, index) => (
+                            <div key={category} className='mb-4'>
+                              <label className='text-gray-700 pr-4'>
+                                {category}
+                              </label>
+                              <div className='flex space-x-2'>
+                                {['morning', 'afternoon'].map((period, periodIndex) => (
+                                  <select
+                                    key={`${category}-${period}`}
+                                    value={schedule.weekend[period] || ''}
+                                    onChange={(e) => handleScheduleChange('weekend', period, e.target.value)}
+                                    className='shadow-sm rounded-md p-2 border border-gray-300 focus:border-blue-500'
+                                  >
+                                    <option value='' disabled>
+                                      {categoryLabels.weekend[periodIndex]}
+                                    </option>
+                                    {generateTimeOptions(period === 'morning')}
+                                  </select>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <SwiperImg />
-
+                        <SwiperImg
+                          uploadimages={uploadimages}
+                          uploadimagesPreview={uploadimagesPreview}
+                          setUploadimages={setUploadimages}
+                          setUploadimagesPreview={setUploadimagesPreview}
+                        />
+                        <h2 className='text-red-500 text-xs'>{uploadImagesError}</h2>
                       </>
 
                     )
@@ -743,7 +870,8 @@ const Auth = () => {
 
                   <div className='justify-center sm:flex sm:items-center sm:gap-4'>
                     <button
-                      className='inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500' disabled={isSubmitting} type='submit'
+                      className='inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500'
+                      type='submit'
                     >
                       Crear cuenta
                     </button>
